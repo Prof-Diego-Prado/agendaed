@@ -52,7 +52,7 @@
   <nav class="flex-1 px-3 space-y-1">
     <button class="sidebar-item active w-full" onclick="navTo('agendamentos')">
       <i data-lucide="calendar" class="w-4 h-4 flex-shrink-0"></i>
-      <span>Agendamentos</span>
+      <span>Atendimentos</span>
     </button>
     <button class="sidebar-item w-full" onclick="navTo('clientes')">
       <i data-lucide="users" class="w-4 h-4 flex-shrink-0"></i>
@@ -88,26 +88,27 @@
   <!-- ====== VIEW: AGENDAMENTOS ====== -->
   <div id="view-agendamentos" class="view active">
     <!-- Header -->
-    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
-      <div class="flex items-center gap-3">
-        <button onclick="mudarDia(-1)" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <i data-lucide="chevron-left" class="w-4 h-4 text-gray-600"></i>
-        </button>
-        <button onclick="irHoje()" class="px-3 py-1.5 text-sm font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-lg transition-colors">Hoje</button>
-        <button onclick="mudarDia(1)" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600"></i>
-        </button>
-        <h2 id="cal-titulo" class="text-lg font-bold text-gray-800 ml-2"></h2>
-      </div>
-      <div class="flex items-center gap-2">
-        <div class="flex bg-gray-100 rounded-lg p-1">
-          <button id="btn-modo-dia" onclick="setModo('dia')" class="px-3 py-1 text-sm font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm">Dia</button>
-          <button id="btn-modo-semana" onclick="setModo('semana')" class="px-3 py-1 text-sm font-medium rounded-md transition-all text-gray-500">Semana</button>
-        </div>
+    <div class="bg-white border-b border-gray-100 px-6 py-3 flex-shrink-0">
+      <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-800">Atendimentos</h1>
         <button onclick="abrirModalAgendar()" class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
           <i data-lucide="plus" class="w-4 h-4"></i>
           Agendar
         </button>
+      </div>
+      <div class="flex items-center gap-2 mt-2">
+        <button onclick="mudarDia(-1)" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+          <i data-lucide="chevron-left" class="w-4 h-4 text-gray-600"></i>
+        </button>
+        <button onclick="irHoje()" class="px-3 py-1 text-xs font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-lg transition-colors">Hoje</button>
+        <button onclick="mudarDia(1)" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+          <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600"></i>
+        </button>
+        <h2 id="cal-titulo" class="text-sm font-semibold text-gray-600 ml-1"></h2>
+        <div class="flex bg-gray-100 rounded-lg p-0.5 ml-auto">
+          <button id="btn-modo-dia" onclick="setModo('dia')" class="px-3 py-1 text-xs font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm">Dia</button>
+          <button id="btn-modo-semana" onclick="setModo('semana')" class="px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-500">Semana</button>
+        </div>
       </div>
     </div>
     <!-- Calendário -->

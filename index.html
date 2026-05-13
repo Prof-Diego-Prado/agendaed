@@ -101,6 +101,9 @@
     #sidebar.collapsed .studio-info { display: none; }
     #sidebar.collapsed .sidebar-footer { display: none; }
     #sidebar.collapsed .sidebar-item { justify-content: center; padding: 10px; }
+    .pagto-btn.pagto-ativo { border-color: #72403e !important; color: #72403e !important; background: #f6f0ea !important; }
+    .fluxo-filtro-btn.ativo { background: #72403e; color: white; border-color: #72403e; }
+    .fluxo-aba.ativa { color: #72403e; border-bottom-color: #72403e; }
   </style>
 </head>
 <body class="font-sans h-screen overflow-hidden flex" style="background:var(--bg)">
@@ -182,6 +185,10 @@
     <button class="sidebar-item admin-only w-full" onclick="abrirRelatorioInativas()" title="Clientes sem visita há 60+ dias">
       <i data-lucide="heart-pulse" class="sidebar-icon"></i>
       <span class="sidebar-label">Clientes Inativas</span>
+    </button>
+    <button class="sidebar-item w-full admin-only" onclick="navTo('fluxo-caixa')" title="Fluxo de Caixa">
+      <i data-lucide="trending-up" class="sidebar-icon"></i>
+      <span class="sidebar-label">Fluxo de Caixa</span>
     </button>
     <button class="sidebar-item w-full admin-only" onclick="navTo('fechamento')" title="Fechamento de pagamentos">
       <i data-lucide="wallet" class="sidebar-icon"></i>
@@ -500,6 +507,66 @@
       </button>
     </div>
 
+  </div>
+</div>
+
+<!-- Modal Pagamento -->
+<div id="modal-pagamento" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-pagamento')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <h3 class="text-lg font-bold text-gray-800">Fechar Comanda</h3>
+      <button onclick="fecharModal('modal-pagamento')" class="p-2 hover:bg-gray-100 rounded-xl">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <div class="px-5 py-4 border-b border-gray-100">
+      <div class="text-xs font-semibold text-gray-400 uppercase mb-2">Resumo da Comanda</div>
+      <div id="pagto-resumo-itens" class="space-y-1 text-sm"></div>
+      <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
+        <span class="font-bold text-gray-700">Total</span>
+        <span id="pagto-total" class="text-2xl font-bold" style="color:#72403e">R$ 0,00</span>
+      </div>
+    </div>
+    <div id="pagto-debitos-section" class="hidden px-5 py-3 border-b" style="background:#fff8f0">
+      <div class="flex items-center gap-2 mb-2">
+        <i data-lucide="alert-triangle" class="w-4 h-4" style="color:#f59e0b"></i>
+        <span class="text-sm font-bold" style="color:#92400e">Cliente com débito em aberto</span>
+      </div>
+      <div id="pagto-debitos-lista" class="text-xs text-gray-600 space-y-1 mb-3"></div>
+      <div>
+        <label class="text-xs font-semibold text-gray-600 block mb-1">Abater da dívida neste atendimento (R$)</label>
+        <input type="number" id="pagto-abatimento" min="0" step="0.01" placeholder="0,00"
+          class="w-full px-3 py-2 text-sm border border-amber-200 rounded-xl bg-amber-50 focus:bg-white" />
+      </div>
+    </div>
+    <div class="px-5 py-4">
+      <div class="text-xs font-semibold text-gray-400 uppercase mb-3">Forma de Pagamento</div>
+      <div class="grid grid-cols-3 gap-2">
+        <button type="button" data-metodo="dinheiro" onclick="selecionarPagto(this)" class="pagto-btn pagto-ativo flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-xs font-semibold transition-all">
+          <i data-lucide="banknote" class="w-5 h-5"></i>Dinheiro
+        </button>
+        <button type="button" data-metodo="pix" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
+          <i data-lucide="qr-code" class="w-5 h-5"></i>Pix
+        </button>
+        <button type="button" data-metodo="debito" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
+          <i data-lucide="credit-card" class="w-5 h-5"></i>Débito
+        </button>
+        <button type="button" data-metodo="credito" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
+          <i data-lucide="credit-card" class="w-5 h-5"></i>Crédito
+        </button>
+        <button type="button" data-metodo="cortesia" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
+          <i data-lucide="gift" class="w-5 h-5"></i>Cortesia
+        </button>
+        <button type="button" data-metodo="fiado" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
+          <i data-lucide="clock" class="w-5 h-5"></i>Fiado
+        </button>
+      </div>
+    </div>
+    <div class="px-5 pb-5">
+      <button onclick="confirmarPagamento()" class="w-full py-3 text-sm font-bold text-white rounded-xl shadow-md transition-all" style="background:linear-gradient(to right,#72403e,#997776)">
+        <i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i>Confirmar Fechamento
+      </button>
+    </div>
   </div>
 </div>
 
@@ -822,6 +889,124 @@
   </div>
 </div>
 
+<!-- VIEW: FLUXO DE CAIXA -->
+<div id="view-fluxo-caixa" class="view">
+  <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+    <h2 class="text-lg font-bold text-gray-800">Fluxo de Caixa</h2>
+    <button onclick="abrirModalDespesa()" class="flex items-center gap-2 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md" style="background:linear-gradient(to right,#72403e,#997776)">
+      <i data-lucide="plus" class="w-4 h-4"></i>Nova Despesa
+    </button>
+  </div>
+  <div class="flex-1 overflow-auto p-4 md:p-6 space-y-4">
+    <div class="flex gap-2 flex-wrap">
+      <button onclick="setFluxoFiltro('hoje')"   id="fluxo-btn-hoje"   class="fluxo-filtro-btn px-4 py-1.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-500">Hoje</button>
+      <button onclick="setFluxoFiltro('semana')" id="fluxo-btn-semana" class="fluxo-filtro-btn px-4 py-1.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-500">Semana</button>
+      <button onclick="setFluxoFiltro('mensal')" id="fluxo-btn-mensal" class="fluxo-filtro-btn px-4 py-1.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-500">Mês</button>
+      <button onclick="setFluxoFiltro('anual')"  id="fluxo-btn-anual"  class="fluxo-filtro-btn px-4 py-1.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-500">Ano</button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#d1fae5">
+            <i data-lucide="trending-up" class="w-5 h-5" style="color:#10b981"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-500">Receita</span>
+        </div>
+        <div id="fluxo-receita" class="text-2xl font-bold text-gray-800">R$ 0,00</div>
+        <div id="fluxo-receita-count" class="text-xs text-gray-400 mt-1"></div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#fee2e2">
+            <i data-lucide="trending-down" class="w-5 h-5" style="color:#ef4444"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-500">Despesas</span>
+        </div>
+        <div id="fluxo-despesa" class="text-2xl font-bold text-gray-800">R$ 0,00</div>
+        <div id="fluxo-despesa-count" class="text-xs text-gray-400 mt-1"></div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#f6f0ea">
+            <i data-lucide="wallet" class="w-5 h-5" style="color:#72403e"></i>
+          </div>
+          <span class="text-sm font-semibold text-gray-500">Resultado Líquido</span>
+        </div>
+        <div id="fluxo-resultado" class="text-2xl font-bold">R$ 0,00</div>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="flex border-b border-gray-100">
+        <button onclick="setFluxoAba('entradas')" id="fluxo-aba-entradas" class="fluxo-aba flex-1 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent">Entradas</button>
+        <button onclick="setFluxoAba('despesas')" id="fluxo-aba-despesas" class="fluxo-aba flex-1 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent">Despesas</button>
+        <button onclick="setFluxoAba('debitos')"  id="fluxo-aba-debitos"  class="fluxo-aba flex-1 py-3 text-sm font-semibold text-gray-500 border-b-2 border-transparent">Débitos</button>
+      </div>
+      <div id="fluxo-lista" class="divide-y divide-gray-50 max-h-96 overflow-y-auto"></div>
+    </div>
+    <div id="fluxo-alertas" class="space-y-2"></div>
+  </div>
+</div>
+
+<!-- Modal Despesa -->
+<div id="modal-despesa" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-despesa')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 id="modal-despesa-titulo" class="text-lg font-bold text-gray-800">Nova Despesa</h3>
+      <button onclick="fecharModal('modal-despesa')" class="p-2 hover:bg-gray-100 rounded-xl">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <form id="form-despesa" onsubmit="salvarDespesa(event)" class="p-6 space-y-4">
+      <input type="hidden" id="despesa-id" />
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nome *</label>
+        <input type="text" id="despesa-nome" required placeholder="Ex: Aluguel, Shampoo..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Valor R$ *</label>
+          <input type="number" id="despesa-valor" required min="0" step="0.01" placeholder="0,00" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Data *</label>
+          <input type="date" id="despesa-data" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Categoria</label>
+          <select id="despesa-categoria" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+            <option value="aluguel">Aluguel</option>
+            <option value="produto">Produto</option>
+            <option value="equipamento">Equipamento</option>
+            <option value="marketing">Marketing</option>
+            <option value="pessoal">Pessoal</option>
+            <option value="outros" selected>Outros</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Repetição</label>
+          <select id="despesa-repeticao" onchange="atualizarProximaData()" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+            <option value="nenhuma" selected>Sem repetição</option>
+            <option value="diaria">Diária</option>
+            <option value="semanal">Semanal</option>
+            <option value="quinzenal">Quinzenal</option>
+            <option value="mensal">Mensal</option>
+          </select>
+        </div>
+      </div>
+      <div id="proxima-data-row" class="hidden">
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Próxima cobrança</label>
+        <input type="date" id="despesa-proxima" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" />
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="fecharModal('modal-despesa')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl">Cancelar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow" style="background:linear-gradient(to right,#72403e,#997776)">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast" class="toast"></div>
 
@@ -852,6 +1037,36 @@ let comandaItens   = [];
 let ordemFuncionarios = [];   // array de IDs na ordem das colunas
 let draggedFuncId  = null;
 let rangeCarregado = { inicio: null, fim: null };
+let despesas        = [];
+let debitosClientes = [];
+let fluxoFiltro     = 'mensal';
+let fluxoAba        = 'entradas';
+
+function memoize(fn) {
+  let lastKey, lastResult;
+  return (...args) => {
+    const key = JSON.stringify(args);
+    if (key !== lastKey) { lastKey = key; lastResult = fn(...args); }
+    return lastResult;
+  };
+}
+
+function calcularRangeFluxo(filtro) {
+  const hoje = new Date();
+  const pad  = n => String(n).padStart(2, '0');
+  const fmt  = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  if (filtro === 'hoje') { const s = fmt(hoje); return [s, s]; }
+  if (filtro === 'semana') {
+    const ini = new Date(hoje); ini.setDate(hoje.getDate() - hoje.getDay());
+    const fim = new Date(ini);  fim.setDate(ini.getDate() + 6);
+    return [fmt(ini), fmt(fim)];
+  }
+  if (filtro === 'anual') return [`${hoje.getFullYear()}-01-01`, `${hoje.getFullYear()}-12-31`];
+  const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const fim = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0);
+  return [fmt(ini), fmt(fim)];
+}
+
 let usuarioLogado = JSON.parse(sessionStorage.getItem('usuario_logado') || 'null');
 // { id, nome, papel, ver_valores_erika, percentual_comissao, tipo_remuneracao, pin }
 function isAdmin() { return usuarioLogado?.papel === 'admin'; }
@@ -919,13 +1134,15 @@ async function init() {
 
 async function carregarDados() {
   try {
-    const [f, c, s, a, es, er] = await Promise.all([
+    const [f, c, s, a, es, er, dp, deb] = await Promise.all([
       db.from('funcionarios').select('*').eq('ativo', true).order('nome'),
       db.from('clientes').select('*').order('nome'),
       db.from('servicos').select('*').order('nome'),
       carregarAgendamentosRange(new Date()),
       db.from('estoque_salao').select('*').order('produto'),
       db.from('estoque_revenda').select('*').order('produto'),
+      db.from('despesas').select('*').order('data', { ascending: false }),
+      db.from('debitos_clientes').select('*').order('created_at', { ascending: false }),
     ]);
     if (f.error) throw f.error;
     if (c.error) throw c.error;
@@ -936,6 +1153,8 @@ async function carregarDados() {
     agendamentos    = a.data || [];
     estoquesSalao   = es.data || [];
     estoquesRevenda = er.data || [];
+    despesas        = dp.data || [];
+    debitosClientes = deb.data || [];
   } catch (e) {
     showToast('Erro ao carregar dados: ' + e.message, 'error');
   }
@@ -969,6 +1188,7 @@ function renderView(view) {
     case 'estoque-salao':   renderEstoqueSalao(); break;
     case 'estoque-revenda': renderEstoqueRevenda(); break;
     case 'fechamento':      renderFechamento(); break;
+    case 'fluxo-caixa':     renderFluxoCaixa(); break;
   }
 }
 
@@ -1420,6 +1640,23 @@ async function abrirDetalheAgendamento(id) {
   document.getElementById('add-item-panel').classList.add('hidden');
 
   renderItensComanda(ag, servico);
+
+  // Alerta de débito no header (admin only)
+  const alertDebEl = document.getElementById('comanda-alerta-debito');
+  if (alertDebEl) alertDebEl.remove();
+  if (isAdmin() && ag.cliente_id) {
+    const debs = debitosClientes.filter(d => d.cliente_id === ag.cliente_id && (d.valor_original - d.valor_pago) > 0.001);
+    if (debs.length) {
+      const totalDev = debs.reduce((s, d) => s + (d.valor_original - d.valor_pago), 0);
+      const alertEl  = document.createElement('div');
+      alertEl.id     = 'comanda-alerta-debito';
+      alertEl.style.cssText = 'margin:0 20px 8px;padding:8px 12px;border-radius:10px;background:#fff8f0;color:#92400e;font-size:12px;display:flex;align-items:center;gap:8px;font-weight:600';
+      alertEl.innerHTML = `<i data-lucide="alert-triangle" style="width:14px;height:14px;color:#f59e0b;flex-shrink:0"></i> Débito em aberto: ${fmtPreco(totalDev)}`;
+      document.getElementById('comanda-header-info').after(alertEl);
+      lucide.createIcons();
+    }
+  }
+
   abrirModal('modal-comanda');
   lucide.createIcons();
 }
@@ -1516,17 +1753,95 @@ async function removerItemComanda(itemId) {
 }
 
 async function fecharComanda() {
-  const total = calcularTotalComanda();
-  const ag    = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
   if (!ag) return;
+  const servico = servicos.find(s => s.id === ag.servico_id);
+  const total   = calcularTotalComanda();
+  const baseVal = Number(ag.valor_cobrado) || servico?.preco || 0;
+
+  let resumoHtml = '';
+  if (servico || baseVal > 0) {
+    resumoHtml += `<div class="flex justify-between py-1 border-b border-gray-50">
+      <span class="text-gray-600">${esc(servico?.nome || 'Serviço')}</span>
+      <span class="font-semibold">${fmtPreco(baseVal)}</span></div>`;
+  }
+  comandaItens.forEach(item => {
+    resumoHtml += `<div class="flex justify-between py-1 border-b border-gray-50">
+      <span class="text-gray-600">${esc(item.descricao)} × ${item.quantidade||1}</span>
+      <span class="font-semibold">${fmtPreco((item.quantidade||1)*(item.valor_unitario||0))}</span></div>`;
+  });
+  document.getElementById('pagto-resumo-itens').innerHTML = resumoHtml || '<span class="text-gray-400 text-xs">Nenhum item</span>';
+  document.getElementById('pagto-total').textContent = fmtPreco(total);
+
+  const section = document.getElementById('pagto-debitos-section');
+  if (isAdmin() && ag.cliente_id) {
+    const debs = debitosClientes.filter(d => d.cliente_id === ag.cliente_id && (d.valor_original - d.valor_pago) > 0.001);
+    if (debs.length) {
+      const totalDev = debs.reduce((s, d) => s + (d.valor_original - d.valor_pago), 0);
+      document.getElementById('pagto-debitos-lista').innerHTML =
+        debs.map(d => `<div>• ${new Date(d.data_lancamento+'T12:00:00').toLocaleDateString('pt-BR')}: ${fmtPreco(d.valor_original - d.valor_pago)} pendente</div>`).join('') +
+        `<div class="mt-1 font-semibold" style="color:#92400e">Total: ${fmtPreco(totalDev)}</div>`;
+      document.getElementById('pagto-abatimento').value = '';
+      section.classList.remove('hidden');
+    } else { section.classList.add('hidden'); }
+  } else { section.classList.add('hidden'); }
+
+  document.querySelectorAll('.pagto-btn').forEach(b => {
+    b.classList.remove('pagto-ativo');
+  });
+  const primeiroBtn = document.querySelector('.pagto-btn[data-metodo="dinheiro"]');
+  if (primeiroBtn) selecionarPagto(primeiroBtn);
+
+  fecharModal('modal-comanda');
+  abrirModal('modal-pagamento');
+  lucide.createIcons();
+}
+
+function selecionarPagto(btn) {
+  document.querySelectorAll('.pagto-btn').forEach(b => {
+    b.classList.remove('pagto-ativo');
+  });
+  btn.classList.add('pagto-ativo');
+}
+
+async function confirmarPagamento() {
+  const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  if (!ag) return;
+  const total    = calcularTotalComanda();
+  const metodoBtn = document.querySelector('.pagto-btn.pagto-ativo');
+  const forma    = metodoBtn?.dataset?.metodo || 'dinheiro';
+  const abatimento = parseFloat(document.getElementById('pagto-abatimento')?.value) || 0;
   try {
     const { error } = await db.from('agendamentos')
-      .update({ status: 'concluido', valor_cobrado: total })
+      .update({ status: 'concluido', valor_cobrado: total, forma_pagamento: forma })
       .eq('id', agendamentoSelecionadoId);
     if (error) throw error;
-    ag.status = 'concluido'; ag.valor_cobrado = total;
-    showToast(`Comanda fechada! Total: ${fmtPreco(total)}`, 'success');
-    fecharModal('modal-comanda');
+    ag.status = 'concluido'; ag.valor_cobrado = total; ag.forma_pagamento = forma;
+
+    if (forma === 'fiado') {
+      await db.from('debitos_clientes').insert({
+        cliente_id: ag.cliente_id, agendamento_id: ag.id,
+        valor_original: total, valor_pago: 0,
+        data_lancamento: new Date().toISOString().slice(0,10),
+      });
+    }
+    if (abatimento > 0 && ag.cliente_id) {
+      const debs = debitosClientes.filter(d => d.cliente_id === ag.cliente_id && (d.valor_original - d.valor_pago) > 0.001);
+      let restante = abatimento;
+      for (const deb of debs) {
+        if (restante <= 0) break;
+        const saldo = deb.valor_original - deb.valor_pago;
+        const pagar = Math.min(saldo, restante);
+        await db.from('debitos_clientes').update({ valor_pago: deb.valor_pago + pagar }).eq('id', deb.id);
+        restante -= pagar;
+      }
+    }
+    const { data: dbsAtual } = await db.from('debitos_clientes').select('*').order('created_at', { ascending: false });
+    debitosClientes = dbsAtual || [];
+
+    const label = { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito', cortesia:'Cortesia', fiado:'Fiado' };
+    showToast(`Comanda fechada · ${label[forma]||forma} · ${fmtPreco(total)}`, 'success');
+    fecharModal('modal-pagamento');
     renderCalendario();
   } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }
@@ -2527,6 +2842,208 @@ async function marcarComoPago(funcId, ini, fim, bruto, comissao) {
   } catch(e) {
     showToast('Erro: ' + e.message, 'error');
   }
+}
+
+// =========================================================
+// FLUXO DE CAIXA
+// =========================================================
+function setFluxoFiltro(f) {
+  fluxoFiltro = f;
+  document.querySelectorAll('.fluxo-filtro-btn').forEach(b => b.classList.remove('ativo'));
+  const btn = document.getElementById('fluxo-btn-' + f);
+  if (btn) btn.classList.add('ativo');
+  renderFluxoCaixa();
+}
+
+function setFluxoAba(aba) {
+  fluxoAba = aba;
+  document.querySelectorAll('.fluxo-aba').forEach(b => b.classList.remove('ativa'));
+  const btn = document.getElementById('fluxo-aba-' + aba);
+  if (btn) btn.classList.add('ativa');
+  renderFluxoLista();
+}
+
+function renderFluxoCaixa() {
+  const [ini, fim] = calcularRangeFluxo(fluxoFiltro);
+  document.querySelectorAll('.fluxo-filtro-btn').forEach(b => b.classList.remove('ativo'));
+  const btnAtivo = document.getElementById('fluxo-btn-' + fluxoFiltro);
+  if (btnAtivo) btnAtivo.classList.add('ativo');
+  document.querySelectorAll('.fluxo-aba').forEach(b => b.classList.remove('ativa'));
+  const abaAtiva = document.getElementById('fluxo-aba-' + fluxoAba);
+  if (abaAtiva) abaAtiva.classList.add('ativa');
+
+  const iniAg = ini + 'T00:00:00'; const fimAg = fim + 'T23:59:59';
+  const agsNo  = agendamentos.filter(a => a.status === 'concluido' && a.data_hora >= iniAg && a.data_hora <= fimAg);
+  const receita = agsNo.reduce((s, a) => s + Number(a.valor_cobrado || 0), 0);
+  const despsNo = despesas.filter(d => d.data >= ini && d.data <= fim);
+  const despTotal = despsNo.reduce((s, d) => s + Number(d.valor || 0), 0);
+  const resultado = receita - despTotal;
+
+  const rEl = document.getElementById('fluxo-receita');
+  const dEl = document.getElementById('fluxo-despesa');
+  const resEl = document.getElementById('fluxo-resultado');
+  if (rEl) { rEl.textContent = fmtPreco(receita); }
+  const rcEl = document.getElementById('fluxo-receita-count');
+  if (rcEl) rcEl.textContent = `${agsNo.length} atendimento${agsNo.length !== 1?'s':''}`;
+  if (dEl) { dEl.textContent = fmtPreco(despTotal); }
+  const dcEl = document.getElementById('fluxo-despesa-count');
+  if (dcEl) dcEl.textContent = `${despsNo.length} lançamento${despsNo.length!==1?'s':''}`;
+  if (resEl) {
+    resEl.textContent = (resultado < 0 ? '- ' : '') + fmtPreco(Math.abs(resultado));
+    resEl.style.color = resultado >= 0 ? '#10b981' : '#ef4444';
+  }
+
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const em7 = new Date(hoje); em7.setDate(hoje.getDate()+7);
+  const proximas = despesas.filter(d => d.proxima_data && new Date(d.proxima_data+'T12:00:00') >= hoje && new Date(d.proxima_data+'T12:00:00') <= em7);
+  const alertasEl = document.getElementById('fluxo-alertas');
+  if (alertasEl) {
+    alertasEl.innerHTML = proximas.map(d =>
+      `<div class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm" style="background:#fff8f0;color:#92400e">
+        <i data-lucide="bell" style="width:16px;height:16px;color:#f59e0b;flex-shrink:0"></i>
+        <span><strong>${esc(d.nome)}</strong> vence em ${new Date(d.proxima_data+'T12:00:00').toLocaleDateString('pt-BR')} · ${fmtPreco(d.valor)}</span>
+      </div>`
+    ).join('');
+  }
+  renderFluxoLista();
+  lucide.createIcons();
+}
+
+function renderFluxoLista() {
+  const [ini, fim] = calcularRangeFluxo(fluxoFiltro);
+  const iniAg = ini + 'T00:00:00'; const fimAg = fim + 'T23:59:59';
+  const lista = document.getElementById('fluxo-lista');
+  if (!lista) return;
+  const catLabel = { aluguel:'Aluguel', produto:'Produto', equipamento:'Equipamento', marketing:'Marketing', pessoal:'Pessoal', outros:'Outros' };
+  const repLabel = { nenhuma:'', diaria:'Diária', semanal:'Semanal', quinzenal:'Quinzenal', mensal:'Mensal' };
+  const pagtoLabel = { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito', cortesia:'Cortesia', fiado:'Fiado' };
+
+  if (fluxoAba === 'entradas') {
+    const ags = agendamentos.filter(a => a.status==='concluido' && a.data_hora>=iniAg && a.data_hora<=fimAg)
+      .sort((a,b) => b.data_hora.localeCompare(a.data_hora));
+    lista.innerHTML = ags.length ? ags.map(ag => {
+      const cli  = clientes.find(c => c.id === ag.cliente_id);
+      const serv = servicos.find(s => s.id === ag.servico_id);
+      const func = funcionarios.find(f => f.id === ag.funcionario_id);
+      const d    = new Date(ag.data_hora);
+      return `<div class="flex items-center justify-between px-4 py-3">
+        <div>
+          <div class="text-sm font-semibold text-gray-800">${esc(cli?.nome?.split(' ')[0]||'—')} · ${esc(serv?.nome||'—')}</div>
+          <div class="text-xs text-gray-400">${d.toLocaleDateString('pt-BR')} · ${esc(func?.nome?.split(' ')[0]||'—')} · ${pagtoLabel[ag.forma_pagamento]||ag.forma_pagamento||'—'}</div>
+        </div>
+        <span class="font-bold text-sm" style="color:#10b981">+${fmtPreco(ag.valor_cobrado)}</span>
+      </div>`;
+    }).join('') : '<div class="text-center py-10 text-gray-400 text-sm">Nenhuma entrada neste período</div>';
+
+  } else if (fluxoAba === 'despesas') {
+    const desps = despesas.filter(d => d.data>=ini && d.data<=fim).sort((a,b)=>b.data.localeCompare(a.data));
+    lista.innerHTML = desps.length ? desps.map(d =>
+      `<div class="flex items-center justify-between px-4 py-3">
+        <div>
+          <div class="text-sm font-semibold text-gray-800">${esc(d.nome)}</div>
+          <div class="text-xs text-gray-400">${new Date(d.data+'T12:00:00').toLocaleDateString('pt-BR')} · ${catLabel[d.categoria]||d.categoria}${repLabel[d.repeticao]?' · '+repLabel[d.repeticao]:''}</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-sm" style="color:#ef4444">-${fmtPreco(d.valor)}</span>
+          <button onclick="editarDespesa('${d.id}')" class="p-1 hover:bg-gray-100 rounded-lg"><i data-lucide="pencil" style="width:14px;height:14px;color:#6b7280"></i></button>
+          <button onclick="excluirDespesa('${d.id}')" class="p-1 hover:bg-red-50 rounded-lg"><i data-lucide="trash-2" style="width:14px;height:14px;color:#ef4444"></i></button>
+        </div>
+      </div>`
+    ).join('') : '<div class="text-center py-10 text-gray-400 text-sm">Nenhuma despesa neste período</div>';
+    lucide.createIcons();
+
+  } else {
+    const debs = debitosClientes.filter(d => (d.valor_original - d.valor_pago) > 0.001);
+    lista.innerHTML = debs.length ? debs.map(d => {
+      const cli  = clientes.find(c => c.id === d.cliente_id);
+      const saldo = d.valor_original - d.valor_pago;
+      return `<div class="flex items-center justify-between px-4 py-3">
+        <div>
+          <div class="text-sm font-semibold text-gray-800">${esc(cli?.nome||'—')}</div>
+          <div class="text-xs text-gray-400">${new Date(d.data_lancamento+'T12:00:00').toLocaleDateString('pt-BR')} · Original: ${fmtPreco(d.valor_original)} · Pago: ${fmtPreco(d.valor_pago)}</div>
+        </div>
+        <span class="font-bold text-sm" style="color:#f59e0b">${fmtPreco(saldo)}</span>
+      </div>`;
+    }).join('') : '<div class="text-center py-10 text-gray-400 text-sm">Nenhum débito em aberto</div>';
+  }
+}
+
+// =========================================================
+// DESPESAS
+// =========================================================
+function abrirModalDespesa(id) {
+  document.getElementById('modal-despesa-titulo').textContent = id ? 'Editar Despesa' : 'Nova Despesa';
+  document.getElementById('form-despesa').reset();
+  document.getElementById('despesa-id').value = id || '';
+  if (id) {
+    const d = despesas.find(x => x.id === id);
+    if (d) {
+      document.getElementById('despesa-nome').value      = d.nome || '';
+      document.getElementById('despesa-valor').value     = d.valor || '';
+      document.getElementById('despesa-data').value      = d.data || '';
+      document.getElementById('despesa-categoria').value = d.categoria || 'outros';
+      document.getElementById('despesa-repeticao').value = d.repeticao || 'nenhuma';
+      document.getElementById('despesa-proxima').value   = d.proxima_data || '';
+    }
+  } else {
+    document.getElementById('despesa-data').value = new Date().toISOString().slice(0,10);
+  }
+  atualizarProximaData();
+  abrirModal('modal-despesa');
+  lucide.createIcons();
+}
+
+function editarDespesa(id) { abrirModalDespesa(id); }
+
+async function excluirDespesa(id) {
+  if (!confirm('Excluir esta despesa?')) return;
+  const { error } = await db.from('despesas').delete().eq('id', id);
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+  despesas = despesas.filter(d => d.id !== id);
+  showToast('Despesa excluída', 'success');
+  renderFluxoCaixa();
+}
+
+function atualizarProximaData() {
+  const rep = document.getElementById('despesa-repeticao').value;
+  const row = document.getElementById('proxima-data-row');
+  const prox = document.getElementById('despesa-proxima');
+  if (rep === 'nenhuma') { row.classList.add('hidden'); return; }
+  row.classList.remove('hidden');
+  if (!prox.value) {
+    const base = new Date(document.getElementById('despesa-data').value || new Date());
+    const dias = { diaria:1, semanal:7, quinzenal:15, mensal:30 }[rep] || 30;
+    base.setDate(base.getDate() + dias);
+    prox.value = base.toISOString().slice(0,10);
+  }
+}
+
+async function salvarDespesa(e) {
+  e.preventDefault();
+  const id  = document.getElementById('despesa-id').value;
+  const rep = document.getElementById('despesa-repeticao').value;
+  const payload = {
+    nome:         document.getElementById('despesa-nome').value.trim(),
+    valor:        parseFloat(document.getElementById('despesa-valor').value) || 0,
+    data:         document.getElementById('despesa-data').value,
+    categoria:    document.getElementById('despesa-categoria').value,
+    repeticao:    rep,
+    proxima_data: rep !== 'nenhuma' ? (document.getElementById('despesa-proxima').value || null) : null,
+  };
+  try {
+    let err;
+    if (id) {
+      ({ error: err } = await db.from('despesas').update(payload).eq('id', id));
+    } else {
+      ({ error: err } = await db.from('despesas').insert(payload));
+    }
+    if (err) throw err;
+    const { data } = await db.from('despesas').select('*').order('data', { ascending: false });
+    despesas = data || [];
+    showToast(id ? 'Despesa atualizada!' : 'Despesa lançada!', 'success');
+    fecharModal('modal-despesa');
+    renderFluxoCaixa();
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }
 
 // =========================================================

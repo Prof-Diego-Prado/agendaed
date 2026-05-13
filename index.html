@@ -104,6 +104,25 @@
     .pagto-btn.pagto-ativo { border-color: #72403e !important; color: #72403e !important; background: #f6f0ea !important; }
     .fluxo-filtro-btn.ativo { background: #72403e; color: white; border-color: #72403e; }
     .fluxo-aba.ativa { color: #72403e; border-bottom-color: #72403e; }
+    /* Typeahead */
+    .typeahead-wrap { position: relative; }
+    .typeahead-dropdown {
+      position: absolute; z-index: 200; left: 0; right: 0; top: 100%;
+      background: white; border: 1px solid #e5e7eb; border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12); max-height: 220px;
+      overflow-y: auto; display: none; margin-top: 4px;
+    }
+    .typeahead-dropdown.open { display: block; }
+    .typeahead-item {
+      padding: 10px 14px; font-size: 13px; cursor: pointer;
+      border-bottom: 1px solid #f3f4f6; color: #374151;
+    }
+    .typeahead-item:last-child { border-bottom: none; }
+    .typeahead-item:hover, .typeahead-item.selected { background: #f6f0ea; color: #72403e; font-weight: 600; }
+    .typeahead-item mark { background: none; color: #72403e; font-weight: 700; }
+    /* Abas cliente */
+    .cli-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; }
+    .cli-tab.ativa { color: #72403e; border-bottom-color: #72403e; }
   </style>
 </head>
 <body class="font-sans h-screen overflow-hidden flex" style="background:var(--bg)">
@@ -397,9 +416,16 @@
       <input type="hidden" id="agendar-id" />
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cliente</label>
-        <select id="agendar-cliente" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
-          <option value="">Selecione o cliente...</option>
-        </select>
+        <input type="hidden" id="agendar-cliente" />
+        <div class="typeahead-wrap">
+          <input type="text" id="agendar-cliente-busca" autocomplete="off"
+            placeholder="Digite o nome da cliente..."
+            oninput="typeaheadCliente(this.value)"
+            onfocus="typeaheadCliente(this.value)"
+            onblur="setTimeout(()=>fecharTypeahead(),200)"
+            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+          <div id="agendar-cliente-dropdown" class="typeahead-dropdown"></div>
+        </div>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
@@ -572,42 +598,136 @@
 
 <!-- Modal Cliente -->
 <div id="modal-cliente" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-cliente')">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" onclick="event.stopPropagation()">
-    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
       <h3 id="modal-cliente-titulo" class="text-lg font-bold text-gray-800">Novo Cliente</h3>
       <button onclick="fecharModal('modal-cliente')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
         <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
       </button>
     </div>
-    <form id="form-cliente" onsubmit="salvarCliente(event)" class="p-6 space-y-4">
-      <input type="hidden" id="cliente-id" />
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nome *</label>
-        <input type="text" id="cliente-nome" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Nome completo" />
-      </div>
+    <!-- Abas -->
+    <div class="flex border-b border-gray-100 px-2" id="cli-tabs">
+      <button class="cli-tab ativa" onclick="setClienteTab('dados')">Dados</button>
+      <button class="cli-tab" onclick="setClienteTab('anamnese')">Anamnese</button>
+      <button class="cli-tab" id="cli-tab-historico" onclick="setClienteTab('historico')" style="display:none">Histórico</button>
+    </div>
+
+    <!-- Aba Dados -->
+    <div id="cli-aba-dados" class="p-6">
+      <form id="form-cliente" onsubmit="salvarCliente(event)" class="space-y-4">
+        <input type="hidden" id="cliente-id" />
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nome *</label>
+          <input type="text" id="cliente-nome" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Nome completo" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Telefone</label>
+            <input type="tel" id="cliente-telefone" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="(44) 99999-0000" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Aniversário</label>
+            <input type="date" id="cliente-aniversario" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+          <input type="email" id="cliente-email" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="email@exemplo.com" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Observações</label>
+          <textarea id="cliente-obs" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors resize-none" placeholder="Alergias, preferências..."></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="fecharModal('modal-cliente')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
+          <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Aba Anamnese -->
+    <div id="cli-aba-anamnese" class="hidden p-6 space-y-4 overflow-y-auto" style="max-height:70vh">
+      <p class="text-xs text-gray-400">Informações preenchidas são salvas automaticamente ao clicar em "Salvar" na aba Dados.</p>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Telefone</label>
-          <input type="tel" id="cliente-telefone" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="(44) 99999-0000" />
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipo de cabelo</label>
+          <select id="anam-tipo-cabelo" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+            <option value="">Selecione...</option>
+            <option value="liso">Liso</option>
+            <option value="ondulado">Ondulado</option>
+            <option value="cacheado">Cacheado</option>
+            <option value="crespo">Crespo</option>
+          </select>
         </div>
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Aniversário</label>
-          <input type="date" id="cliente-aniversario" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Textura</label>
+          <select id="anam-textura" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+            <option value="">Selecione...</option>
+            <option value="fino">Fino</option>
+            <option value="medio">Médio</option>
+            <option value="grosso">Grosso</option>
+          </select>
         </div>
       </div>
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
-        <input type="email" id="cliente-email" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="email@exemplo.com" />
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Coloração anterior</label>
+        <select id="anam-coloracao" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+          <option value="">Selecione...</option>
+          <option value="nenhuma">Nenhuma</option>
+          <option value="tintura">Tintura</option>
+          <option value="luzes">Luzes/Mechas</option>
+          <option value="descolorado">Descoloração</option>
+          <option value="progressiva">Progressiva</option>
+          <option value="relaxamento">Relaxamento</option>
+        </select>
       </div>
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Observações</label>
-        <textarea id="cliente-obs" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors resize-none" placeholder="Alergias, preferências..."></textarea>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Condição do couro cabeludo</label>
+        <div class="flex flex-wrap gap-2" id="anam-couro-check">
+          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="normal" onchange="syncAnamCheck()" /> Normal</label>
+          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="oleoso" onchange="syncAnamCheck()" /> Oleoso</label>
+          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="seco" onchange="syncAnamCheck()" /> Seco</label>
+          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="sensivel" onchange="syncAnamCheck()" /> Sensível</label>
+          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="caspa" onchange="syncAnamCheck()" /> Caspa</label>
+          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="queda" onchange="syncAnamCheck()" /> Queda</label>
+        </div>
+        <input type="hidden" id="anam-couro" />
       </div>
-      <div class="flex justify-end gap-2 pt-2">
-        <button type="button" onclick="fecharModal('modal-cliente')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
-        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Alergias conhecidas</label>
+        <textarea id="anam-alergias" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none" placeholder="Ex: amônia, corante..."></textarea>
       </div>
-    </form>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Medicamentos em uso</label>
+        <textarea id="anam-medicamentos" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none" placeholder="Ex: anticoagulantes..."></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" id="anam-gestante" class="w-4 h-4 rounded" /> Gestante
+        </label>
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" id="anam-amamentando" class="w-4 h-4 rounded" /> Amamentando
+        </label>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Problemas de pele / sensibilidade</label>
+        <textarea id="anam-pele" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none" placeholder="Psoríase, dermatite, rosácea..."></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Expectativas / Objetivo</label>
+        <textarea id="anam-expectativa" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none" placeholder="O que a cliente deseja alcançar..."></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Observações adicionais</label>
+        <textarea id="anam-obs-extra" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none"></textarea>
+      </div>
+      <div class="text-xs text-gray-400 pt-1">Salve na aba "Dados" para gravar a anamnese.</div>
+    </div>
+
+    <!-- Aba Histórico -->
+    <div id="cli-aba-historico" class="hidden" style="max-height:70vh;overflow-y:auto">
+      <div id="cli-historico-conteudo" class="divide-y divide-gray-50"></div>
+    </div>
   </div>
 </div>
 
@@ -1518,6 +1638,43 @@ function posicionarBloco(colDiv, ag) {
 }
 
 // =========================================================
+// TYPEAHEAD CLIENTES
+// =========================================================
+let typeaheadIdx = -1;
+
+function typeaheadCliente(q) {
+  const dropdown = document.getElementById('agendar-cliente-dropdown');
+  if (!dropdown) return;
+  const termo = q.trim().toLowerCase();
+  const filtrados = termo.length < 1
+    ? clientes.slice(0, 30)
+    : clientes.filter(c => c.nome.toLowerCase().includes(termo)).slice(0, 30);
+
+  if (!filtrados.length) { dropdown.classList.remove('open'); return; }
+
+  dropdown.innerHTML = filtrados.map((c, i) => {
+    const nomeHl = c.nome.replace(new RegExp(`(${termo.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>');
+    return `<div class="typeahead-item" data-id="${c.id}" data-nome="${esc(c.nome)}"
+      onmousedown="selecionarClienteTypeahead('${c.id}','${c.nome.replace(/'/g,"\\'")}')">
+      ${termo ? nomeHl : esc(c.nome)}
+    </div>`;
+  }).join('');
+  dropdown.classList.add('open');
+  typeaheadIdx = -1;
+}
+
+function selecionarClienteTypeahead(id, nome) {
+  document.getElementById('agendar-cliente').value = id;
+  document.getElementById('agendar-cliente-busca').value = nome;
+  document.getElementById('agendar-cliente-dropdown').classList.remove('open');
+}
+
+function fecharTypeahead() {
+  const dd = document.getElementById('agendar-cliente-dropdown');
+  if (dd) dd.classList.remove('open');
+}
+
+// =========================================================
 // MODAL AGENDAMENTO
 // =========================================================
 function abrirModalAgendar(dataPreset = null) {
@@ -1525,10 +1682,12 @@ function abrirModalAgendar(dataPreset = null) {
   document.getElementById('agendar-id').value = '';
   document.getElementById('form-agendar').reset();
 
-  // Preenche selects
-  const selCliente = document.getElementById('agendar-cliente');
-  selCliente.innerHTML = '<option value="">Selecione o cliente...</option>' +
-    clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+  // Limpa typeahead de cliente
+  const buscaEl = document.getElementById('agendar-cliente-busca');
+  if (buscaEl) { buscaEl.value = ''; }
+  document.getElementById('agendar-cliente').value = '';
+  const dd = document.getElementById('agendar-cliente-dropdown');
+  if (dd) dd.classList.remove('open');
 
   const selFunc = document.getElementById('agendar-funcionaria');
   selFunc.innerHTML = '<option value="">Selecione...</option>' +
@@ -1917,6 +2076,9 @@ function renderClientes(filtro = '') {
       <td class="px-6 py-4 text-gray-600">${c.aniversario ? fmtData(c.aniversario) : '—'}</td>
       <td class="px-6 py-4">
         <div class="flex items-center justify-end gap-2">
+          <button onclick="abrirHistoricoCliente('${c.id}')" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600" title="Histórico">
+            <i data-lucide="clock" class="w-4 h-4"></i>
+          </button>
           <button onclick="editarCliente('${c.id}')" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600">
             <i data-lucide="pencil" class="w-4 h-4"></i>
           </button>
@@ -1934,11 +2096,76 @@ function filtrarClientes() {
   renderClientes(document.getElementById('busca-cliente').value);
 }
 
+// =========================================================
+// ABAS MODAL CLIENTE
+// =========================================================
+function setClienteTab(aba) {
+  ['dados','anamnese','historico'].forEach(t => {
+    document.getElementById('cli-aba-' + t)?.classList.add('hidden');
+  });
+  document.getElementById('cli-aba-' + aba)?.classList.remove('hidden');
+  document.querySelectorAll('.cli-tab').forEach(b => b.classList.remove('ativa'));
+  const idx = ['dados','anamnese','historico'].indexOf(aba);
+  const tabs = document.querySelectorAll('.cli-tab');
+  if (tabs[idx]) tabs[idx].classList.add('ativa');
+
+  if (aba === 'historico') renderHistoricoCliente();
+}
+
+function lerAnamnese() {
+  return {
+    tipo_cabelo:   document.getElementById('anam-tipo-cabelo')?.value || '',
+    textura:       document.getElementById('anam-textura')?.value || '',
+    coloracao:     document.getElementById('anam-coloracao')?.value || '',
+    couro:         document.getElementById('anam-couro')?.value || '',
+    alergias:      document.getElementById('anam-alergias')?.value || '',
+    medicamentos:  document.getElementById('anam-medicamentos')?.value || '',
+    gestante:      document.getElementById('anam-gestante')?.checked || false,
+    amamentando:   document.getElementById('anam-amamentando')?.checked || false,
+    pele:          document.getElementById('anam-pele')?.value || '',
+    expectativa:   document.getElementById('anam-expectativa')?.value || '',
+    obs_extra:     document.getElementById('anam-obs-extra')?.value || '',
+  };
+}
+
+function preencherAnamnese(dados) {
+  if (!dados) dados = {};
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
+  set('anam-tipo-cabelo', dados.tipo_cabelo);
+  set('anam-textura',     dados.textura);
+  set('anam-coloracao',   dados.coloracao);
+  set('anam-alergias',    dados.alergias);
+  set('anam-medicamentos',dados.medicamentos);
+  set('anam-pele',        dados.pele);
+  set('anam-expectativa', dados.expectativa);
+  set('anam-obs-extra',   dados.obs_extra);
+  setChk('anam-gestante',    dados.gestante);
+  setChk('anam-amamentando', dados.amamentando);
+  const couroVals = (dados.couro || '').split(',').map(s => s.trim()).filter(Boolean);
+  document.querySelectorAll('#anam-couro-check input[type="checkbox"]').forEach(cb => {
+    cb.checked = couroVals.includes(cb.value);
+  });
+  document.getElementById('anam-couro').value = dados.couro || '';
+}
+
+function syncAnamCheck() {
+  const vals = [];
+  document.querySelectorAll('#anam-couro-check input[type="checkbox"]').forEach(cb => {
+    if (cb.checked) vals.push(cb.value);
+  });
+  document.getElementById('anam-couro').value = vals.join(',');
+}
+
 function abrirModalCliente() {
   document.getElementById('modal-cliente-titulo').textContent = 'Novo Cliente';
   document.getElementById('form-cliente').reset();
   document.getElementById('cliente-id').value = '';
+  preencherAnamnese({});
+  setClienteTab('dados');
+  document.getElementById('cli-tab-historico').style.display = 'none';
   abrirModal('modal-cliente');
+  lucide.createIcons();
 }
 
 function editarCliente(id) {
@@ -1951,7 +2178,12 @@ function editarCliente(id) {
   document.getElementById('cliente-email').value = c.email || '';
   document.getElementById('cliente-aniversario').value = c.aniversario || '';
   document.getElementById('cliente-obs').value = c.observacoes || '';
+  preencherAnamnese(c.anamnese || {});
+  setClienteTab('dados');
+  document.getElementById('cli-tab-historico').style.display = '';
+  window._clienteHistoricoId = c.id;
   abrirModal('modal-cliente');
+  lucide.createIcons();
 }
 
 async function salvarCliente(e) {
@@ -1963,6 +2195,7 @@ async function salvarCliente(e) {
     email:       document.getElementById('cliente-email').value.trim() || null,
     aniversario: document.getElementById('cliente-aniversario').value || null,
     observacoes: document.getElementById('cliente-obs').value.trim() || null,
+    anamnese:    lerAnamnese(),
   };
   try {
     let err;
@@ -3044,6 +3277,69 @@ async function salvarDespesa(e) {
     fecharModal('modal-despesa');
     renderFluxoCaixa();
   } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+// =========================================================
+// HISTÓRICO DA CLIENTE
+// =========================================================
+function abrirHistoricoCliente(id) {
+  const c = clientes.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('cliente-id').value = c.id;
+  document.getElementById('cliente-nome').value = c.nome || '';
+  document.getElementById('cliente-telefone').value = c.telefone || '';
+  document.getElementById('cliente-email').value = c.email || '';
+  document.getElementById('cliente-aniversario').value = c.aniversario || '';
+  document.getElementById('cliente-obs').value = c.observacoes || '';
+  document.getElementById('modal-cliente-titulo').textContent = c.nome.split(' ')[0] + ' — Histórico';
+  preencherAnamnese(c.anamnese || {});
+  window._clienteHistoricoId = c.id;
+  document.getElementById('cli-tab-historico').style.display = '';
+  abrirModal('modal-cliente');
+  setClienteTab('historico');
+  lucide.createIcons();
+}
+
+function renderHistoricoCliente() {
+  const id  = window._clienteHistoricoId;
+  const el  = document.getElementById('cli-historico-conteudo');
+  if (!el || !id) return;
+
+  const ags = agendamentos
+    .filter(a => a.cliente_id === id && a.status === 'concluido')
+    .sort((a, b) => b.data_hora.localeCompare(a.data_hora));
+
+  if (!ags.length) {
+    el.innerHTML = '<div class="text-center py-12 text-gray-400 text-sm">Nenhum atendimento registrado</div>';
+    return;
+  }
+
+  const totalGasto = ags.reduce((s, a) => s + Number(a.valor_cobrado || 0), 0);
+  const pagtoLabel = { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito', cortesia:'Cortesia', fiado:'Fiado' };
+
+  el.innerHTML = `
+    <div class="px-5 py-3 text-xs text-gray-400 flex justify-between" style="background:#f6f0ea55">
+      <span>${ags.length} atendimento${ags.length!==1?'s':''}</span>
+      <span class="font-semibold" style="color:#72403e">Total gasto: ${fmtPreco(totalGasto)}</span>
+    </div>` +
+    ags.map(ag => {
+      const serv = servicos.find(s => s.id === ag.servico_id);
+      const func = funcionarios.find(f => f.id === ag.funcionario_id);
+      const d    = new Date(ag.data_hora);
+      return `<div class="px-5 py-4">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-sm font-semibold text-gray-800">${esc(serv?.nome || '—')}</div>
+            <div class="text-xs text-gray-400 mt-0.5 flex flex-wrap gap-2">
+              <span>📅 ${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</span>
+              <span>👩 ${esc(func?.nome?.split(' ')[0] || '—')}</span>
+              ${ag.forma_pagamento ? `<span>${pagtoLabel[ag.forma_pagamento]||ag.forma_pagamento}</span>` : ''}
+            </div>
+          </div>
+          <span class="text-sm font-bold" style="color:#72403e">${fmtPreco(ag.valor_cobrado)}</span>
+        </div>
+      </div>`;
+    }).join('');
 }
 
 // =========================================================

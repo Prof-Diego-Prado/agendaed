@@ -5,10 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Studio Érika Daiany</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
     [x-cloak] { display: none !important; }
+    /* Dark mode via CSS variables */
+    :root {
+      --bg:       #f6f0ea;
+      --surface:  #ffffff;
+      --surface2: #f9fafb;
+      --border:   #e5e7eb;
+      --text1:    #1f2937;
+      --text2:    #6b7280;
+      --text3:    #9ca3af;
+      --slot-alt: #fafafa;
+      --slot-border: #f1f5f9;
+    }
+    html.dark {
+      --bg:       #111827;
+      --surface:  #1f2937;
+      --surface2: #111827;
+      --border:   #374151;
+      --text1:    #f9fafb;
+      --text2:    #d1d5db;
+      --text3:    #9ca3af;
+      --slot-alt: #1a2332;
+      --slot-border: #374151;
+    }
+    html.dark body                    { background: var(--bg) !important; }
+    html.dark .bg-white               { background: var(--surface) !important; }
+    html.dark .bg-gray-50             { background: var(--surface2) !important; }
+    html.dark .bg-gray-100            { background: #374151 !important; }
+    html.dark .bg-gray-200            { background: #4b5563 !important; }
+    html.dark .text-gray-800          { color: var(--text1) !important; }
+    html.dark .text-gray-700          { color: var(--text1) !important; }
+    html.dark .text-gray-600          { color: var(--text2) !important; }
+    html.dark .text-gray-500          { color: var(--text3) !important; }
+    html.dark .text-gray-400          { color: var(--text3) !important; }
+    html.dark .border-gray-100        { border-color: var(--border) !important; }
+    html.dark .border-gray-200        { border-color: var(--border) !important; }
+    html.dark .border-b               { border-color: var(--border) !important; }
+    html.dark .shadow-sm, html.dark .shadow-2xl { box-shadow: 0 4px 16px rgba(0,0,0,.4) !important; }
+    html.dark .time-slot              { border-bottom-color: var(--slot-border) !important; }
+    html.dark .time-slot:nth-child(even) { background: var(--slot-alt) !important; }
+    html.dark .hover\:bg-gray-50:hover{ background: #374151 !important; }
+    html.dark .hover\:bg-gray-100:hover{ background: #4b5563 !important; }
+    html.dark input, html.dark select, html.dark textarea {
+      background: #374151 !important;
+      color: var(--text1) !important;
+      border-color: #4b5563 !important;
+    }
     .sidebar-item {
   display: flex;
   align-items: center;
@@ -56,7 +103,37 @@
     #sidebar.collapsed .sidebar-item { justify-content: center; padding: 10px; }
   </style>
 </head>
-<body class="bg-gray-50 font-sans h-screen overflow-hidden flex">
+<body class="font-sans h-screen overflow-hidden flex" style="background:var(--bg)">
+
+<!-- ====== TELA DE LOGIN ====== -->
+<div id="tela-login" class="fixed inset-0 z-[200] flex items-center justify-center" style="background:linear-gradient(135deg,#72403e,#8d6137)">
+  <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4">
+    <div class="text-center mb-6">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:linear-gradient(135deg,#72403e,#8d6137)">
+        <i data-lucide="scissors" class="w-7 h-7 text-white"></i>
+      </div>
+      <h1 class="text-xl font-bold text-gray-800">Studio Érika Daiany</h1>
+      <p class="text-sm text-gray-500 mt-1">Faça login para continuar</p>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Funcionária</label>
+        <select id="login-funcionaria" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+          <option value="">Selecione...</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">PIN</label>
+        <input type="password" id="login-pin" maxlength="6" placeholder="••••" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-center text-xl tracking-widest"
+          onkeydown="if(event.key==='Enter') fazerLogin()" />
+      </div>
+      <button onclick="fazerLogin()" class="w-full py-3 text-sm font-semibold text-white rounded-xl transition-all" style="background:linear-gradient(to right,#72403e,#997776)">
+        Entrar
+      </button>
+      <p id="login-erro" class="text-center text-sm text-red-500 hidden">PIN incorreto. Tente novamente.</p>
+    </div>
+  </div>
+</div>
 
 <!-- ============================================================ SIDEBAR -->
 <aside id="sidebar" class="w-64 flex-shrink-0 bg-gradient-to-b from-[#72403e] to-[#8d6137] flex flex-col text-white shadow-xl">
@@ -84,7 +161,7 @@
       <i data-lucide="users" class="sidebar-icon"></i>
       <span class="sidebar-label">Clientes</span>
     </button>
-    <button class="sidebar-item w-full" onclick="navTo('funcionarias')">
+    <button class="sidebar-item admin-only w-full" onclick="navTo('funcionarias')">
       <i data-lucide="badge" class="sidebar-icon"></i>
       <span class="sidebar-label">Funcionárias</span>
     </button>
@@ -92,19 +169,23 @@
       <i data-lucide="sparkles" class="sidebar-icon"></i>
       <span class="sidebar-label">Serviços</span>
     </button>
-    <div class="pt-3 pb-1 px-4 text-xs text-white/50 font-semibold uppercase tracking-widest sidebar-section-label">Estoque</div>
-    <button class="sidebar-item w-full" onclick="navTo('estoque-salao')">
+    <div class="admin-only pt-3 pb-1 px-4 text-xs text-white/50 font-semibold uppercase tracking-widest sidebar-section-label">Estoque</div>
+    <button class="sidebar-item admin-only w-full" onclick="navTo('estoque-salao')">
       <i data-lucide="package" class="sidebar-icon"></i>
       <span class="sidebar-label">Estoque Salão</span>
     </button>
-    <button class="sidebar-item w-full" onclick="navTo('estoque-revenda')">
+    <button class="sidebar-item admin-only w-full" onclick="navTo('estoque-revenda')">
       <i data-lucide="shopping-bag" class="sidebar-icon"></i>
       <span class="sidebar-label">Estoque Revenda</span>
     </button>
-    <div class="pt-3 pb-1 px-4 text-xs text-white/50 font-semibold uppercase tracking-widest sidebar-section-label">Relacionamento</div>
-    <button class="sidebar-item w-full" onclick="abrirRelatorioInativas()" title="Clientes sem visita há 60+ dias">
+    <div class="admin-only pt-3 pb-1 px-4 text-xs text-white/50 font-semibold uppercase tracking-widest sidebar-section-label">Relacionamento</div>
+    <button class="sidebar-item admin-only w-full" onclick="abrirRelatorioInativas()" title="Clientes sem visita há 60+ dias">
       <i data-lucide="heart-pulse" class="sidebar-icon"></i>
       <span class="sidebar-label">Clientes Inativas</span>
+    </button>
+    <button class="sidebar-item w-full admin-only" onclick="navTo('fechamento')" title="Fechamento de pagamentos">
+      <i data-lucide="wallet" class="sidebar-icon"></i>
+      <span class="sidebar-label">Fechamento</span>
     </button>
   </nav>
 
@@ -122,10 +203,18 @@
     <div class="bg-white border-b border-gray-100 px-6 py-3 flex-shrink-0">
       <div class="flex items-center justify-between">
         <h1 class="text-xl font-bold text-gray-800">Atendimentos</h1>
-        <button onclick="abrirModalAgendar()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
-          <i data-lucide="plus" class="w-4 h-4"></i>
-          Agendar
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleDarkMode()" id="btn-dark" class="p-2 rounded-xl hover:bg-gray-100 transition-colors" title="Modo escuro">
+            <i data-lucide="moon" class="w-5 h-5 text-gray-600"></i>
+          </button>
+          <button onclick="fazerLogout()" class="p-2 rounded-xl hover:bg-gray-100 transition-colors" title="Sair">
+            <i data-lucide="log-out" class="w-5 h-5 text-gray-600"></i>
+          </button>
+          <button onclick="abrirModalAgendar()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Agendar
+          </button>
+        </div>
       </div>
       <div class="flex items-center gap-2 mt-2">
         <button onclick="mudarDia(-1)" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
@@ -487,6 +576,42 @@
           <span class="text-sm text-gray-500">Cor usada no calendário</span>
         </div>
       </div>
+      <div id="campos-admin-func" class="space-y-3 pt-2 border-t border-gray-100">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Papel</label>
+            <select id="func-papel" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+              <option value="funcionaria">Funcionária</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">PIN de acesso</label>
+            <input type="text" id="func-pin" maxlength="6" placeholder="1234" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Remuneração</label>
+            <select id="func-tipo-rem" onchange="toggleCampoComissao()" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+              <option value="comissao">Comissão (%)</option>
+              <option value="fixo">Salário Fixo</option>
+            </select>
+          </div>
+          <div id="campo-comissao">
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">% Comissão</label>
+            <input type="number" id="func-comissao" min="0" max="100" step="1" placeholder="40" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+          </div>
+          <div id="campo-salario" class="hidden">
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Salário R$</label>
+            <input type="number" id="func-salario" min="0" step="0.01" placeholder="1500,00" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+          </div>
+        </div>
+        <div class="flex items-center gap-3 py-1">
+          <input type="checkbox" id="func-ver-valores" class="w-4 h-4 rounded" />
+          <label for="func-ver-valores" class="text-sm text-gray-700">Pode ver os valores dos serviços da Érika</label>
+        </div>
+      </div>
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" onclick="fecharModal('modal-funcionaria')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
         <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
@@ -656,6 +781,39 @@
   </div>
 </div>
 
+<!-- ====== VIEW: FECHAMENTO ====== -->
+<div id="view-fechamento" class="view">
+  <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+    <h2 class="text-lg font-bold text-gray-800">Fechamento de Pagamentos</h2>
+    <button onclick="gerarFechamento()" class="flex items-center gap-2 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md transition-all" style="background:linear-gradient(to right,#72403e,#997776)">
+      <i data-lucide="calculator" class="w-4 h-4"></i>
+      Calcular
+    </button>
+  </div>
+  <div class="flex-1 overflow-auto p-6 space-y-5">
+    <!-- Filtros -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-wrap gap-4 items-end">
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1">Funcionária</label>
+        <select id="fech-func" class="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 min-w-[180px]">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1">De</label>
+        <input type="date" id="fech-inicio" class="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1">Até</label>
+        <input type="date" id="fech-fim" class="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
+      </div>
+    </div>
+
+    <!-- Resultado -->
+    <div id="fech-resultado" class="space-y-4"></div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast" class="toast"></div>
 
@@ -686,6 +844,9 @@ let comandaItens   = [];
 let ordemFuncionarios = [];   // array de IDs na ordem das colunas
 let draggedFuncId  = null;
 let rangeCarregado = { inicio: null, fim: null };
+let usuarioLogado = JSON.parse(sessionStorage.getItem('usuario_logado') || 'null');
+// { id, nome, papel, ver_valores_erika, percentual_comissao, tipo_remuneracao, pin }
+function isAdmin() { return usuarioLogado?.papel === 'admin'; }
 
 // Retorna funcionarios ativos na ordem definida pelo usuário
 function funcionariosOrdenados() {
@@ -730,6 +891,19 @@ function salvarOrdem() {
 // INIT
 // =========================================================
 async function init() {
+  // Tela de login
+  if (!usuarioLogado) {
+    await carregarLoginOpcoes();
+    lucide.createIcons();
+    return;
+  }
+  // Esconde tela de login se já logado
+  const telaLogin = document.getElementById('tela-login');
+  if (telaLogin) telaLogin.style.display = 'none';
+
+  if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+  }
   lucide.createIcons();
   if (localStorage.getItem('sidebar_collapsed') === '1') {
     document.getElementById('sidebar').classList.add('collapsed');
@@ -738,6 +912,7 @@ async function init() {
   }
   await carregarDados();
   inicializarOrdem();
+  adaptarUIParaPapel();
   renderCalendario();
 }
 
@@ -792,6 +967,7 @@ function renderView(view) {
     case 'servicos':        renderServicos(); break;
     case 'estoque-salao':   renderEstoqueSalao(); break;
     case 'estoque-revenda': renderEstoqueRevenda(); break;
+    case 'fechamento':      renderFechamento(); break;
   }
 }
 
@@ -989,8 +1165,25 @@ function renderCalendarioDia(container, dias) {
     container.appendChild(hdrWrapper);
   } else {
     // Modo dia — colunas ordenáveis por drag-and-drop (Érika travada na 1ª posição)
-    const funcOrdenados = funcionariosOrdenados();
+    const funcOrdenadosTodos = funcionariosOrdenados();
     const erikaId = ordemFuncionarios[0];
+
+    // Filtra: só mostra funcionária se tiver agendamento no dia (ou se for admin)
+    const funcOrdenados = isAdmin()
+      ? funcOrdenadosTodos
+      : funcOrdenadosTodos.filter(f => agendamentos.some(a => {
+          const d = new Date(a.data_hora);
+          return a.funcionario_id === f.id && d.toDateString() === currentDate.toDateString();
+        }));
+
+    if (funcOrdenados.length === 0) {
+      const msg = document.createElement('div');
+      msg.className = 'flex-1 flex items-center justify-center text-gray-400 flex-col gap-3';
+      msg.innerHTML = '<i data-lucide="calendar-x" style="width:48px;height:48px;opacity:.3"></i><p>Nenhum agendamento para este dia</p>';
+      container.appendChild(msg);
+      lucide.createIcons();
+      return;
+    }
 
     const hdrRow = document.createElement('div');
     hdrRow.className = 'flex flex-1 border-b border-gray-200 bg-gray-50';
@@ -1243,13 +1436,14 @@ function renderItensComanda(ag, servico) {
   const fechado = ag.status === 'concluido' || ag.status === 'cancelado';
   const baseVal = Number(ag.valor_cobrado || servico?.preco || 0);
 
+  const podVerValor = isAdmin() || usuarioLogado?.ver_valores_erika;
   let html = `
     <div class="flex items-center justify-between py-2 px-3 rounded-xl" style="background:#f6f0ea80">
       <div class="flex items-center gap-2">
         <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#c2ac9f44;color:#72403e">Principal</span>
         <span class="text-sm font-medium text-gray-800">${esc(servico?.nome || 'Serviço agendado')}</span>
       </div>
-      <span class="text-sm font-bold text-gray-800">${fmtPreco(baseVal)}</span>
+      <span class="text-sm font-bold text-gray-800">${podVerValor ? fmtPreco(baseVal) : '—'}</span>
     </div>`;
 
   let extraTotal = 0;
@@ -1269,7 +1463,7 @@ function renderItensComanda(ag, servico) {
   });
 
   lista.innerHTML = html;
-  totalEl.textContent = fmtPreco(baseVal + extraTotal);
+  totalEl.textContent = podVerValor ? fmtPreco(baseVal + extraTotal) : '—';
   lucide.createIcons();
 }
 
@@ -1533,6 +1727,14 @@ function abrirModalFuncionaria() {
   document.getElementById('form-funcionaria').reset();
   document.getElementById('funcionaria-id').value = '';
   document.getElementById('funcionaria-cor').value = '#ec4899';
+  document.getElementById('campos-admin-func').style.display = isAdmin() ? '' : 'none';
+  document.getElementById('func-papel').value = 'funcionaria';
+  document.getElementById('func-pin').value = '1234';
+  document.getElementById('func-tipo-rem').value = 'comissao';
+  document.getElementById('func-comissao').value = '';
+  document.getElementById('func-salario').value = '';
+  document.getElementById('func-ver-valores').checked = false;
+  toggleCampoComissao();
   abrirModal('modal-funcionaria');
 }
 
@@ -1545,6 +1747,14 @@ function editarFuncionaria(id) {
   document.getElementById('funcionaria-cargo').value = f.cargo || '';
   document.getElementById('funcionaria-telefone').value = f.telefone || '';
   document.getElementById('funcionaria-cor').value = f.cor || '#ec4899';
+  document.getElementById('campos-admin-func').style.display = isAdmin() ? '' : 'none';
+  document.getElementById('func-papel').value = f.papel || 'funcionaria';
+  document.getElementById('func-pin').value = f.pin || '1234';
+  document.getElementById('func-tipo-rem').value = f.tipo_remuneracao || 'comissao';
+  document.getElementById('func-comissao').value = f.percentual_comissao || '';
+  document.getElementById('func-salario').value = f.salario_fixo || '';
+  document.getElementById('func-ver-valores').checked = f.ver_valores_erika || false;
+  toggleCampoComissao();
   abrirModal('modal-funcionaria');
 }
 
@@ -1557,6 +1767,14 @@ async function salvarFuncionaria(e) {
     telefone: document.getElementById('funcionaria-telefone').value.trim() || null,
     cor:      document.getElementById('funcionaria-cor').value,
   };
+  if (isAdmin()) {
+    payload.papel               = document.getElementById('func-papel').value;
+    payload.pin                 = document.getElementById('func-pin').value || '1234';
+    payload.tipo_remuneracao    = document.getElementById('func-tipo-rem').value;
+    payload.percentual_comissao = parseFloat(document.getElementById('func-comissao').value) || 0;
+    payload.salario_fixo        = parseFloat(document.getElementById('func-salario').value) || 0;
+    payload.ver_valores_erika   = document.getElementById('func-ver-valores').checked;
+  }
   try {
     let err;
     if (id) {
@@ -2059,6 +2277,208 @@ function toggleSidebar() {
   icon.setAttribute('data-lucide', collapsed ? 'panel-left-open' : 'panel-left-close');
   lucide.createIcons();
   localStorage.setItem('sidebar_collapsed', collapsed ? '1' : '0');
+}
+
+// =========================================================
+// DARK MODE
+// =========================================================
+function toggleDarkMode() {
+  const dark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', dark ? 'dark' : 'light');
+  const icon = document.getElementById('btn-dark');
+  icon.querySelector('i').setAttribute('data-lucide', dark ? 'sun' : 'moon');
+  lucide.createIcons();
+}
+
+// =========================================================
+// AUTENTICAÇÃO
+// =========================================================
+async function carregarLoginOpcoes() {
+  const { data } = await db.from('funcionarios').select('id,nome,papel').eq('ativo',true).order('nome');
+  const sel = document.getElementById('login-funcionaria');
+  if (sel) sel.innerHTML = '<option value="">Selecione...</option>' +
+    (data||[]).map(f=>`<option value="${f.id}">${f.nome.split(' ')[0]} ${f.nome.split(' ')[1]||''}</option>`).join('');
+}
+
+async function fazerLogin() {
+  const funcId = document.getElementById('login-funcionaria').value;
+  const pin    = document.getElementById('login-pin').value;
+  const erro   = document.getElementById('login-erro');
+  if (!funcId || !pin) { erro.classList.remove('hidden'); erro.textContent='Selecione a funcionária e insira o PIN.'; return; }
+  const { data: func } = await db.from('funcionarios').select('*').eq('id',funcId).single();
+  if (!func || func.pin !== pin) { erro.classList.remove('hidden'); erro.textContent='PIN incorreto. Tente novamente.'; return; }
+  usuarioLogado = { id:func.id, nome:func.nome, papel:func.papel, ver_valores_erika:func.ver_valores_erika, percentual_comissao:func.percentual_comissao, tipo_remuneracao:func.tipo_remuneracao, pin:func.pin };
+  sessionStorage.setItem('usuario_logado', JSON.stringify(usuarioLogado));
+  document.getElementById('tela-login').style.display = 'none';
+  erro.classList.add('hidden');
+
+  if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+  }
+  if (localStorage.getItem('sidebar_collapsed') === '1') {
+    document.getElementById('sidebar').classList.add('collapsed');
+    document.getElementById('sidebar-toggle-icon').setAttribute('data-lucide', 'panel-left-open');
+  }
+  await carregarDados();
+  inicializarOrdem();
+  adaptarUIParaPapel();
+  renderCalendario();
+  lucide.createIcons();
+}
+
+function fazerLogout() {
+  usuarioLogado = null;
+  sessionStorage.removeItem('usuario_logado');
+  document.getElementById('tela-login').style.display = 'flex';
+  document.getElementById('login-pin').value = '';
+}
+
+function adaptarUIParaPapel() {
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = isAdmin() ? '' : 'none';
+  });
+  const footer = document.querySelector('.sidebar-footer');
+  if (footer) footer.innerHTML = `<div>${usuarioLogado?.nome?.split(' ')[0] || ''}</div><div style="opacity:.5;font-size:11px">${isAdmin()?'Admin':'Funcionária'}</div>`;
+}
+
+// =========================================================
+// CAMPOS FUNCIONÁRIA (admin)
+// =========================================================
+function toggleCampoComissao() {
+  const tipo = document.getElementById('func-tipo-rem')?.value;
+  document.getElementById('campo-comissao').style.display = tipo === 'comissao' ? '' : 'none';
+  document.getElementById('campo-salario').style.display  = tipo === 'fixo'     ? '' : 'none';
+}
+
+// =========================================================
+// FECHAMENTO DE PAGAMENTOS
+// =========================================================
+function renderFechamento() {
+  const sel = document.getElementById('fech-func');
+  if (sel) {
+    sel.innerHTML = '<option value="">Todas</option>' +
+      funcionarios.map(f => `<option value="${f.id}">${f.nome.split(' ')[0]}</option>`).join('');
+  }
+  const hoje = new Date();
+  const ini  = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const fim  = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+  const fmtInput = d => d.toISOString().split('T')[0];
+  const inEl = document.getElementById('fech-inicio');
+  const fimEl = document.getElementById('fech-fim');
+  if (inEl && !inEl.value) inEl.value = fmtInput(ini);
+  if (fimEl && !fimEl.value) fimEl.value = fmtInput(fim);
+}
+
+async function gerarFechamento() {
+  const funcId = document.getElementById('fech-func').value;
+  const ini    = document.getElementById('fech-inicio').value;
+  const fim    = document.getElementById('fech-fim').value;
+  if (!ini || !fim) { showToast('Selecione o período', 'error'); return; }
+
+  const iniISO = new Date(ini + 'T00:00:00').toISOString();
+  const fimISO = new Date(fim + 'T23:59:59').toISOString();
+
+  let query = db.from('agendamentos')
+    .select('*, comanda_itens(*)')
+    .eq('status', 'concluido')
+    .gte('data_hora', iniISO)
+    .lte('data_hora', fimISO);
+  if (funcId) query = query.eq('funcionario_id', funcId);
+
+  const { data: ags, error } = await query.order('data_hora');
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+
+  const porFunc = {};
+  (ags || []).forEach(ag => {
+    const fid = ag.funcionario_id || 'sem_func';
+    if (!porFunc[fid]) porFunc[fid] = [];
+    porFunc[fid].push(ag);
+  });
+
+  const res = document.getElementById('fech-resultado');
+  if (!Object.keys(porFunc).length) {
+    res.innerHTML = '<div class="text-center py-12 text-gray-400">Nenhum atendimento concluído neste período</div>';
+    return;
+  }
+
+  res.innerHTML = Object.entries(porFunc).map(([fid, lista]) => {
+    const func = funcionarios.find(f => f.id === fid);
+    const nome = func?.nome?.split(' ')[0] || 'Sem funcionária';
+    const pct  = func?.percentual_comissao || 0;
+    const tipo = func?.tipo_remuneracao || 'comissao';
+
+    let totalBruto = 0;
+    const linhas = lista.map(ag => {
+      const serv   = servicos.find(s => s.id === ag.servico_id);
+      const cli    = clientes.find(c => c.id === ag.cliente_id);
+      const base   = Number(ag.valor_cobrado || 0);
+      const extras = (ag.comanda_itens||[]).reduce((s,i)=>s+(i.quantidade||1)*(i.valor_unitario||0), 0);
+      const total  = base + extras;
+      totalBruto  += total;
+      const d      = new Date(ag.data_hora);
+      return `<tr class="border-b border-gray-50 text-sm">
+        <td class="px-4 py-2.5 text-gray-600">${d.toLocaleDateString('pt-BR')}</td>
+        <td class="px-4 py-2.5 text-gray-800">${esc(cli?.nome?.split(' ')[0] || '—')}</td>
+        <td class="px-4 py-2.5 text-gray-700">${esc(serv?.nome || '—')}</td>
+        <td class="px-4 py-2.5 text-right font-semibold">${fmtPreco(total)}</td>
+      </tr>`;
+    }).join('');
+
+    const totalComissao = tipo === 'comissao' ? totalBruto * pct / 100 : (func?.salario_fixo || 0);
+    const remuLabel     = tipo === 'comissao' ? `Comissão ${pct}%` : 'Salário Fixo';
+
+    return `
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100" style="background:#f6f0ea88">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background:${func?.cor||'#997776'}">${nome[0]}</div>
+          <div>
+            <div class="font-bold text-gray-800">${func?.nome || nome}</div>
+            <div class="text-xs text-gray-500">${lista.length} atendimento${lista.length !== 1 ? 's' : ''} · ${remuLabel}</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-gray-500">Total bruto</div>
+          <div class="font-bold text-gray-800 text-lg">${fmtPreco(totalBruto)}</div>
+          <div class="text-sm font-semibold mt-0.5" style="color:#72403e">${remuLabel}: ${fmtPreco(totalComissao)}</div>
+        </div>
+      </div>
+      <table class="w-full">
+        <thead><tr class="text-xs text-gray-400 uppercase border-b border-gray-100 bg-gray-50">
+          <th class="px-4 py-2 text-left font-semibold">Data</th>
+          <th class="px-4 py-2 text-left font-semibold">Cliente</th>
+          <th class="px-4 py-2 text-left font-semibold">Serviço</th>
+          <th class="px-4 py-2 text-right font-semibold">Valor</th>
+        </tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+      <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-t border-gray-100">
+        <span class="text-sm font-bold text-gray-700">A receber: <span style="color:#72403e">${fmtPreco(totalComissao)}</span></span>
+        <button onclick="marcarComoPago('${fid}','${ini}','${fim}',${totalBruto},${totalComissao})" class="px-4 py-1.5 text-xs font-semibold text-white rounded-xl" style="background:#10b981">
+          ✓ Marcar como Pago
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  lucide.createIcons();
+}
+
+async function marcarComoPago(funcId, ini, fim, bruto, comissao) {
+  try {
+    const { error } = await db.from('fechamentos').insert({
+      funcionario_id: funcId || null,
+      periodo_inicio: ini,
+      periodo_fim:    fim,
+      total_bruto:    bruto,
+      total_comissao: comissao,
+      status:         'pago',
+    });
+    if (error) throw error;
+    showToast('Pagamento registrado!', 'success');
+  } catch(e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
 }
 
 // =========================================================

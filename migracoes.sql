@@ -12,13 +12,13 @@ alter table funcionarios add column if not exists salario_fixo       numeric(10,
 alter table funcionarios add column if not exists pin                text    default '1234';
 
 -- 2. Papéis corretos
--- Érika Daiany é a única admin (nome completo: Erica Daiane Lepre Do Prado)
+-- Érika Daiany e Luiza são admins com acesso total
 update funcionarios set papel = 'admin', ver_valores_erika = true
-where nome ilike '%erica%' or nome ilike '%érika%';
+where nome ilike '%erica%' or nome ilike '%érika%' or nome ilike '%luiza%';
 
--- Todas as demais são funcionárias (incluindo Luiza)
+-- Todas as demais são funcionárias
 update funcionarios set papel = 'funcionaria', ver_valores_erika = false
-where nome not ilike '%erica%' and nome not ilike '%érika%';
+where nome not ilike '%erica%' and nome not ilike '%érika%' and nome not ilike '%luiza%';
 
 -- 3. Comissões iniciais (ajuste conforme acordado)
 update funcionarios set percentual_comissao = 40 where nome ilike '%cibeli%';

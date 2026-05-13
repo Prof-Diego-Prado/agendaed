@@ -4,6 +4,8 @@
 -- ============================================================
 
 -- 1. Novos campos em funcionarios
+alter table funcionarios add column if not exists ordem integer default 99;
+
 alter table funcionarios add column if not exists papel              text    default 'funcionaria' check (papel in ('admin','funcionaria'));
 alter table funcionarios add column if not exists ver_valores_erika  boolean default false;
 alter table funcionarios add column if not exists tipo_remuneracao   text    default 'comissao'    check (tipo_remuneracao in ('fixo','comissao'));
@@ -44,6 +46,15 @@ alter table fechamentos enable row level security;
 drop policy if exists "fechamentos_all" on fechamentos;
 create policy "fechamentos_all" on fechamentos for all using (true) with check (true);
 
+-- Ordem inicial das colunas da agenda (ajuste os números conforme desejado)
+-- Érika primeiro, depois as demais em ordem alfabética
+update funcionarios set ordem = 1 where nome ilike '%erica%' or nome ilike '%érika%';
+update funcionarios set ordem = 2 where nome ilike '%cibeli%';
+update funcionarios set ordem = 3 where nome ilike '%jaqueline%';
+update funcionarios set ordem = 4 where nome ilike '%priscila%';
+update funcionarios set ordem = 5 where nome ilike '%amanda%';
+update funcionarios set ordem = 6 where nome ilike '%luiza%';
+
 -- Verificar resultado
-select nome, papel, ver_valores_erika, tipo_remuneracao, percentual_comissao, pin
-from funcionarios order by papel desc, nome;
+select nome, ordem, papel, tipo_remuneracao, percentual_comissao, pin
+from funcionarios order by ordem, nome;

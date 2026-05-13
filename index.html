@@ -866,20 +866,13 @@ function inicializarOrdem() {
   if (salvo) {
     try { ordemFuncionarios = JSON.parse(salvo); } catch {}
   }
-  // Garante que todos os ativos estejam na lista e Érika seja o primeiro
-  const erika = funcionarios.find(f => f.nome.toLowerCase().includes('erica') || f.nome.toLowerCase().includes('érika'));
-  const erikaId = erika?.id;
-  // Adiciona novos que não estão na lista salva
-  funcionarios.forEach(f => {
+  // Adiciona novos que não estão na lista salva (respeitando campo `ordem` do banco)
+  const sorted = [...funcionarios].sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+  sorted.forEach(f => {
     if (!ordemFuncionarios.includes(f.id)) ordemFuncionarios.push(f.id);
   });
   // Remove IDs que não existem mais
   ordemFuncionarios = ordemFuncionarios.filter(id => funcionarios.some(f => f.id === id));
-  // Mantém Érika sempre primeiro
-  if (erikaId && ordemFuncionarios[0] !== erikaId) {
-    ordemFuncionarios = ordemFuncionarios.filter(id => id !== erikaId);
-    ordemFuncionarios.unshift(erikaId);
-  }
   localStorage.setItem('ordem_funcionarios', JSON.stringify(ordemFuncionarios));
 }
 
@@ -1164,9 +1157,8 @@ function renderCalendarioDia(container, dias) {
     hdrWrapper.appendChild(bodyRow);
     container.appendChild(hdrWrapper);
   } else {
-    // Modo dia — colunas ordenáveis por drag-and-drop (Érika travada na 1ª posição)
+    // Modo dia — colunas ordenáveis por drag-and-drop (livre, sem travamento)
     const funcOrdenadosTodos = funcionariosOrdenados();
-    const erikaId = ordemFuncionarios[0];
 
     // Filtra: só mostra funcionária se tiver agendamento no dia (ou se for admin)
     const funcOrdenados = isAdmin()
@@ -1189,33 +1181,28 @@ function renderCalendarioDia(container, dias) {
     hdrRow.className = 'flex flex-1 border-b border-gray-200 bg-gray-50';
 
     funcOrdenados.forEach((func, idx) => {
-      const travado = func.id === erikaId;
       const fHdr = document.createElement('div');
       fHdr.className = 'calendar-col border-r border-gray-100 text-center py-3 select-none transition-colors';
       fHdr.style.minWidth = '160px';
-      fHdr.style.cursor = travado ? 'default' : 'grab';
+      fHdr.style.cursor = 'grab';
       fHdr.innerHTML = `
         <div class="flex items-center justify-center gap-2">
           <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:${func.cor}"></div>
           <span class="text-sm font-bold text-gray-700">${func.nome.split(' ')[0]}</span>
-          ${travado
-            ? '<i data-lucide="lock" class="w-3 h-3 text-gray-300 flex-shrink-0"></i>'
-            : '<i data-lucide="grip-vertical" class="w-3 h-3 text-gray-300 flex-shrink-0"></i>'}
+          <i data-lucide="grip-vertical" class="w-3 h-3 text-gray-300 flex-shrink-0"></i>
         </div>
         <div class="text-xs text-gray-400">${func.cargo || ''}</div>`;
 
-      if (!travado) {
-        fHdr.setAttribute('draggable', 'true');
-        fHdr.addEventListener('dragstart', e => {
-          draggedFuncId = func.id;
-          e.dataTransfer.effectAllowed = 'move';
-          fHdr.style.opacity = '0.5';
-        });
-        fHdr.addEventListener('dragend', () => { fHdr.style.opacity = ''; });
-      }
+      fHdr.setAttribute('draggable', 'true');
+      fHdr.addEventListener('dragstart', e => {
+        draggedFuncId = func.id;
+        e.dataTransfer.effectAllowed = 'move';
+        fHdr.style.opacity = '0.5';
+      });
+      fHdr.addEventListener('dragend', () => { fHdr.style.opacity = ''; });
 
       fHdr.addEventListener('dragover', e => {
-        if (draggedFuncId && draggedFuncId !== func.id && func.id !== erikaId) {
+        if (draggedFuncId && draggedFuncId !== func.id) {
           e.preventDefault();
           fHdr.style.background = '#f6f0ea';
         }
@@ -1224,10 +1211,9 @@ function renderCalendarioDia(container, dias) {
       fHdr.addEventListener('drop', e => {
         e.preventDefault();
         fHdr.style.background = '';
-        if (!draggedFuncId || draggedFuncId === func.id || func.id === erikaId) return;
+        if (!draggedFuncId || draggedFuncId === func.id) return;
         const fromIdx = ordemFuncionarios.indexOf(draggedFuncId);
-        let toIdx   = ordemFuncionarios.indexOf(func.id);
-        if (toIdx === 0) toIdx = 1;
+        const toIdx   = ordemFuncionarios.indexOf(func.id);
         ordemFuncionarios.splice(fromIdx, 1);
         ordemFuncionarios.splice(toIdx, 0, draggedFuncId);
         draggedFuncId = null;

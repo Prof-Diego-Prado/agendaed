@@ -41,6 +41,7 @@ create table if not exists fechamentos (
 );
 
 alter table fechamentos enable row level security;
+drop policy if exists "fechamentos_all" on fechamentos;
 create policy "fechamentos_all" on fechamentos for all using (true) with check (true);
 
 -- Verificar resultado

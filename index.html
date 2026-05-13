@@ -314,21 +314,72 @@
   </div>
 </div>
 
-<!-- Modal Detalhes Agendamento -->
-<div id="modal-detalhe-agendamento" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-detalhe-agendamento')">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
-    <div class="flex items-center justify-between p-6 border-b border-gray-100">
-      <h3 class="text-lg font-bold text-gray-800">Detalhes do Agendamento</h3>
-      <button onclick="fecharModal('modal-detalhe-agendamento')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+<!-- Modal Comanda -->
+<div id="modal-comanda" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-comanda')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onclick="event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <h3 class="text-lg font-bold text-gray-800">Comanda</h3>
+        <span id="comanda-status-badge" class="badge text-xs px-2 py-0.5 rounded-full"></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btn-whatsapp-comanda" onclick="enviarWhatsApp()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-xl transition-colors" style="background:#25D366">
+          <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
+        </button>
+        <button onclick="fecharModal('modal-comanda')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Info cliente -->
+    <div id="comanda-header-info" class="px-5 py-3 border-b text-sm" style="background:#f6f0ea;border-color:#c2ac9f44"></div>
+
+    <!-- Lista de itens -->
+    <div class="px-5 py-3 overflow-y-auto" style="max-height:260px">
+      <div id="comanda-itens-lista" class="space-y-1"></div>
+    </div>
+
+    <!-- Adicionar item -->
+    <div class="px-5 pb-4 border-t border-gray-100">
+      <div id="add-item-panel" class="hidden pt-3 pb-2 space-y-2">
+        <div class="flex gap-2 items-end">
+          <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-500 block mb-1">Serviço</label>
+            <select id="item-select" onchange="preencherValorItem()" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50"></select>
+          </div>
+          <div class="w-28">
+            <label class="text-xs font-semibold text-gray-500 block mb-1">Valor R$</label>
+            <input type="number" id="item-valor" step="0.01" min="0" placeholder="0,00" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
+          </div>
+          <button onclick="confirmarAddItem()" class="px-3 py-2 text-white rounded-xl text-sm font-bold transition-colors" style="background:#72403e">+</button>
+        </div>
+        <input type="text" id="item-descricao-custom" placeholder="Ou descreva item livre (ex: Produto vendido)..." class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
+      </div>
+
+      <div class="flex items-center justify-between pt-3">
+        <button id="btn-toggle-add-item" onclick="toggleAddItem()" class="flex items-center gap-1.5 text-sm font-semibold transition-colors" style="color:#72403e">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          Adicionar serviço
+        </button>
+        <div class="text-right">
+          <div class="text-xs text-gray-400 mb-0.5">Total</div>
+          <div id="comanda-total" class="text-2xl font-bold" style="color:#72403e">R$ 0,00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div id="comanda-acoes" class="flex gap-2 px-5 pb-5 pt-2 border-t border-gray-100">
+      <button id="btn-faltou-comanda" onclick="atualizarStatusComanda('faltou')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors">Faltou</button>
+      <button id="btn-cancelar-comanda" onclick="atualizarStatusComanda('cancelado')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors">Cancelar</button>
+      <button id="btn-fechar-comanda" onclick="fecharComanda()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl shadow flex items-center justify-center gap-1.5 transition-all" style="background:linear-gradient(to right,#72403e,#997776)">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>Fechar Comanda
       </button>
     </div>
-    <div id="detalhe-conteudo" class="p-6 space-y-3 text-sm text-gray-700"></div>
-    <div class="flex gap-2 px-6 pb-6">
-      <button id="btn-concluir" onclick="atualizarStatusAgendamento('concluido')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors">Concluir</button>
-      <button id="btn-faltou" onclick="atualizarStatusAgendamento('faltou')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors">Faltou</button>
-      <button id="btn-cancelar-ag" onclick="atualizarStatusAgendamento('cancelado')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors">Cancelar</button>
-    </div>
+
   </div>
 </div>
 
@@ -600,6 +651,7 @@ let estoquesRevenda = [];
 let currentDate    = new Date();
 let modoCalendario = 'dia'; // 'dia' | 'semana'
 let agendamentoSelecionadoId = null;
+let comandaItens = [];
 
 // =========================================================
 // INIT
@@ -976,57 +1028,215 @@ async function salvarAgendamento(e) {
   }
 }
 
-function abrirDetalheAgendamento(id) {
-  const ag      = agendamentos.find(a => a.id === id);
+async function abrirDetalheAgendamento(id) {
+  const ag = agendamentos.find(a => a.id === id);
   if (!ag) return;
   agendamentoSelecionadoId = id;
 
-  const cliente  = clientes.find(c => c.id === ag.cliente_id);
-  const func     = funcionarios.find(f => f.id === ag.funcionario_id);
-  const servico  = servicos.find(s => s.id === ag.servico_id);
-  const d        = new Date(ag.data_hora);
+  try {
+    const { data, error } = await db.from('comanda_itens')
+      .select('*').eq('agendamento_id', id).order('created_at');
+    if (error) throw error;
+    comandaItens = data || [];
+  } catch(e) { comandaItens = []; }
 
-  const statusLabels = { agendado: 'Agendado', concluido: 'Concluído', cancelado: 'Cancelado', faltou: 'Faltou' };
-  const statusCores  = { agendado: 'blue', concluido: 'green', cancelado: 'red', faltou: 'yellow' };
-  const sc           = statusCores[ag.status] || 'gray';
+  const cliente = clientes.find(c => c.id === ag.cliente_id);
+  const func    = funcionarios.find(f => f.id === ag.funcionario_id);
+  const servico = servicos.find(s => s.id === ag.servico_id);
+  const d       = new Date(ag.data_hora);
 
-  document.getElementById('detalhe-conteudo').innerHTML = `
-    <div class="flex items-center gap-2 mb-2">
-      <span class="badge bg-${sc}-100 text-${sc}-700">${statusLabels[ag.status] || ag.status}</span>
-    </div>
-    <div class="space-y-2">
-      <div class="flex gap-2"><span class="text-gray-400 w-24">Cliente</span><span class="font-semibold">${cliente ? cliente.nome : '—'}</span></div>
-      <div class="flex gap-2"><span class="text-gray-400 w-24">Funcionária</span><span class="font-semibold">${func ? func.nome : '—'}</span></div>
-      <div class="flex gap-2"><span class="text-gray-400 w-24">Serviço</span><span class="font-semibold">${servico ? servico.nome : '—'}</span></div>
-      <div class="flex gap-2"><span class="text-gray-400 w-24">Data/hora</span><span class="font-semibold">${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</span></div>
-      ${ag.valor_cobrado ? `<div class="flex gap-2"><span class="text-gray-400 w-24">Valor</span><span class="font-semibold">${fmtPreco(ag.valor_cobrado)}</span></div>` : ''}
-      ${ag.observacoes ? `<div class="flex gap-2"><span class="text-gray-400 w-24">Obs</span><span>${ag.observacoes}</span></div>` : ''}
-    </div>
-  `;
+  // Status badge
+  const statusLabels = { agendado:'Agendado', concluido:'Concluído', cancelado:'Cancelado', faltou:'Faltou' };
+  const statusCores  = { agendado:'#3b82f6', concluido:'#10b981', cancelado:'#ef4444', faltou:'#f59e0b' };
+  const badge = document.getElementById('comanda-status-badge');
+  badge.textContent = statusLabels[ag.status] || ag.status;
+  badge.style.background = (statusCores[ag.status] || '#6b7280') + '22';
+  badge.style.color = statusCores[ag.status] || '#6b7280';
 
-  // Mostrar/ocultar botões conforme status
-  const concluido = ag.status === 'concluido';
-  const cancelado = ag.status === 'cancelado';
-  document.getElementById('btn-concluir').style.display     = concluido || cancelado ? 'none' : '';
-  document.getElementById('btn-faltou').style.display       = ag.status === 'faltou' || cancelado ? 'none' : '';
-  document.getElementById('btn-cancelar-ag').style.display  = cancelado ? 'none' : '';
+  // Header info
+  const tel = cliente?.telefone || '';
+  document.getElementById('comanda-header-info').innerHTML = `
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="font-bold text-gray-800 text-base">${esc(cliente?.nome || '—')}</div>
+        <div class="text-xs text-gray-500 mt-0.5 flex gap-3">
+          ${func ? `<span>👩 ${esc(func.nome.split(' ')[0])}</span>` : ''}
+          <span>📅 ${d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'})} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>
+        </div>
+      </div>
+      ${tel ? `<span class="text-xs text-gray-500">${esc(tel)}</span>` : ''}
+    </div>`;
 
-  abrirModal('modal-detalhe-agendamento');
+  // WhatsApp
+  const num = fmtWhatsAppNum(tel);
+  document.getElementById('btn-whatsapp-comanda').style.display = num ? '' : 'none';
+
+  // Preenche select de serviços
+  const sel = document.getElementById('item-select');
+  sel.innerHTML = '<option value="">Selecione o serviço...</option>' +
+    servicos.filter(s => s.ativo).map(s =>
+      `<option value="${s.id}" data-preco="${s.preco}">${esc(s.nome)} — ${fmtPreco(s.preco)}</option>`
+    ).join('');
+
+  // Exibe/oculta botões de ação conforme status
+  const fechado = ag.status === 'concluido' || ag.status === 'cancelado';
+  document.getElementById('btn-faltou-comanda').style.display  = (ag.status==='faltou'||fechado) ? 'none' : '';
+  document.getElementById('btn-cancelar-comanda').style.display = ag.status==='cancelado' ? 'none' : '';
+  document.getElementById('btn-fechar-comanda').style.display   = fechado ? 'none' : '';
+  document.getElementById('btn-toggle-add-item').style.display  = fechado ? 'none' : '';
+  document.getElementById('add-item-panel').classList.add('hidden');
+
+  renderItensComanda(ag, servico);
+  abrirModal('modal-comanda');
   lucide.createIcons();
 }
 
-async function atualizarStatusAgendamento(status) {
+function renderItensComanda(ag, servico) {
+  const lista   = document.getElementById('comanda-itens-lista');
+  const totalEl = document.getElementById('comanda-total');
+  const fechado = ag.status === 'concluido' || ag.status === 'cancelado';
+  const baseVal = Number(ag.valor_cobrado || servico?.preco || 0);
+
+  let html = `
+    <div class="flex items-center justify-between py-2 px-3 rounded-xl" style="background:#f6f0ea80">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#c2ac9f44;color:#72403e">Principal</span>
+        <span class="text-sm font-medium text-gray-800">${esc(servico?.nome || 'Serviço agendado')}</span>
+      </div>
+      <span class="text-sm font-bold text-gray-800">${fmtPreco(baseVal)}</span>
+    </div>`;
+
+  let extraTotal = 0;
+  comandaItens.forEach(item => {
+    const sub = (item.quantidade||1) * (item.valor_unitario||0);
+    extraTotal += sub;
+    html += `
+      <div class="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-gray-50 group transition-colors">
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+          ${!fechado ? `<button onclick="removerItemComanda('${item.id}')" class="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-red-400 hover:text-red-600">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i></button>` : ''}
+          <span class="text-sm text-gray-700 truncate">${esc(item.descricao)}</span>
+          ${item.quantidade > 1 ? `<span class="text-xs text-gray-400 flex-shrink-0">×${item.quantidade}</span>` : ''}
+        </div>
+        <span class="text-sm font-semibold text-gray-800 flex-shrink-0 ml-2">${fmtPreco(sub)}</span>
+      </div>`;
+  });
+
+  lista.innerHTML = html;
+  totalEl.textContent = fmtPreco(baseVal + extraTotal);
+  lucide.createIcons();
+}
+
+function calcularTotalComanda() {
+  const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  if (!ag) return 0;
+  const servico = servicos.find(s => s.id === ag.servico_id);
+  const base    = Number(ag.valor_cobrado || servico?.preco || 0);
+  const extras  = comandaItens.reduce((acc, i) => acc + (i.quantidade||1) * (i.valor_unitario||0), 0);
+  return base + extras;
+}
+
+function preencherValorItem() {
+  const sel = document.getElementById('item-select');
+  const opt = sel.options[sel.selectedIndex];
+  if (opt?.dataset?.preco) document.getElementById('item-valor').value = opt.dataset.preco;
+  if (sel.value) document.getElementById('item-descricao-custom').value = '';
+}
+
+function toggleAddItem() {
+  document.getElementById('add-item-panel').classList.toggle('hidden');
+}
+
+async function confirmarAddItem() {
+  const sel    = document.getElementById('item-select');
+  const custom = document.getElementById('item-descricao-custom').value.trim();
+  const valor  = parseFloat(document.getElementById('item-valor').value);
+  let descricao = custom || (sel.value ? servicos.find(s => s.id === sel.value)?.nome : '');
+  if (!descricao) { showToast('Descreva o item', 'error'); return; }
+  if (isNaN(valor) || valor < 0) { showToast('Informe o valor', 'error'); return; }
+  try {
+    const { data, error } = await db.from('comanda_itens').insert({
+      agendamento_id: agendamentoSelecionadoId,
+      descricao, quantidade: 1, valor_unitario: valor,
+    }).select().single();
+    if (error) throw error;
+    comandaItens.push(data);
+    sel.value = ''; document.getElementById('item-valor').value = '';
+    document.getElementById('item-descricao-custom').value = '';
+    document.getElementById('add-item-panel').classList.add('hidden');
+    const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+    renderItensComanda(ag, servicos.find(s => s.id === ag?.servico_id));
+    showToast('Item adicionado!', 'success');
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function removerItemComanda(itemId) {
+  try {
+    const { error } = await db.from('comanda_itens').delete().eq('id', itemId);
+    if (error) throw error;
+    comandaItens = comandaItens.filter(i => i.id !== itemId);
+    const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+    renderItensComanda(ag, servicos.find(s => s.id === ag?.servico_id));
+    showToast('Item removido', 'success');
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function fecharComanda() {
+  const total = calcularTotalComanda();
+  const ag    = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  if (!ag) return;
+  try {
+    const { error } = await db.from('agendamentos')
+      .update({ status: 'concluido', valor_cobrado: total })
+      .eq('id', agendamentoSelecionadoId);
+    if (error) throw error;
+    ag.status = 'concluido'; ag.valor_cobrado = total;
+    showToast(`Comanda fechada! Total: ${fmtPreco(total)}`, 'success');
+    fecharModal('modal-comanda');
+    renderCalendario();
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function atualizarStatusComanda(status) {
   try {
     const { error } = await db.from('agendamentos').update({ status }).eq('id', agendamentoSelecionadoId);
     if (error) throw error;
-    const idx = agendamentos.findIndex(a => a.id === agendamentoSelecionadoId);
-    if (idx !== -1) agendamentos[idx].status = status;
+    const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+    if (ag) ag.status = status;
     showToast('Status atualizado!', 'success');
-    fecharModal('modal-detalhe-agendamento');
+    fecharModal('modal-comanda');
     renderCalendario();
-  } catch (e) {
-    showToast('Erro: ' + e.message, 'error');
-  }
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+function fmtWhatsAppNum(tel) {
+  if (!tel) return null;
+  const d = tel.replace(/\D/g, '');
+  if (!d || d.length < 8) return null;
+  if (d.startsWith('55') && d.length >= 12) return d;
+  return '55' + d;
+}
+
+function enviarWhatsApp() {
+  const ag      = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  if (!ag) return;
+  const cliente = clientes.find(c => c.id === ag.cliente_id);
+  const func    = funcionarios.find(f => f.id === ag.funcionario_id);
+  const servico = servicos.find(s => s.id === ag.servico_id);
+  const d       = new Date(ag.data_hora);
+  const tel     = cliente?.telefone || '';
+  const num     = fmtWhatsAppNum(tel);
+  if (!num) { showToast('Cliente sem telefone cadastrado', 'error'); return; }
+
+  const dataFmt  = d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+  const horaFmt  = d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const primeiro = (cliente?.nome||'').split(' ')[0];
+  const func1    = func ? func.nome.split(' ')[0] : 'nossa equipe';
+  const total    = calcularTotalComanda();
+
+  const msg = `Olá ${primeiro}! 😊\n\nPassando para confirmar seu atendimento no *Studio Érika Daiany*:\n\n📅 ${dataFmt} às ${horaFmt}\n✂️ ${servico?.nome || 'Atendimento'}\n👩 ${func1}${total > 0 ? `\n💰 ${fmtPreco(total)}` : ''}\n\nTe esperamos! 💇‍♀️`;
+
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 // =========================================================

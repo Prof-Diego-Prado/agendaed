@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Studio Érika Daiany</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .sidebar-item { @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer; }
+    .sidebar-item:hover { @apply bg-white/10; }
+    .sidebar-item.active { @apply bg-white text-pink-600; }
+    .view { display: none; }
+    .view.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal-backdrop.hidden { display: none; }
+    .calendar-col { min-width: 160px; }
+    .time-slot { height: 40px; border-bottom: 1px solid #f1f5f9; position: relative; }
+    .time-slot:nth-child(even) { background: #fafafa; }
+    .appt-block { position: absolute; left: 2px; right: 2px; border-radius: 6px; padding: 3px 6px; font-size: 11px; font-weight: 600; cursor: pointer; overflow: hidden; z-index: 2; line-height: 1.3; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; color: white; box-shadow: 0 4px 20px rgba(0,0,0,0.15); transform: translateY(100px); opacity: 0; transition: all 0.3s ease; pointer-events: none; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #10b981; }
+    .toast.error { background: #ef4444; }
+    .badge { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    input, select, textarea { outline: none; }
+    input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px #ec4899; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+    .avatar-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: white; flex-shrink: 0; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans h-screen overflow-hidden flex">
+
+<!-- ============================================================ SIDEBAR -->
+<aside id="sidebar" class="w-64 flex-shrink-0 bg-gradient-to-b from-pink-500 to-purple-600 flex flex-col text-white shadow-xl">
+  <div class="p-6 pb-4">
+    <div class="flex items-center gap-3 mb-1">
+      <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+        <i data-lucide="scissors" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <p class="text-xs text-white/70 leading-none">Studio</p>
+        <p class="font-bold text-sm leading-tight">Érika Daiany</p>
+      </div>
+    </div>
+  </div>
+
+  <nav class="flex-1 px-3 space-y-1">
+    <button class="sidebar-item active w-full" onclick="navTo('agendamentos')">
+      <i data-lucide="calendar" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Agendamentos</span>
+    </button>
+    <button class="sidebar-item w-full" onclick="navTo('clientes')">
+      <i data-lucide="users" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Clientes</span>
+    </button>
+    <button class="sidebar-item w-full" onclick="navTo('funcionarias')">
+      <i data-lucide="badge" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Funcionárias</span>
+    </button>
+    <button class="sidebar-item w-full" onclick="navTo('servicos')">
+      <i data-lucide="sparkles" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Serviços</span>
+    </button>
+    <div class="pt-3 pb-1 px-4 text-xs text-white/50 font-semibold uppercase tracking-widest">Estoque</div>
+    <button class="sidebar-item w-full" onclick="navTo('estoque-salao')">
+      <i data-lucide="package" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Estoque Salão</span>
+    </button>
+    <button class="sidebar-item w-full" onclick="navTo('estoque-revenda')">
+      <i data-lucide="shopping-bag" class="w-4 h-4 flex-shrink-0"></i>
+      <span>Estoque Revenda</span>
+    </button>
+  </nav>
+
+  <div class="p-4 text-xs text-white/40 text-center">
+    Studio Érika Daiany © 2026
+  </div>
+</aside>
+
+<!-- ============================================================ MAIN -->
+<main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+  <!-- ====== VIEW: AGENDAMENTOS ====== -->
+  <div id="view-agendamentos" class="view active">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <button onclick="mudarDia(-1)" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <i data-lucide="chevron-left" class="w-4 h-4 text-gray-600"></i>
+        </button>
+        <button onclick="irHoje()" class="px-3 py-1.5 text-sm font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-lg transition-colors">Hoje</button>
+        <button onclick="mudarDia(1)" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600"></i>
+        </button>
+        <h2 id="cal-titulo" class="text-lg font-bold text-gray-800 ml-2"></h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="flex bg-gray-100 rounded-lg p-1">
+          <button id="btn-modo-dia" onclick="setModo('dia')" class="px-3 py-1 text-sm font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm">Dia</button>
+          <button id="btn-modo-semana" onclick="setModo('semana')" class="px-3 py-1 text-sm font-medium rounded-md transition-all text-gray-500">Semana</button>
+        </div>
+        <button onclick="abrirModalAgendar()" class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Agendar
+        </button>
+      </div>
+    </div>
+    <!-- Calendário -->
+    <div class="flex-1 overflow-auto">
+      <div id="calendario" class="flex min-h-full"></div>
+    </div>
+  </div>
+
+  <!-- ====== VIEW: CLIENTES ====== -->
+  <div id="view-clientes" class="view">
+    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <h2 class="text-lg font-bold text-gray-800">Clientes</h2>
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input id="busca-cliente" type="text" placeholder="Buscar por nome..." oninput="filtrarClientes()" class="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl w-64 bg-gray-50 focus:bg-white transition-colors" />
+        </div>
+        <button onclick="abrirModalCliente()" class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Novo cliente
+        </button>
+      </div>
+    </div>
+    <div class="flex-1 overflow-auto p-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100 bg-gray-50">
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Nome</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Telefone</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Email</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Aniversário</th>
+              <th class="px-6 py-3"></th>
+            </tr>
+          </thead>
+          <tbody id="tabela-clientes"></tbody>
+        </table>
+        <div id="empty-clientes" class="hidden text-center py-16 text-gray-400">
+          <i data-lucide="users" class="w-12 h-12 mx-auto mb-3 opacity-30"></i>
+          <p class="text-sm">Nenhum cliente encontrado</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== VIEW: FUNCIONÁRIAS ====== -->
+  <div id="view-funcionarias" class="view">
+    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <h2 class="text-lg font-bold text-gray-800">Funcionárias</h2>
+      <button onclick="abrirModalFuncionaria()" class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        Nova funcionária
+      </button>
+    </div>
+    <div class="flex-1 overflow-auto p-6">
+      <div id="grid-funcionarias" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+    </div>
+  </div>
+
+  <!-- ====== VIEW: SERVIÇOS ====== -->
+  <div id="view-servicos" class="view">
+    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <h2 class="text-lg font-bold text-gray-800">Serviços</h2>
+      <button onclick="abrirModalServico()" class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        Novo serviço
+      </button>
+    </div>
+    <div class="flex-1 overflow-auto p-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100 bg-gray-50">
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Serviço</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Categoria</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Duração</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Preço</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3"></th>
+            </tr>
+          </thead>
+          <tbody id="tabela-servicos"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== VIEW: ESTOQUE SALÃO ====== -->
+  <div id="view-estoque-salao" class="view">
+    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <h2 class="text-lg font-bold text-gray-800">Estoque do Salão</h2>
+      <button onclick="abrirModalEstoqueSalao()" class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        Novo item
+      </button>
+    </div>
+    <div class="flex-1 overflow-auto p-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100 bg-gray-50">
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Produto</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Categoria</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Quantidade</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Mínimo</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Fornecedor</th>
+              <th class="px-6 py-3"></th>
+            </tr>
+          </thead>
+          <tbody id="tabela-estoque-salao"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== VIEW: ESTOQUE REVENDA ====== -->
+  <div id="view-estoque-revenda" class="view">
+    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <h2 class="text-lg font-bold text-gray-800">Estoque Revenda</h2>
+      <button onclick="abrirModalEstoqueRevenda()" class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        Novo produto
+      </button>
+    </div>
+    <div class="flex-1 overflow-auto p-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100 bg-gray-50">
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Produto</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Categoria</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Qtd</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Custo</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Venda</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Margem</th>
+              <th class="px-6 py-3"></th>
+            </tr>
+          </thead>
+          <tbody id="tabela-estoque-revenda"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ============================================================ MODAIS -->
+
+<!-- Modal Agendar -->
+<div id="modal-agendar" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-agendar')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 id="modal-agendar-titulo" class="text-lg font-bold text-gray-800">Novo Agendamento</h3>
+      <button onclick="fecharModal('modal-agendar')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <form id="form-agendar" onsubmit="salvarAgendamento(event)" class="p-6 space-y-4">
+      <input type="hidden" id="agendar-id" />
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cliente</label>
+        <select id="agendar-cliente" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
+          <option value="">Selecione o cliente...</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Funcionária</label>
+          <select id="agendar-funcionaria" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Serviço</label>
+          <select id="agendar-servico" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Data</label>
+          <input type="date" id="agendar-data" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Horário</label>
+          <input type="time" id="agendar-hora" required step="1800" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Valor cobrado (R$)</label>
+        <input type="number" id="agendar-valor" step="0.01" min="0" placeholder="0,00" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Observações</label>
+        <textarea id="agendar-obs" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors resize-none" placeholder="Opcional..."></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="fecharModal('modal-agendar')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Detalhes Agendamento -->
+<div id="modal-detalhe-agendamento" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-detalhe-agendamento')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 class="text-lg font-bold text-gray-800">Detalhes do Agendamento</h3>
+      <button onclick="fecharModal('modal-detalhe-agendamento')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <div id="detalhe-conteudo" class="p-6 space-y-3 text-sm text-gray-700"></div>
+    <div class="flex gap-2 px-6 pb-6">
+      <button id="btn-concluir" onclick="atualizarStatusAgendamento('concluido')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors">Concluir</button>
+      <button id="btn-faltou" onclick="atualizarStatusAgendamento('faltou')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors">Faltou</button>
+      <button id="btn-cancelar-ag" onclick="atualizarStatusAgendamento('cancelado')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cliente -->
+<div id="modal-cliente" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-cliente')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 id="modal-cliente-titulo" class="text-lg font-bold text-gray-800">Novo Cliente</h3>
+      <button onclick="fecharModal('modal-cliente')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <form id="form-cliente" onsubmit="salvarCliente(event)" class="p-6 space-y-4">
+      <input type="hidden" id="cliente-id" />
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nome *</label>
+        <input type="text" id="cliente-nome" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Nome completo" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Telefone</label>
+          <input type="tel" id="cliente-telefone" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="(44) 99999-0000" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Aniversário</label>
+          <input type="date" id="cliente-aniversario" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+        <input type="email" id="cliente-email" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="email@exemplo.com" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Observações</label>
+        <textarea id="cliente-obs" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors resize-none" placeholder="Alergias, preferências..."></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="fecharModal('modal-cliente')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Funcionária -->
+<div id="modal-funcionaria" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-funcionaria')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 id="modal-funcionaria-titulo" class="text-lg font-bold text-gray-800">Nova Funcionária</h3>
+      <button onclick="fecharModal('modal-funcionaria')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <form id="form-funcionaria" onsubmit="salvarFuncionaria(event)" class="p-6 space-y-4">
+      <input type="hidden" id="funcionaria-id" />
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nome *</label>
+        <input type="text" id="funcionaria-nome" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Nome da funcionária" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cargo</label>
+          <input type="text" id="funcionaria-cargo" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Cabeleireira..." />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Telefone</label>
+          <input type="tel" id="funcionaria-telefone" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="(44) 99999-0000" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cor da agenda</label>
+        <div class="flex items-center gap-3">
+          <input type="color" id="funcionaria-cor" value="#ec4899" class="w-12 h-10 rounded-xl border border-gray-200 cursor-pointer p-1" />
+          <span class="text-sm text-gray-500">Cor usada no calendário</span>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="fecharModal('modal-funcionaria')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Serviço -->
+<div id="modal-servico" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-servico')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 id="modal-servico-titulo" class="text-lg font-bold text-gray-800">Novo Serviço</h3>
+      <button onclick="fecharModal('modal-servico')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <form id="form-servico" onsubmit="salvarServico(event)" class="p-6 space-y-4">
+      <input type="hidden" id="servico-id" />
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nome *</label>
+        <input type="text" id="servico-nome" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Nome do serviço" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Categoria</label>
+          <input type="text" id="servico-categoria" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Cabelo, Unhas..." />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Duração (min) *</label>
+          <input type="number" id="servico-duracao" required min="5" step="5" value="60" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Preço (R$) *</label>
+        <input type="number" id="servico-preco" required min="0" step="0.01" value="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="fecharModal('modal-servico')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Estoque Salão -->
+<div id="modal-estoque-salao" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-estoque-salao')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 id="modal-estoque-salao-titulo" class="text-lg font-bold text-gray-800">Novo Item</h3>
+      <button onclick="fecharModal('modal-estoque-salao')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <form id="form-estoque-salao" onsubmit="salvarEstoqueSalao(event)" class="p-6 space-y-4">
+      <input type="hidden" id="es-id" />
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Produto *</label>
+        <input type="text" id="es-produto" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Nome do produto" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Categoria</label>
+          <input type="text" id="es-categoria" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Coloração..." />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Unidade</label>
+          <select id="es-unidade" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
+            <option>un</option>
+            <option>ml</option>
+            <option>g</option>
+            <option>L</option>
+            <option>kg</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Quantidade atual *</label>
+          <input type="number" id="es-quantidade" required min="0" step="0.001" value="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Qtd mínima</label>
+          <input type="number" id="es-minimo" min="0" step="0.001" value="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Fornecedor</label>
+        <input type="text" id="es-fornecedor" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Nome do fornecedor" />
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="fecharModal('modal-estoque-salao')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Estoque Revenda -->
+<div id="modal-estoque-revenda" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-estoque-revenda')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 id="modal-estoque-revenda-titulo" class="text-lg font-bold text-gray-800">Novo Produto</h3>
+      <button onclick="fecharModal('modal-estoque-revenda')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <form id="form-estoque-revenda" onsubmit="salvarEstoqueRevenda(event)" class="p-6 space-y-4">
+      <input type="hidden" id="er-id" />
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Produto *</label>
+        <input type="text" id="er-produto" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Nome do produto" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Categoria</label>
+          <input type="text" id="er-categoria" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Shampoo, Creme..." />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cód. de barras</label>
+          <input type="text" id="er-barras" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="0000000000000" />
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Quantidade</label>
+          <input type="number" id="er-quantidade" min="0" value="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Custo (R$)</label>
+          <input type="number" id="er-custo" min="0" step="0.01" value="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Venda (R$)</label>
+          <input type="number" id="er-venda" min="0" step="0.01" value="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="fecharModal('modal-estoque-revenda')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Ajustar Quantidade Estoque Salão -->
+<div id="modal-ajustar-qty" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-ajustar-qty')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 class="text-lg font-bold text-gray-800">Ajustar Quantidade</h3>
+      <button onclick="fecharModal('modal-ajustar-qty')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <div class="p-6 space-y-4">
+      <input type="hidden" id="ajustar-id" />
+      <p id="ajustar-produto-nome" class="font-semibold text-gray-800"></p>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nova quantidade</label>
+        <input type="number" id="ajustar-qty" step="0.001" min="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm" />
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="fecharModal('modal-ajustar-qty')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
+        <button onclick="confirmarAjusteQty()" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- ============================================================ SCRIPT -->
+<script>
+// =========================================================
+// CONFIG SUPABASE
+// =========================================================
+const SUPA_URL  = 'https://whvskugkdrztcdmriori.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndodnNrdWdrZHJ6dGNkbXJpb3JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1Nzk1MjIsImV4cCI6MjA5NDE1NTUyMn0.gARuGrfy1VKGp_z9rzk2zgwCZkZb8sqx5njnI1xBdzA';
+const { createClient } = supabase;
+const db = createClient(SUPA_URL, SUPA_KEY);
+
+// =========================================================
+// ESTADO GLOBAL
+// =========================================================
+let currentView    = 'agendamentos';
+let funcionarios   = [];
+let clientes       = [];
+let servicos       = [];
+let agendamentos   = [];
+let estoquesSalao  = [];
+let estoquesRevenda = [];
+let currentDate    = new Date();
+let modoCalendario = 'dia'; // 'dia' | 'semana'
+let agendamentoSelecionadoId = null;
+
+// =========================================================
+// INIT
+// =========================================================
+async function init() {
+  lucide.createIcons();
+  await carregarDados();
+  renderCalendario();
+}
+
+async function carregarDados() {
+  try {
+    const [f, c, s, a, es, er] = await Promise.all([
+      db.from('funcionarios').select('*').eq('ativo', true).order('nome'),
+      db.from('clientes').select('*').order('nome'),
+      db.from('servicos').select('*').order('nome'),
+      db.from('agendamentos').select('*').order('data_hora'),
+      db.from('estoque_salao').select('*').order('produto'),
+      db.from('estoque_revenda').select('*').order('produto'),
+    ]);
+    if (f.error) throw f.error;
+    if (c.error) throw c.error;
+    if (s.error) throw s.error;
+    funcionarios    = f.data || [];
+    clientes        = c.data || [];
+    servicos        = s.data || [];
+    agendamentos    = a.data || [];
+    estoquesSalao   = es.data || [];
+    estoquesRevenda = er.data || [];
+  } catch (e) {
+    showToast('Erro ao carregar dados: ' + e.message, 'error');
+  }
+}
+
+// =========================================================
+// NAVEGAÇÃO
+// =========================================================
+function navTo(view) {
+  currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('view-' + view);
+  if (el) el.classList.add('active');
+  const btns = document.querySelectorAll('.sidebar-item');
+  btns.forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + view + "'")) {
+      b.classList.add('active');
+    }
+  });
+  renderView(view);
+  lucide.createIcons();
+}
+
+function renderView(view) {
+  switch (view) {
+    case 'agendamentos':    renderCalendario(); break;
+    case 'clientes':        renderClientes(); break;
+    case 'funcionarias':    renderFuncionarias(); break;
+    case 'servicos':        renderServicos(); break;
+    case 'estoque-salao':   renderEstoqueSalao(); break;
+    case 'estoque-revenda': renderEstoqueRevenda(); break;
+  }
+}
+
+// =========================================================
+// CALENDÁRIO
+// =========================================================
+const HORA_INICIO = 8;
+const HORA_FIM    = 20;
+const SLOT_MIN    = 30;
+const SLOTS_TOTAL = ((HORA_FIM - HORA_INICIO) * 60) / SLOT_MIN;
+
+function setModo(modo) {
+  modoCalendario = modo;
+  document.getElementById('btn-modo-dia').className    = modo === 'dia'    ? 'px-3 py-1 text-sm font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm' : 'px-3 py-1 text-sm font-medium rounded-md transition-all text-gray-500';
+  document.getElementById('btn-modo-semana').className = modo === 'semana' ? 'px-3 py-1 text-sm font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm' : 'px-3 py-1 text-sm font-medium rounded-md transition-all text-gray-500';
+  renderCalendario();
+}
+
+function mudarDia(delta) {
+  if (modoCalendario === 'dia') {
+    currentDate = new Date(currentDate.getTime() + delta * 86400000);
+  } else {
+    currentDate = new Date(currentDate.getTime() + delta * 7 * 86400000);
+  }
+  renderCalendario();
+}
+
+function irHoje() {
+  currentDate = new Date();
+  renderCalendario();
+}
+
+function getDiasDaSemana(date) {
+  const d = new Date(date);
+  const dow = d.getDay(); // 0=dom
+  const seg = new Date(d);
+  seg.setDate(d.getDate() - ((dow === 0 ? 7 : dow) - 1));
+  const dias = [];
+  for (let i = 0; i < 7; i++) {
+    const dd = new Date(seg);
+    dd.setDate(seg.getDate() + i);
+    dias.push(dd);
+  }
+  return dias;
+}
+
+function fmtDiaSemana(date) {
+  const nomes = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  return nomes[date.getDay()];
+}
+
+function renderCalendario() {
+  // Atualiza título
+  const titulo = document.getElementById('cal-titulo');
+  if (modoCalendario === 'dia') {
+    titulo.textContent = currentDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  } else {
+    const dias = getDiasDaSemana(currentDate);
+    titulo.textContent = dias[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) + ' – ' + dias[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  const container = document.getElementById('calendario');
+  container.innerHTML = '';
+
+  if (modoCalendario === 'dia') {
+    renderCalendarioDia(container, [currentDate]);
+  } else {
+    renderCalendarioDia(container, getDiasDaSemana(currentDate));
+  }
+}
+
+function renderCalendarioDia(container, dias) {
+  const horaW = 56; // largura coluna de horas
+
+  // Coluna de horas (fixa à esquerda)
+  const colHoras = document.createElement('div');
+  colHoras.className = 'flex-shrink-0 bg-white border-r border-gray-200 sticky left-0 z-10';
+  colHoras.style.width = horaW + 'px';
+
+  // Header vazio acima das horas
+  const hdrHora = document.createElement('div');
+  hdrHora.style.height = '48px';
+  hdrHora.className = 'border-b border-gray-100 bg-gray-50';
+  colHoras.appendChild(hdrHora);
+
+  for (let i = 0; i < SLOTS_TOTAL; i++) {
+    const totalMin = HORA_INICIO * 60 + i * SLOT_MIN;
+    const hh = String(Math.floor(totalMin / 60)).padStart(2, '0');
+    const mm = String(totalMin % 60).padStart(2, '0');
+    const slot = document.createElement('div');
+    slot.className = 'time-slot flex items-start justify-end pr-2 pt-1';
+    if (i % 2 === 0) {
+      slot.innerHTML = `<span class="text-xs text-gray-400 font-medium">${hh}:${mm}</span>`;
+    }
+    colHoras.appendChild(slot);
+  }
+  container.appendChild(colHoras);
+
+  // Se modo semana: para cada dia, para cada funcionária, uma coluna
+  // Se modo dia: para cada funcionária, uma coluna
+  const cols = [];
+  if (modoCalendario === 'semana') {
+    // Agrupa por dia e dentro cada funcionária
+    dias.forEach(dia => {
+      funcionarios.forEach(func => {
+        cols.push({ dia, func });
+      });
+    });
+  } else {
+    funcionarios.forEach(func => {
+      cols.push({ dia: dias[0], func });
+    });
+  }
+
+  // Dias únicos (para header agrupado em semana)
+  const diasUnicos = [...new Map(cols.map(c => [c.dia.toDateString(), c.dia])).values()];
+
+  if (modoCalendario === 'semana') {
+    // Header com dias agrupados
+    const hdrRow = document.createElement('div');
+    hdrRow.className = 'flex flex-1';
+    diasUnicos.forEach(dia => {
+      const diaFuncs = cols.filter(c => c.dia.toDateString() === dia.toDateString());
+      const diaHdr = document.createElement('div');
+      diaHdr.className = 'border-r border-gray-100 text-center';
+      diaHdr.style.width = (diaFuncs.length * 160) + 'px';
+      diaHdr.style.minWidth = (diaFuncs.length * 160) + 'px';
+      const isHoje = dia.toDateString() === new Date().toDateString();
+      diaHdr.innerHTML = `<div class="text-xs text-gray-500 font-semibold uppercase py-1">${fmtDiaSemana(dia)}</div><div class="text-sm font-bold pb-2 ${isHoje ? 'text-pink-600' : 'text-gray-700'}">${dia.getDate().toString().padStart(2,'0')}/${(dia.getMonth()+1).toString().padStart(2,'0')}</div>`;
+      hdrRow.appendChild(diaHdr);
+    });
+    const hdrWrapper = document.createElement('div');
+    hdrWrapper.className = 'flex flex-col';
+    hdrWrapper.style.flex = '1';
+    hdrWrapper.appendChild(hdrRow);
+
+    // Subheader com nomes de funcionárias
+    const subHdr = document.createElement('div');
+    subHdr.className = 'flex border-b border-gray-200';
+    cols.forEach(({ func }) => {
+      const fCol = document.createElement('div');
+      fCol.className = 'calendar-col border-r border-gray-100 text-center py-2';
+      fCol.innerHTML = `<div class="w-3 h-3 rounded-full inline-block mr-1" style="background:${func.cor}"></div><span class="text-xs font-semibold text-gray-600">${func.nome}</span>`;
+      subHdr.appendChild(fCol);
+    });
+    hdrWrapper.appendChild(subHdr);
+
+    // Slots
+    const bodyRow = document.createElement('div');
+    bodyRow.className = 'flex flex-1 relative';
+
+    cols.forEach(({ dia, func }) => {
+      const colDiv = document.createElement('div');
+      colDiv.className = 'calendar-col border-r border-gray-100 relative';
+      colDiv.style.minWidth = '160px';
+
+      for (let i = 0; i < SLOTS_TOTAL; i++) {
+        const slotDiv = document.createElement('div');
+        slotDiv.className = 'time-slot';
+        colDiv.appendChild(slotDiv);
+      }
+
+      // Agendamentos para este dia+func
+      const agsDia = agendamentos.filter(a => {
+        const d = new Date(a.data_hora);
+        return a.funcionario_id === func.id && d.toDateString() === dia.toDateString();
+      });
+      agsDia.forEach(ag => posicionarBloco(colDiv, ag));
+      bodyRow.appendChild(colDiv);
+    });
+
+    hdrWrapper.appendChild(bodyRow);
+    container.appendChild(hdrWrapper);
+  } else {
+    // Modo dia normal
+    const hdrRow = document.createElement('div');
+    hdrRow.className = 'flex flex-1 border-b border-gray-200 bg-gray-50';
+    funcionarios.forEach(func => {
+      const fHdr = document.createElement('div');
+      fHdr.className = 'calendar-col border-r border-gray-100 text-center py-3';
+      fHdr.style.minWidth = '160px';
+      fHdr.innerHTML = `<div class="flex items-center justify-center gap-2"><div class="w-3 h-3 rounded-full" style="background:${func.cor}"></div><span class="text-sm font-bold text-gray-700">${func.nome}</span></div><div class="text-xs text-gray-400">${func.cargo || ''}</div>`;
+      hdrRow.appendChild(fHdr);
+    });
+
+    const bodyRow = document.createElement('div');
+    bodyRow.className = 'flex flex-1 relative';
+
+    funcionarios.forEach(func => {
+      const colDiv = document.createElement('div');
+      colDiv.className = 'calendar-col border-r border-gray-100 relative';
+      colDiv.style.minWidth = '160px';
+
+      for (let i = 0; i < SLOTS_TOTAL; i++) {
+        const slotDiv = document.createElement('div');
+        slotDiv.className = 'time-slot';
+        colDiv.appendChild(slotDiv);
+      }
+
+      // Agendamentos para este dia+func
+      const agsDia = agendamentos.filter(a => {
+        const d = new Date(a.data_hora);
+        return a.funcionario_id === func.id && d.toDateString() === currentDate.toDateString();
+      });
+      agsDia.forEach(ag => posicionarBloco(colDiv, ag));
+      bodyRow.appendChild(colDiv);
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flex flex-col flex-1';
+    wrapper.appendChild(hdrRow);
+    wrapper.appendChild(bodyRow);
+    container.appendChild(wrapper);
+  }
+}
+
+function posicionarBloco(colDiv, ag) {
+  const d = new Date(ag.data_hora);
+  const minFromStart = (d.getHours() - HORA_INICIO) * 60 + d.getMinutes();
+  if (minFromStart < 0) return;
+
+  const servico  = servicos.find(s => s.id === ag.servico_id);
+  const cliente  = clientes.find(c => c.id === ag.cliente_id);
+  const func     = funcionarios.find(f => f.id === ag.funcionario_id);
+  const durMin   = servico ? servico.duracao_min : 60;
+  const slotH    = 40; // px por slot de 30min
+  const top      = (minFromStart / SLOT_MIN) * slotH;
+  const height   = Math.max((durMin / SLOT_MIN) * slotH - 2, 20);
+
+  const cor = func ? func.cor : '#ec4899';
+  const corBg = cor + '22';
+
+  const statusCores = { agendado: cor, concluido: '#10b981', cancelado: '#ef4444', faltou: '#f59e0b' };
+  const statusCor = statusCores[ag.status] || cor;
+
+  const block = document.createElement('div');
+  block.className = 'appt-block';
+  block.style.top    = top + 'px';
+  block.style.height = height + 'px';
+  block.style.background = corBg;
+  block.style.borderLeft = '3px solid ' + statusCor;
+  block.style.color = '#374151';
+
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+
+  block.innerHTML = `<span style="color:${statusCor}">${hh}:${mm}</span> ${cliente ? cliente.nome.split(' ')[0] : '?'}<br/><span class="opacity-70">${servico ? servico.nome : '?'}</span>`;
+  block.onclick = () => abrirDetalheAgendamento(ag.id);
+  colDiv.appendChild(block);
+}
+
+// =========================================================
+// MODAL AGENDAMENTO
+// =========================================================
+function abrirModalAgendar(dataPreset = null) {
+  document.getElementById('modal-agendar-titulo').textContent = 'Novo Agendamento';
+  document.getElementById('agendar-id').value = '';
+  document.getElementById('form-agendar').reset();
+
+  // Preenche selects
+  const selCliente = document.getElementById('agendar-cliente');
+  selCliente.innerHTML = '<option value="">Selecione o cliente...</option>' +
+    clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+
+  const selFunc = document.getElementById('agendar-funcionaria');
+  selFunc.innerHTML = '<option value="">Selecione...</option>' +
+    funcionarios.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
+
+  const selServ = document.getElementById('agendar-servico');
+  selServ.innerHTML = '<option value="">Selecione...</option>' +
+    servicos.filter(s => s.ativo).map(s => `<option value="${s.id}">${s.nome} — ${fmtPreco(s.preco)}</option>`).join('');
+
+  // Data padrão
+  const hoje = dataPreset || currentDate;
+  document.getElementById('agendar-data').value = hoje.toISOString().split('T')[0];
+
+  abrirModal('modal-agendar');
+  lucide.createIcons();
+}
+
+async function salvarAgendamento(e) {
+  e.preventDefault();
+  const id            = document.getElementById('agendar-id').value;
+  const cliente_id    = document.getElementById('agendar-cliente').value;
+  const funcionario_id = document.getElementById('agendar-funcionaria').value;
+  const servico_id    = document.getElementById('agendar-servico').value;
+  const data          = document.getElementById('agendar-data').value;
+  const hora          = document.getElementById('agendar-hora').value;
+  const valor         = document.getElementById('agendar-valor').value;
+  const obs           = document.getElementById('agendar-obs').value;
+
+  if (!data || !hora) { showToast('Informe data e horário', 'error'); return; }
+
+  const data_hora = new Date(data + 'T' + hora).toISOString();
+
+  const payload = { cliente_id, funcionario_id, servico_id, data_hora, observacoes: obs || null, valor_cobrado: valor ? parseFloat(valor) : null };
+
+  try {
+    let err;
+    if (id) {
+      ({ error: err } = await db.from('agendamentos').update(payload).eq('id', id));
+    } else {
+      ({ error: err } = await db.from('agendamentos').insert(payload));
+    }
+    if (err) throw err;
+    showToast(id ? 'Agendamento atualizado!' : 'Agendamento criado!', 'success');
+    fecharModal('modal-agendar');
+    const { data: ags } = await db.from('agendamentos').select('*').order('data_hora');
+    agendamentos = ags || [];
+    renderCalendario();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+function abrirDetalheAgendamento(id) {
+  const ag      = agendamentos.find(a => a.id === id);
+  if (!ag) return;
+  agendamentoSelecionadoId = id;
+
+  const cliente  = clientes.find(c => c.id === ag.cliente_id);
+  const func     = funcionarios.find(f => f.id === ag.funcionario_id);
+  const servico  = servicos.find(s => s.id === ag.servico_id);
+  const d        = new Date(ag.data_hora);
+
+  const statusLabels = { agendado: 'Agendado', concluido: 'Concluído', cancelado: 'Cancelado', faltou: 'Faltou' };
+  const statusCores  = { agendado: 'blue', concluido: 'green', cancelado: 'red', faltou: 'yellow' };
+  const sc           = statusCores[ag.status] || 'gray';
+
+  document.getElementById('detalhe-conteudo').innerHTML = `
+    <div class="flex items-center gap-2 mb-2">
+      <span class="badge bg-${sc}-100 text-${sc}-700">${statusLabels[ag.status] || ag.status}</span>
+    </div>
+    <div class="space-y-2">
+      <div class="flex gap-2"><span class="text-gray-400 w-24">Cliente</span><span class="font-semibold">${cliente ? cliente.nome : '—'}</span></div>
+      <div class="flex gap-2"><span class="text-gray-400 w-24">Funcionária</span><span class="font-semibold">${func ? func.nome : '—'}</span></div>
+      <div class="flex gap-2"><span class="text-gray-400 w-24">Serviço</span><span class="font-semibold">${servico ? servico.nome : '—'}</span></div>
+      <div class="flex gap-2"><span class="text-gray-400 w-24">Data/hora</span><span class="font-semibold">${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</span></div>
+      ${ag.valor_cobrado ? `<div class="flex gap-2"><span class="text-gray-400 w-24">Valor</span><span class="font-semibold">${fmtPreco(ag.valor_cobrado)}</span></div>` : ''}
+      ${ag.observacoes ? `<div class="flex gap-2"><span class="text-gray-400 w-24">Obs</span><span>${ag.observacoes}</span></div>` : ''}
+    </div>
+  `;
+
+  // Mostrar/ocultar botões conforme status
+  const concluido = ag.status === 'concluido';
+  const cancelado = ag.status === 'cancelado';
+  document.getElementById('btn-concluir').style.display     = concluido || cancelado ? 'none' : '';
+  document.getElementById('btn-faltou').style.display       = ag.status === 'faltou' || cancelado ? 'none' : '';
+  document.getElementById('btn-cancelar-ag').style.display  = cancelado ? 'none' : '';
+
+  abrirModal('modal-detalhe-agendamento');
+  lucide.createIcons();
+}
+
+async function atualizarStatusAgendamento(status) {
+  try {
+    const { error } = await db.from('agendamentos').update({ status }).eq('id', agendamentoSelecionadoId);
+    if (error) throw error;
+    const idx = agendamentos.findIndex(a => a.id === agendamentoSelecionadoId);
+    if (idx !== -1) agendamentos[idx].status = status;
+    showToast('Status atualizado!', 'success');
+    fecharModal('modal-detalhe-agendamento');
+    renderCalendario();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+// =========================================================
+// CLIENTES
+// =========================================================
+function renderClientes(filtro = '') {
+  const tbody = document.getElementById('tabela-clientes');
+  const empty = document.getElementById('empty-clientes');
+  const lista = filtro
+    ? clientes.filter(c => c.nome.toLowerCase().includes(filtro.toLowerCase()))
+    : clientes;
+
+  if (lista.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  tbody.innerHTML = lista.map(c => `
+    <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+      <td class="px-6 py-4">
+        <div class="flex items-center gap-3">
+          <div class="avatar-circle text-sm" style="background: ${stringToColor(c.nome)}">${iniciais(c.nome)}</div>
+          <span class="font-semibold text-gray-800">${esc(c.nome)}</span>
+        </div>
+      </td>
+      <td class="px-6 py-4 text-gray-600">${esc(c.telefone || '—')}</td>
+      <td class="px-6 py-4 text-gray-600">${esc(c.email || '—')}</td>
+      <td class="px-6 py-4 text-gray-600">${c.aniversario ? fmtData(c.aniversario) : '—'}</td>
+      <td class="px-6 py-4">
+        <div class="flex items-center justify-end gap-2">
+          <button onclick="editarCliente('${c.id}')" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </button>
+          <button onclick="excluirCliente('${c.id}')" class="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-500">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  lucide.createIcons();
+}
+
+function filtrarClientes() {
+  renderClientes(document.getElementById('busca-cliente').value);
+}
+
+function abrirModalCliente() {
+  document.getElementById('modal-cliente-titulo').textContent = 'Novo Cliente';
+  document.getElementById('form-cliente').reset();
+  document.getElementById('cliente-id').value = '';
+  abrirModal('modal-cliente');
+}
+
+function editarCliente(id) {
+  const c = clientes.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('modal-cliente-titulo').textContent = 'Editar Cliente';
+  document.getElementById('cliente-id').value = c.id;
+  document.getElementById('cliente-nome').value = c.nome || '';
+  document.getElementById('cliente-telefone').value = c.telefone || '';
+  document.getElementById('cliente-email').value = c.email || '';
+  document.getElementById('cliente-aniversario').value = c.aniversario || '';
+  document.getElementById('cliente-obs').value = c.observacoes || '';
+  abrirModal('modal-cliente');
+}
+
+async function salvarCliente(e) {
+  e.preventDefault();
+  const id = document.getElementById('cliente-id').value;
+  const payload = {
+    nome:        document.getElementById('cliente-nome').value.trim(),
+    telefone:    document.getElementById('cliente-telefone').value.trim() || null,
+    email:       document.getElementById('cliente-email').value.trim() || null,
+    aniversario: document.getElementById('cliente-aniversario').value || null,
+    observacoes: document.getElementById('cliente-obs').value.trim() || null,
+  };
+  try {
+    let err;
+    if (id) {
+      ({ error: err } = await db.from('clientes').update(payload).eq('id', id));
+    } else {
+      ({ error: err } = await db.from('clientes').insert(payload));
+    }
+    if (err) throw err;
+    showToast(id ? 'Cliente atualizado!' : 'Cliente cadastrado!', 'success');
+    fecharModal('modal-cliente');
+    const { data } = await db.from('clientes').select('*').order('nome');
+    clientes = data || [];
+    renderClientes(document.getElementById('busca-cliente').value);
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+async function excluirCliente(id) {
+  if (!confirm('Excluir este cliente?')) return;
+  try {
+    const { error } = await db.from('clientes').delete().eq('id', id);
+    if (error) throw error;
+    clientes = clientes.filter(c => c.id !== id);
+    showToast('Cliente removido', 'success');
+    renderClientes(document.getElementById('busca-cliente').value);
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+// =========================================================
+// FUNCIONÁRIAS
+// =========================================================
+function renderFuncionarias() {
+  const grid = document.getElementById('grid-funcionarias');
+  grid.innerHTML = funcionarios.map(f => `
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-3 hover:shadow-md transition-all">
+      <div class="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg" style="background: linear-gradient(135deg, ${f.cor}, ${f.cor}99)">
+        ${iniciais(f.nome)}
+      </div>
+      <div class="text-center">
+        <p class="font-bold text-gray-800 text-lg">${esc(f.nome)}</p>
+        <p class="text-sm text-gray-500">${esc(f.cargo || '—')}</p>
+        ${f.telefone ? `<p class="text-xs text-gray-400 mt-1">${esc(f.telefone)}</p>` : ''}
+      </div>
+      <div class="flex items-center gap-2 mt-1">
+        <div class="w-4 h-4 rounded-full border-2 border-white shadow" style="background:${f.cor}"></div>
+        <span class="text-xs text-gray-400">Cor da agenda: ${f.cor}</span>
+      </div>
+      <div class="flex gap-2 w-full mt-2">
+        <button onclick="editarFuncionaria('${f.id}')" class="flex-1 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center justify-center gap-1.5">
+          <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Editar
+        </button>
+      </div>
+    </div>
+  `).join('') + `
+    <div class="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl border-2 border-dashed border-pink-200 p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:from-pink-100 hover:to-purple-100 transition-all" onclick="abrirModalFuncionaria()">
+      <div class="w-12 h-12 rounded-full bg-gradient-to-r from-pink-400 to-purple-400 flex items-center justify-center">
+        <i data-lucide="plus" class="w-6 h-6 text-white"></i>
+      </div>
+      <p class="text-sm font-semibold text-pink-600">Nova funcionária</p>
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+function abrirModalFuncionaria() {
+  document.getElementById('modal-funcionaria-titulo').textContent = 'Nova Funcionária';
+  document.getElementById('form-funcionaria').reset();
+  document.getElementById('funcionaria-id').value = '';
+  document.getElementById('funcionaria-cor').value = '#ec4899';
+  abrirModal('modal-funcionaria');
+}
+
+function editarFuncionaria(id) {
+  const f = funcionarios.find(x => x.id === id);
+  if (!f) return;
+  document.getElementById('modal-funcionaria-titulo').textContent = 'Editar Funcionária';
+  document.getElementById('funcionaria-id').value = f.id;
+  document.getElementById('funcionaria-nome').value = f.nome || '';
+  document.getElementById('funcionaria-cargo').value = f.cargo || '';
+  document.getElementById('funcionaria-telefone').value = f.telefone || '';
+  document.getElementById('funcionaria-cor').value = f.cor || '#ec4899';
+  abrirModal('modal-funcionaria');
+}
+
+async function salvarFuncionaria(e) {
+  e.preventDefault();
+  const id = document.getElementById('funcionaria-id').value;
+  const payload = {
+    nome:     document.getElementById('funcionaria-nome').value.trim(),
+    cargo:    document.getElementById('funcionaria-cargo').value.trim() || null,
+    telefone: document.getElementById('funcionaria-telefone').value.trim() || null,
+    cor:      document.getElementById('funcionaria-cor').value,
+  };
+  try {
+    let err;
+    if (id) {
+      ({ error: err } = await db.from('funcionarios').update(payload).eq('id', id));
+    } else {
+      ({ error: err } = await db.from('funcionarios').insert(payload));
+    }
+    if (err) throw err;
+    showToast(id ? 'Funcionária atualizada!' : 'Funcionária cadastrada!', 'success');
+    fecharModal('modal-funcionaria');
+    const { data } = await db.from('funcionarios').select('*').eq('ativo', true).order('nome');
+    funcionarios = data || [];
+    renderFuncionarias();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+// =========================================================
+// SERVIÇOS
+// =========================================================
+function renderServicos() {
+  const tbody = document.getElementById('tabela-servicos');
+  tbody.innerHTML = servicos.map(s => `
+    <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+      <td class="px-6 py-4 font-semibold text-gray-800">${esc(s.nome)}</td>
+      <td class="px-6 py-4 text-gray-500">${esc(s.categoria || '—')}</td>
+      <td class="px-6 py-4 text-gray-600">${s.duracao_min} min</td>
+      <td class="px-6 py-4 font-semibold text-gray-800">${fmtPreco(s.preco)}</td>
+      <td class="px-6 py-4">
+        <span class="badge ${s.ativo ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}">${s.ativo ? 'Ativo' : 'Inativo'}</span>
+      </td>
+      <td class="px-6 py-4">
+        <div class="flex items-center justify-end gap-2">
+          <button onclick="editarServico('${s.id}')" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </button>
+          <button onclick="toggleServico('${s.id}',${!s.ativo})" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600" title="${s.ativo ? 'Desativar' : 'Ativar'}">
+            <i data-lucide="${s.ativo ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  lucide.createIcons();
+}
+
+function abrirModalServico() {
+  document.getElementById('modal-servico-titulo').textContent = 'Novo Serviço';
+  document.getElementById('form-servico').reset();
+  document.getElementById('servico-id').value = '';
+  abrirModal('modal-servico');
+}
+
+function editarServico(id) {
+  const s = servicos.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('modal-servico-titulo').textContent = 'Editar Serviço';
+  document.getElementById('servico-id').value = s.id;
+  document.getElementById('servico-nome').value = s.nome || '';
+  document.getElementById('servico-categoria').value = s.categoria || '';
+  document.getElementById('servico-duracao').value = s.duracao_min || 60;
+  document.getElementById('servico-preco').value = s.preco || 0;
+  abrirModal('modal-servico');
+}
+
+async function salvarServico(e) {
+  e.preventDefault();
+  const id = document.getElementById('servico-id').value;
+  const payload = {
+    nome:        document.getElementById('servico-nome').value.trim(),
+    categoria:   document.getElementById('servico-categoria').value.trim() || null,
+    duracao_min: parseInt(document.getElementById('servico-duracao').value),
+    preco:       parseFloat(document.getElementById('servico-preco').value),
+  };
+  try {
+    let err;
+    if (id) {
+      ({ error: err } = await db.from('servicos').update(payload).eq('id', id));
+    } else {
+      ({ error: err } = await db.from('servicos').insert(payload));
+    }
+    if (err) throw err;
+    showToast(id ? 'Serviço atualizado!' : 'Serviço criado!', 'success');
+    fecharModal('modal-servico');
+    const { data } = await db.from('servicos').select('*').order('nome');
+    servicos = data || [];
+    renderServicos();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+async function toggleServico(id, ativo) {
+  try {
+    const { error } = await db.from('servicos').update({ ativo }).eq('id', id);
+    if (error) throw error;
+    const idx = servicos.findIndex(s => s.id === id);
+    if (idx !== -1) servicos[idx].ativo = ativo;
+    showToast(ativo ? 'Serviço ativado' : 'Serviço desativado', 'success');
+    renderServicos();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+// =========================================================
+// ESTOQUE SALÃO
+// =========================================================
+function renderEstoqueSalao() {
+  const tbody = document.getElementById('tabela-estoque-salao');
+  tbody.innerHTML = estoquesSalao.map(item => {
+    const baixo = parseFloat(item.quantidade) <= parseFloat(item.quantidade_minima);
+    return `
+    <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors ${baixo ? 'bg-red-50' : ''}">
+      <td class="px-6 py-4">
+        <div class="flex items-center gap-2">
+          ${baixo ? '<span title="Estoque baixo!" class="text-red-500"><i data-lucide="alert-triangle" class="w-4 h-4"></i></span>' : ''}
+          <span class="font-semibold ${baixo ? 'text-red-700' : 'text-gray-800'}">${esc(item.produto)}</span>
+        </div>
+      </td>
+      <td class="px-6 py-4 text-gray-500">${esc(item.categoria || '—')}</td>
+      <td class="px-6 py-4">
+        <div class="flex items-center gap-2">
+          <button onclick="ajustarQty('${item.id}', ${item.quantidade}, -1, '${esc(item.unidade)}')" class="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold transition-colors">−</button>
+          <span class="font-bold ${baixo ? 'text-red-600' : 'text-gray-800'} min-w-[60px] text-center">${item.quantidade} ${esc(item.unidade)}</span>
+          <button onclick="ajustarQty('${item.id}', ${item.quantidade}, 1, '${esc(item.unidade)}')" class="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold transition-colors">+</button>
+        </div>
+      </td>
+      <td class="px-6 py-4 text-gray-500">${item.quantidade_minima} ${esc(item.unidade)}</td>
+      <td class="px-6 py-4 text-gray-500">${esc(item.fornecedor || '—')}</td>
+      <td class="px-6 py-4">
+        <div class="flex items-center justify-end gap-2">
+          <button onclick="editarEstoqueSalao('${item.id}')" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </button>
+          <button onclick="abrirAjusteModal('${item.id}','${esc(item.produto)}',${item.quantidade})" class="p-1.5 hover:bg-blue-50 rounded-lg transition-colors text-gray-400 hover:text-blue-500" title="Ajustar quantidade">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `;
+  }).join('');
+  lucide.createIcons();
+}
+
+async function ajustarQty(id, qtyAtual, delta, unidade) {
+  const novaQty = Math.max(0, parseFloat(qtyAtual) + delta);
+  try {
+    const { error } = await db.from('estoque_salao').update({ quantidade: novaQty, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) throw error;
+    const idx = estoquesSalao.findIndex(e => e.id === id);
+    if (idx !== -1) estoquesSalao[idx].quantidade = novaQty;
+    renderEstoqueSalao();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+function abrirAjusteModal(id, produto, qtyAtual) {
+  document.getElementById('ajustar-id').value = id;
+  document.getElementById('ajustar-produto-nome').textContent = produto;
+  document.getElementById('ajustar-qty').value = qtyAtual;
+  abrirModal('modal-ajustar-qty');
+}
+
+async function confirmarAjusteQty() {
+  const id  = document.getElementById('ajustar-id').value;
+  const qty = parseFloat(document.getElementById('ajustar-qty').value);
+  if (isNaN(qty) || qty < 0) { showToast('Quantidade inválida', 'error'); return; }
+  try {
+    const { error } = await db.from('estoque_salao').update({ quantidade: qty, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) throw error;
+    const idx = estoquesSalao.findIndex(e => e.id === id);
+    if (idx !== -1) estoquesSalao[idx].quantidade = qty;
+    showToast('Quantidade atualizada!', 'success');
+    fecharModal('modal-ajustar-qty');
+    renderEstoqueSalao();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+function abrirModalEstoqueSalao() {
+  document.getElementById('modal-estoque-salao-titulo').textContent = 'Novo Item';
+  document.getElementById('form-estoque-salao').reset();
+  document.getElementById('es-id').value = '';
+  abrirModal('modal-estoque-salao');
+}
+
+function editarEstoqueSalao(id) {
+  const item = estoquesSalao.find(x => x.id === id);
+  if (!item) return;
+  document.getElementById('modal-estoque-salao-titulo').textContent = 'Editar Item';
+  document.getElementById('es-id').value = item.id;
+  document.getElementById('es-produto').value = item.produto || '';
+  document.getElementById('es-categoria').value = item.categoria || '';
+  document.getElementById('es-unidade').value = item.unidade || 'un';
+  document.getElementById('es-quantidade').value = item.quantidade || 0;
+  document.getElementById('es-minimo').value = item.quantidade_minima || 0;
+  document.getElementById('es-fornecedor').value = item.fornecedor || '';
+  abrirModal('modal-estoque-salao');
+}
+
+async function salvarEstoqueSalao(e) {
+  e.preventDefault();
+  const id = document.getElementById('es-id').value;
+  const payload = {
+    produto:            document.getElementById('es-produto').value.trim(),
+    categoria:          document.getElementById('es-categoria').value.trim() || null,
+    unidade:            document.getElementById('es-unidade').value,
+    quantidade:         parseFloat(document.getElementById('es-quantidade').value),
+    quantidade_minima:  parseFloat(document.getElementById('es-minimo').value) || 0,
+    fornecedor:         document.getElementById('es-fornecedor').value.trim() || null,
+    updated_at:         new Date().toISOString(),
+  };
+  try {
+    let err;
+    if (id) {
+      ({ error: err } = await db.from('estoque_salao').update(payload).eq('id', id));
+    } else {
+      ({ error: err } = await db.from('estoque_salao').insert(payload));
+    }
+    if (err) throw err;
+    showToast(id ? 'Item atualizado!' : 'Item adicionado!', 'success');
+    fecharModal('modal-estoque-salao');
+    const { data } = await db.from('estoque_salao').select('*').order('produto');
+    estoquesSalao = data || [];
+    renderEstoqueSalao();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+// =========================================================
+// ESTOQUE REVENDA
+// =========================================================
+function renderEstoqueRevenda() {
+  const tbody = document.getElementById('tabela-estoque-revenda');
+  tbody.innerHTML = estoquesRevenda.map(item => {
+    const custo  = parseFloat(item.preco_custo) || 0;
+    const venda  = parseFloat(item.preco_venda) || 0;
+    const margem = custo > 0 ? ((venda - custo) / custo * 100).toFixed(1) : '—';
+    const margemNum = custo > 0 ? (venda - custo) / custo * 100 : null;
+    return `
+    <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+      <td class="px-6 py-4 font-semibold text-gray-800">${esc(item.produto)}</td>
+      <td class="px-6 py-4 text-gray-500">${esc(item.categoria || '—')}</td>
+      <td class="px-6 py-4 font-bold text-gray-800">${item.quantidade}</td>
+      <td class="px-6 py-4 text-gray-600">${fmtPreco(item.preco_custo)}</td>
+      <td class="px-6 py-4 font-semibold text-gray-800">${fmtPreco(item.preco_venda)}</td>
+      <td class="px-6 py-4">
+        ${margemNum !== null
+          ? `<span class="badge ${margemNum >= 30 ? 'bg-emerald-100 text-emerald-700' : margemNum >= 10 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}">${margem}%</span>`
+          : '<span class="text-gray-400">—</span>'}
+      </td>
+      <td class="px-6 py-4">
+        <div class="flex items-center justify-end gap-2">
+          <button onclick="editarEstoqueRevenda('${item.id}')" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </button>
+          <button onclick="excluirEstoqueRevenda('${item.id}')" class="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-500">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `;
+  }).join('');
+  lucide.createIcons();
+}
+
+function abrirModalEstoqueRevenda() {
+  document.getElementById('modal-estoque-revenda-titulo').textContent = 'Novo Produto';
+  document.getElementById('form-estoque-revenda').reset();
+  document.getElementById('er-id').value = '';
+  abrirModal('modal-estoque-revenda');
+}
+
+function editarEstoqueRevenda(id) {
+  const item = estoquesRevenda.find(x => x.id === id);
+  if (!item) return;
+  document.getElementById('modal-estoque-revenda-titulo').textContent = 'Editar Produto';
+  document.getElementById('er-id').value = item.id;
+  document.getElementById('er-produto').value = item.produto || '';
+  document.getElementById('er-categoria').value = item.categoria || '';
+  document.getElementById('er-barras').value = item.codigo_barras || '';
+  document.getElementById('er-quantidade').value = item.quantidade || 0;
+  document.getElementById('er-custo').value = item.preco_custo || 0;
+  document.getElementById('er-venda').value = item.preco_venda || 0;
+  abrirModal('modal-estoque-revenda');
+}
+
+async function salvarEstoqueRevenda(e) {
+  e.preventDefault();
+  const id = document.getElementById('er-id').value;
+  const payload = {
+    produto:        document.getElementById('er-produto').value.trim(),
+    categoria:      document.getElementById('er-categoria').value.trim() || null,
+    codigo_barras:  document.getElementById('er-barras').value.trim() || null,
+    quantidade:     parseInt(document.getElementById('er-quantidade').value) || 0,
+    preco_custo:    parseFloat(document.getElementById('er-custo').value) || 0,
+    preco_venda:    parseFloat(document.getElementById('er-venda').value) || 0,
+    updated_at:     new Date().toISOString(),
+  };
+  try {
+    let err;
+    if (id) {
+      ({ error: err } = await db.from('estoque_revenda').update(payload).eq('id', id));
+    } else {
+      ({ error: err } = await db.from('estoque_revenda').insert(payload));
+    }
+    if (err) throw err;
+    showToast(id ? 'Produto atualizado!' : 'Produto adicionado!', 'success');
+    fecharModal('modal-estoque-revenda');
+    const { data } = await db.from('estoque_revenda').select('*').order('produto');
+    estoquesRevenda = data || [];
+    renderEstoqueRevenda();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+async function excluirEstoqueRevenda(id) {
+  if (!confirm('Excluir este produto?')) return;
+  try {
+    const { error } = await db.from('estoque_revenda').delete().eq('id', id);
+    if (error) throw error;
+    estoquesRevenda = estoquesRevenda.filter(e => e.id !== id);
+    showToast('Produto removido', 'success');
+    renderEstoqueRevenda();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+// =========================================================
+// MODAIS HELPERS
+// =========================================================
+function abrirModal(id) {
+  document.getElementById(id).classList.remove('hidden');
+}
+function fecharModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+function fecharModalSeFora(e, id) {
+  if (e.target === document.getElementById(id)) fecharModal(id);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop:not(.hidden)').forEach(m => m.classList.add('hidden'));
+  }
+});
+
+// =========================================================
+// TOAST
+// =========================================================
+let toastTimeout;
+function showToast(msg, tipo = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${tipo}`;
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// =========================================================
+// UTILS
+// =========================================================
+function fmtPreco(v) {
+  return 'R$ ' + parseFloat(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtData(d) {
+  if (!d) return '—';
+  const [y, m, day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+function iniciais(nome) {
+  return nome ? nome.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase() : '?';
+}
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function stringToColor(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  const h = Math.abs(hash) % 360;
+  return `hsl(${h}, 60%, 55%)`;
+}
+
+// =========================================================
+// START
+// =========================================================
+init();
+</script>
+</body>
+</html>

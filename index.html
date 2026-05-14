@@ -761,8 +761,11 @@
         </div>
         <div class="space-y-2">
           <label class="block text-sm font-semibold text-gray-700 mb-1.5">Serviço</label>
-          <select id="agendar-categoria" onchange="popularServicosCategoria()" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
+          <select id="agendar-categoria" onchange="_popularSubcatsAgendar()" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
             <option value="">Todas as categorias</option>
+          </select>
+          <select id="agendar-subcategoria" onchange="popularServicosCategoria()" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors hidden">
+            <option value="">Todas as subcategorias</option>
           </select>
           <select id="agendar-servico" required onchange="preencherValorServico()" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
             <option value="">Selecione o serviço...</option>
@@ -830,11 +833,17 @@
     <div class="px-5 pb-4 border-t border-gray-100">
       <!-- Painel adicionar serviço -->
       <div id="add-item-panel" class="hidden pt-3 pb-2 space-y-2">
-        <div class="flex gap-2 mb-1">
-          <div class="flex-1">
+        <div class="grid grid-cols-2 gap-2 mb-1">
+          <div>
             <label class="text-xs font-semibold text-gray-500 block mb-1">Categoria</label>
-            <select id="item-cat-select" onchange="popularItemServicos()" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50">
-              <option value="">Todas as categorias</option>
+            <select id="item-cat-select" onchange="popularItemSubcats()" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50">
+              <option value="">Todas</option>
+            </select>
+          </div>
+          <div id="item-subcat-wrap">
+            <label class="text-xs font-semibold text-gray-500 block mb-1">Subcategoria</label>
+            <select id="item-subcat-select" onchange="popularItemServicos()" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50">
+              <option value="">Todas</option>
             </select>
           </div>
         </div>
@@ -854,6 +863,14 @@
 
       <!-- Painel adicionar produto de revenda -->
       <div id="add-produto-panel" class="hidden pt-3 pb-2 space-y-2">
+        <div class="flex gap-2 mb-1">
+          <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-500 block mb-1">Categoria</label>
+            <select id="produto-cat-select" onchange="popularProdutoSelect()" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50">
+              <option value="">Todas as categorias</option>
+            </select>
+          </div>
+        </div>
         <div class="flex gap-2 items-end">
           <div class="flex-1">
             <label class="text-xs font-semibold text-gray-500 block mb-1">Produto</label>
@@ -2437,9 +2454,9 @@ function abrirModalAgendar(dataPreset = null) {
   selFunc.innerHTML = '<option value="">Selecione...</option>' +
     funcionarios.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
 
-  // Cascade categorias → serviços
+  // Cascade categorias → subcategorias → serviços
   _popularCategoriasAgendar();
-  popularServicosCategoria();
+  _popularSubcatsAgendar();
 
   // Data padrão
   const hoje = dataPreset || currentDate;
@@ -2455,25 +2472,53 @@ function preencherValorServico() {
   if (s) document.getElementById('agendar-valor').value = s.preco || '';
 }
 
+// ---- helpers de cascata compartilhados ----
+function _subcatsDaCat(cat) {
+  return [...new Set(servicos.filter(s => s.ativo && (!cat || (s.categoria||'')===cat) && s.subcategoria).map(s => s.subcategoria))].sort();
+}
+function _servicosFiltrados(cat, subcat) {
+  return servicos.filter(s => {
+    if (!s.ativo) return false;
+    if (cat    && (s.categoria   ||'') !== cat)    return false;
+    if (subcat && (s.subcategoria||'') !== subcat) return false;
+    return true;
+  });
+}
+
+// ---- Agendamento ----
 function _popularCategoriasAgendar() {
   const cats = [...new Set(servicos.filter(s => s.ativo && s.categoria).map(s => s.categoria))].sort();
   const sel  = document.getElementById('agendar-categoria');
   if (!sel) return;
+  const prev = sel.value;
   sel.innerHTML = `<option value="">Todas as categorias</option>` +
-    cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    cats.map(c => `<option value="${esc(c)}"${c===prev?' selected':''}>${esc(c)}</option>`).join('');
+}
+
+function _popularSubcatsAgendar() {
+  const cat    = document.getElementById('agendar-categoria')?.value || '';
+  const subcats = _subcatsDaCat(cat);
+  const selSub  = document.getElementById('agendar-subcategoria');
+  if (!selSub) return;
+  if (subcats.length === 0) {
+    selSub.classList.add('hidden');
+    selSub.value = '';
+  } else {
+    selSub.classList.remove('hidden');
+    selSub.innerHTML = `<option value="">Todas as subcategorias</option>` +
+      subcats.map(sc => `<option value="${esc(sc)}">${esc(sc)}</option>`).join('');
+  }
+  popularServicosCategoria();
 }
 
 function popularServicosCategoria(preSelectId = null) {
-  const cat  = document.getElementById('agendar-categoria')?.value || '';
-  const lista = servicos.filter(s => s.ativo && (!cat || (s.categoria || '') === cat));
-  const sel  = document.getElementById('agendar-servico');
+  const cat    = document.getElementById('agendar-categoria')?.value || '';
+  const subcat = document.getElementById('agendar-subcategoria')?.value || '';
+  const lista  = _servicosFiltrados(cat, subcat);
+  const sel    = document.getElementById('agendar-servico');
   if (!sel) return;
   sel.innerHTML = `<option value="">Selecione o serviço...</option>` +
-    lista.map(s => {
-      const label = s.subcategoria ? `${s.nome} (${s.subcategoria}) — ${fmtPreco(s.preco)}` : `${s.nome} — ${fmtPreco(s.preco)}`;
-      return `<option value="${s.id}"${s.id === preSelectId ? ' selected' : ''}>${esc(label)}</option>`;
-    }).join('');
-  // Auto-fill valor se só um serviço
+    lista.map(s => `<option value="${s.id}"${s.id===preSelectId?' selected':''}>${esc(s.nome)} — ${fmtPreco(s.preco)}</option>`).join('');
   if (lista.length === 1 && !preSelectId) {
     sel.value = lista[0].id;
     document.getElementById('agendar-valor').value = lista[0].preco || '';
@@ -2656,21 +2701,37 @@ function popularItemCat() {
   const sel = document.getElementById('item-cat-select');
   if (!sel) return;
   const prev = sel.value;
-  sel.innerHTML = '<option value="">Todas as categorias</option>' +
+  sel.innerHTML = '<option value="">Todas</option>' +
     cats.map(c => `<option value="${esc(c)}"${c === prev ? ' selected' : ''}>${esc(c)}</option>`).join('');
+  popularItemSubcats();
+}
+
+function popularItemSubcats() {
+  const cat     = document.getElementById('item-cat-select')?.value || '';
+  const subcats = _subcatsDaCat(cat);
+  const selSub  = document.getElementById('item-subcat-select');
+  const wrap    = document.getElementById('item-subcat-wrap');
+  if (!selSub) return;
+  if (subcats.length === 0) {
+    if (wrap) wrap.style.opacity = '0.4';
+    selSub.innerHTML = '<option value="">Todas</option>';
+    selSub.value = '';
+  } else {
+    if (wrap) wrap.style.opacity = '1';
+    selSub.innerHTML = '<option value="">Todas</option>' +
+      subcats.map(sc => `<option value="${esc(sc)}">${esc(sc)}</option>`).join('');
+  }
   popularItemServicos();
 }
 
 function popularItemServicos() {
-  const cat = document.getElementById('item-cat-select')?.value || '';
-  const lista = servicos.filter(s => s.ativo && (!cat || (s.categoria || '') === cat));
+  const cat    = document.getElementById('item-cat-select')?.value || '';
+  const subcat = document.getElementById('item-subcat-select')?.value || '';
+  const lista  = _servicosFiltrados(cat, subcat);
   const sel = document.getElementById('item-select');
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione o serviço...</option>' +
-    lista.map(s => {
-      const label = s.subcategoria ? `${s.nome} (${s.subcategoria}) — ${fmtPreco(s.preco)}` : `${s.nome} — ${fmtPreco(s.preco)}`;
-      return `<option value="${s.id}" data-preco="${s.preco}">${esc(label)}</option>`;
-    }).join('');
+    lista.map(s => `<option value="${s.id}" data-preco="${s.preco}">${esc(s.nome)} — ${fmtPreco(s.preco)}</option>`).join('');
   document.getElementById('item-valor').value = '';
 }
 
@@ -4147,17 +4208,29 @@ function toggleAddProduto() {
   const isHidden = panel.classList.contains('hidden');
   itemPanel.classList.add('hidden');
   panel.classList.toggle('hidden', !isHidden);
-  if (isHidden) popularSelectProdutos();
+  if (isHidden) popularProdutoCat();
 }
 
-function popularSelectProdutos() {
+function popularProdutoCat() {
+  const cats = [...new Set(estoquesRevenda.filter(p => p.categoria).map(p => p.categoria))].sort();
+  const sel  = document.getElementById('produto-cat-select');
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Todas as categorias</option>' +
+    cats.map(c => `<option value="${esc(c)}"${c===prev?' selected':''}>${esc(c)}</option>`).join('');
+  popularProdutoSelect();
+}
+
+function popularProdutoSelect() {
+  const cat = document.getElementById('produto-cat-select')?.value || '';
   const sel = document.getElementById('produto-select');
   if (!sel) return;
-  sel.innerHTML = '<option value="">Selecione o produto...</option>'
-    + estoquesRevenda.filter(p => parseInt(p.quantidade) > 0).map(p =>
-        `<option value="${p.id}" data-preco="${p.preco_venda}" data-qty="${p.quantidade}">${esc(p.produto)} (${p.quantidade} em estoque)</option>`
-      ).join('');
+  const lista = estoquesRevenda.filter(p => parseInt(p.quantidade) > 0 && (!cat || (p.categoria||'') === cat));
+  sel.innerHTML = '<option value="">Selecione o produto...</option>' +
+    lista.map(p => `<option value="${p.id}" data-preco="${p.preco_venda}" data-qty="${p.quantidade}">${esc(p.produto)} (${p.quantidade} em estoque)</option>`).join('');
 }
+
+function popularSelectProdutos() { popularProdutoSelect(); }
 
 function preencherValorProduto() {
   const sel = document.getElementById('produto-select');

@@ -129,6 +129,22 @@
     /* Filtros remuneração */
     .remu-filtro-btn { transition: all .15s; }
     .remu-filtro-btn.ativo { background: #72403e; color: #fff; border-color: #72403e; }
+    /* Glow — botão Aniversariantes */
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,.0), 0 0 0 0 rgba(251,191,36,.0); }
+      50%       { box-shadow: 0 0 8px 3px rgba(251,191,36,.7), 0 0 16px 6px rgba(251,191,36,.3); }
+    }
+    .glow-effect {
+      animation: glow-pulse 1.8s ease-in-out infinite;
+      border: 1.5px solid rgba(251,191,36,.6) !important;
+    }
+    /* Badge contador de aniversariantes */
+    .birthday-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 18px; height: 18px; padding: 0 5px;
+      background: #fbbf24; color: #78350f; border-radius: 999px;
+      font-size: 10px; font-weight: 800; margin-left: auto; flex-shrink: 0;
+    }
 
 /* =========================================================
    MOBILE FIRST — breakpoint < 768px
@@ -334,6 +350,10 @@
       <span class="sidebar-label">Estoque Revenda</span>
     </button>
     <div class="admin-only pt-3 pb-1 px-4 text-xs text-white/50 font-semibold uppercase tracking-widest sidebar-section-label">Relacionamento</div>
+    <button id="btn-aniversariantes" class="sidebar-item w-full" onclick="abrirModalAniversariantes()" title="Aniversariantes da semana">
+      <i data-lucide="cake" class="sidebar-icon"></i>
+      <span class="sidebar-label">Aniversariantes</span>
+    </button>
     <button class="sidebar-item admin-only w-full" onclick="abrirRelatorioInativas()" title="Clientes sem visita há 60+ dias">
       <i data-lucide="heart-pulse" class="sidebar-icon"></i>
       <span class="sidebar-label">Clientes Inativas</span>
@@ -1319,6 +1339,29 @@
   </div>
 </div>
 
+<!-- Modal Aniversariantes da Semana -->
+<div id="modal-aniversariantes" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-aniversariantes')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100" style="background:linear-gradient(to right,#fef3c7,#fffbeb)">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">🎂</span>
+        <div>
+          <h3 class="text-lg font-bold text-gray-800">Aniversariantes da Semana</h3>
+          <p id="aniv-subtitulo" class="text-xs text-gray-500"></p>
+        </div>
+      </div>
+      <button onclick="fecharModal('modal-aniversariantes')" class="p-2 hover:bg-amber-100 rounded-xl transition-colors">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <div id="aniv-lista" class="divide-y divide-gray-100 overflow-y-auto" style="max-height:420px"></div>
+    <div id="aniv-vazio" class="hidden px-6 py-12 text-center text-gray-400">
+      <span class="text-4xl block mb-3">🎈</span>
+      <p class="text-sm font-medium">Nenhum aniversário esta semana</p>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Marcar Pagamento (Remuneração) -->
 <div id="modal-marcar-pago" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-marcar-pago')">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
@@ -1693,6 +1736,7 @@ async function init() {
   await carregarDados();
   inicializarOrdem();
   adaptarUIParaPapel();
+  verificarAniversariantesGlow();
   renderCalendario();
 }
 
@@ -3614,6 +3658,152 @@ document.addEventListener('keydown', e => {
 // TOAST
 // =========================================================
 let toastTimeout;
+// =========================================================
+// ANIVERSARIANTES DA SEMANA
+// =========================================================
+
+/**
+ * Função pura. Retorna clientes cujo aniversário (dia+mês) cai
+ * entre a segunda-feira e o domingo da semana atual.
+ * Lida com semanas que cruzam virada de ano.
+ * @param {Array} clientsArray - array global `clientes`
+ * @returns {Array} clientes com _birthdayDate (Date do dia correspondente)
+ */
+function getBirthdaysThisWeek(clientsArray) {
+  const hoje     = new Date();
+  const dow      = hoje.getDay(); // 0=Dom … 6=Sáb
+  const toMon    = dow === 0 ? -6 : 1 - dow; // deslocamento até segunda
+  const segunda  = new Date(hoje);
+  segunda.setDate(hoje.getDate() + toMon);
+  segunda.setHours(0, 0, 0, 0);
+
+  // Gera os 7 dias {dia, mes, date} de segunda a domingo
+  const semana = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(segunda);
+    d.setDate(segunda.getDate() + i);
+    return { dia: d.getDate(), mes: d.getMonth() + 1, date: d };
+  });
+
+  return clientsArray
+    .filter(c => {
+      if (!c.aniversario) return false;
+      const [, mm, dd] = c.aniversario.split('-').map(Number);
+      return semana.some(s => s.dia === dd && s.mes === mm);
+    })
+    .map(c => {
+      const [, mm, dd] = c.aniversario.split('-').map(Number);
+      const dia = semana.find(s => s.dia === dd && s.mes === mm);
+      return { ...c, _birthdayDate: dia.date };
+    })
+    .sort((a, b) => a._birthdayDate - b._birthdayDate);
+}
+
+/**
+ * Verifica aniversariantes e aplica glow no botão se:
+ *   - Hoje é segunda-feira  OU  o aniversário é hoje
+ *   - E há pelo menos 1 aniversariante na semana
+ * Também atualiza o badge de contagem.
+ */
+function verificarAniversariantesGlow() {
+  const btn    = document.getElementById('btn-aniversariantes');
+  if (!btn) return;
+
+  const lista  = getBirthdaysThisWeek(clientes);
+  const hoje   = new Date();
+  const ehSeg  = hoje.getDay() === 1;
+  const temHoj = lista.some(c => {
+    const d = c._birthdayDate;
+    return d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth();
+  });
+
+  // Badge com contagem
+  let badge = btn.querySelector('.birthday-badge');
+  if (lista.length > 0) {
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'birthday-badge';
+      btn.appendChild(badge);
+    }
+    badge.textContent = lista.length;
+  } else if (badge) {
+    badge.remove();
+  }
+
+  // Glow: segunda-feira com aniversariante na semana, OU aniversário exatamente hoje
+  if (lista.length > 0 && (ehSeg || temHoj)) {
+    btn.classList.add('glow-effect');
+  } else {
+    btn.classList.remove('glow-effect');
+  }
+}
+
+function abrirModalAniversariantes() {
+  const lista   = getBirthdaysThisWeek(clientes);
+  const hoje    = new Date();
+  const segunda = (() => {
+    const d   = new Date(hoje);
+    const dow = hoje.getDay();
+    d.setDate(hoje.getDate() + (dow === 0 ? -6 : 1 - dow));
+    return d;
+  })();
+  const domingo = new Date(segunda);
+  domingo.setDate(segunda.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+
+  document.getElementById('aniv-subtitulo').textContent =
+    `${fmt(segunda)} – ${fmt(domingo)}  ·  ${lista.length} aniversariante${lista.length !== 1 ? 's' : ''}`;
+
+  const listaEl = document.getElementById('aniv-lista');
+  const vazioEl = document.getElementById('aniv-vazio');
+
+  if (!lista.length) {
+    listaEl.innerHTML = '';
+    vazioEl.classList.remove('hidden');
+  } else {
+    vazioEl.classList.add('hidden');
+    const SALAO = 'Studio Érika Daiany';
+    listaEl.innerHTML = lista.map(c => {
+      const d       = c._birthdayDate;
+      const ehHoje  = d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth();
+      const diaNome = ehHoje ? 'Hoje!' : d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+      const numWA   = fmtWhatsAppNum(c.telefone);
+      const msg     = encodeURIComponent(
+        `Olá, ${c.nome.split(' ')[0]}! 🎂🌸 A equipe do ${SALAO} deseja um feliz aniversário! ` +
+        `Temos um mimo especial para você esta semana. Venha nos visitar! 💖`
+      );
+      const waHref  = numWA ? `https://wa.me/${numWA}?text=${msg}` : null;
+      const primeiroNome = esc(c.nome.split(' ')[0]);
+      const nomeCompleto = esc(c.nome);
+
+      return `
+      <div class="flex items-center gap-4 px-6 py-4 hover:bg-amber-50 transition-colors">
+        <div class="relative flex-shrink-0">
+          <div class="w-11 h-11 rounded-full flex items-center justify-center font-bold text-white text-sm shadow"
+               style="background:linear-gradient(135deg,#f59e0b,#d97706)">${iniciais(c.nome)}</div>
+          ${ehHoje ? '<span class="absolute -top-1 -right-1 text-sm">🎂</span>' : ''}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-gray-800 truncate">${nomeCompleto}</p>
+          <p class="text-xs ${ehHoje ? 'font-bold text-amber-600' : 'text-gray-400'} capitalize">${diaNome}</p>
+          ${c.telefone ? `<p class="text-xs text-gray-400 mt-0.5">${esc(c.telefone)}</p>` : ''}
+        </div>
+        ${waHref
+          ? `<a href="${waHref}" target="_blank" rel="noopener"
+               class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white flex-shrink-0 hover:opacity-90 transition-opacity"
+               style="background:#25D366">
+               <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+               Parabenizar
+             </a>`
+          : `<span class="text-xs text-gray-300 italic">sem tel.</span>`
+        }
+      </div>`;
+    }).join('');
+  }
+
+  abrirModal('modal-aniversariantes');
+  lucide.createIcons();
+}
+
 function showToast(msg, tipo = 'success') {
   const t = document.getElementById('toast');
   t.textContent = msg;

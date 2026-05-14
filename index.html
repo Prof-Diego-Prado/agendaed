@@ -821,14 +821,23 @@
         <h3 class="text-lg font-bold text-gray-800">Comanda</h3>
         <span id="comanda-status-badge" class="badge text-xs px-2 py-0.5 rounded-full"></span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5">
         <button id="btn-anamnese-comanda" onclick="verAnamneseComanda()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1a1a1a] rounded-xl transition-colors" style="background:#fffbeb">
           <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Ficha
+        </button>
+        <button id="btn-anotacoes-comanda" onclick="abrirAnotacoesComanda()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1a1a1a] rounded-xl transition-colors" style="background:#fffbeb">
+          <i data-lucide="notebook-pen" class="w-3.5 h-3.5"></i> Anotações
         </button>
         <button id="btn-whatsapp-comanda" onclick="enviarWhatsApp()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-xl transition-colors" style="background:#25D366">
           <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
         </button>
-        <button onclick="fecharModal('modal-comanda')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+        <button id="btn-add-whatsapp-comanda" onclick="adicionarWhatsAppComanda()" style="display:none" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-xl transition-colors" style="background:#25D366">
+          <i data-lucide="phone-plus" class="w-3.5 h-3.5"></i> Add Tel
+        </button>
+        <button id="btn-editar-ag" onclick="toggleEditarAg()" class="p-1.5 hover:bg-[#fffbeb] rounded-xl transition-colors" title="Editar agendamento">
+          <i data-lucide="pencil" class="w-4 h-4 text-gray-500"></i>
+        </button>
+        <button onclick="fecharModal('modal-comanda')" class="p-1.5 hover:bg-gray-100 rounded-xl transition-colors">
           <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
         </button>
       </div>
@@ -836,6 +845,47 @@
 
     <!-- Info cliente -->
     <div id="comanda-header-info" class="px-5 py-3 border-b text-sm" style="background:#fffbeb;border-color:#f5c51844"></div>
+
+    <!-- Painel editar agendamento -->
+    <div id="comanda-editar-panel" class="hidden px-5 py-3 border-b space-y-2" style="background:#f8fafc">
+      <div class="text-xs font-bold text-gray-400 uppercase tracking-wide">Editar Agendamento</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-xs text-gray-500 block mb-0.5">Categoria</label>
+          <select id="edit-ag-cat" onchange="_popularSubcatsEditar()" class="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-xl bg-white">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div id="edit-ag-subcat-wrap">
+          <label class="text-xs text-gray-500 block mb-0.5">Subcategoria</label>
+          <select id="edit-ag-subcat" onchange="_popularServicosEditar()" class="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-xl bg-white">
+            <option value="">Todas</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 block mb-0.5">Serviço</label>
+        <select id="edit-ag-servico" onchange="preencherValorEditarAg()" class="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-xl bg-white"></select>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label class="text-xs text-gray-500 block mb-0.5">Data</label>
+          <input type="date" id="edit-ag-data" class="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-xl bg-white" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 block mb-0.5">Horário</label>
+          <input type="time" id="edit-ag-hora" class="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-xl bg-white" />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 block mb-0.5">Valor R$</label>
+          <input type="number" id="edit-ag-valor" step="0.01" min="0" placeholder="0,00" class="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-xl bg-white" />
+        </div>
+      </div>
+      <div class="flex gap-2 justify-end pt-1">
+        <button type="button" onclick="toggleEditarAg()" class="px-3 py-1.5 text-sm text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-xl">Cancelar</button>
+        <button type="button" onclick="salvarEdicaoAg()" class="px-4 py-1.5 text-sm font-semibold text-white rounded-xl" style="background:#1a1a1a">Salvar</button>
+      </div>
+    </div>
 
     <!-- Lista de itens -->
     <div class="px-5 py-3 overflow-y-auto" style="max-height:260px">
@@ -948,6 +998,30 @@
       </button>
     </div>
 
+  </div>
+</div>
+
+<!-- Modal Anotações -->
+<div id="modal-anotacoes" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-anotacoes')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <div>
+        <h3 class="font-bold text-gray-800">Anotações</h3>
+        <p id="anotacoes-cliente-nome" class="text-xs text-gray-400 mt-0.5"></p>
+      </div>
+      <button onclick="fecharModal('modal-anotacoes')" class="p-2 hover:bg-gray-100 rounded-xl">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <div class="p-5">
+      <textarea id="anotacoes-texto" rows="8" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white resize-none transition-colors" placeholder="Preferências, alergias, observações da cliente..."></textarea>
+    </div>
+    <div class="flex justify-end gap-2 px-5 pb-5">
+      <button onclick="fecharModal('modal-anotacoes')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl">Fechar</button>
+      <button onclick="salvarAnotacoes()" class="px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow flex items-center gap-1.5" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
+        <i data-lucide="save" class="w-4 h-4"></i>Salvar
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2212,6 +2286,7 @@ function renderCalendarioDia(container, dias) {
       for (let i = 0; i < SLOTS_TOTAL; i++) {
         const slotDiv = document.createElement('div');
         slotDiv.className = 'time-slot';
+        slotDiv.dataset.si = i;
         colDiv.appendChild(slotDiv);
       }
 
@@ -2222,6 +2297,16 @@ function renderCalendarioDia(container, dias) {
       });
       agsDia.forEach(ag => posicionarBloco(colDiv, ag));
       layoutOverlaps(colDiv);
+      // Click em slot vazio → abrir modal de agendamento
+      colDiv.addEventListener('click', (e) => {
+        if (!isAdmin() || e.target.closest('.appt-block')) return;
+        const slotEl = e.target.closest('.time-slot[data-si]');
+        if (!slotEl) return;
+        const totalMin = HORA_INICIO * 60 + parseInt(slotEl.dataset.si) * SLOT_MIN;
+        const hh = String(Math.floor(totalMin/60)).padStart(2,'0');
+        const mm = String(totalMin%60).padStart(2,'0');
+        abrirModalAgendarComSlot(func.id, dia, `${hh}:${mm}`);
+      });
       bodyRow.appendChild(colDiv);
     });
 
@@ -2309,6 +2394,7 @@ function renderCalendarioDia(container, dias) {
       for (let i = 0; i < SLOTS_TOTAL; i++) {
         const slotDiv = document.createElement('div');
         slotDiv.className = 'time-slot';
+        slotDiv.dataset.si = i;
         colDiv.appendChild(slotDiv);
       }
 
@@ -2318,6 +2404,15 @@ function renderCalendarioDia(container, dias) {
       });
       agsDia.forEach(ag => posicionarBloco(colDiv, ag));
       layoutOverlaps(colDiv);
+      colDiv.addEventListener('click', (e) => {
+        if (!isAdmin() || e.target.closest('.appt-block')) return;
+        const slotEl = e.target.closest('.time-slot[data-si]');
+        if (!slotEl) return;
+        const totalMin = HORA_INICIO * 60 + parseInt(slotEl.dataset.si) * SLOT_MIN;
+        const hh = String(Math.floor(totalMin/60)).padStart(2,'0');
+        const mm = String(totalMin%60).padStart(2,'0');
+        abrirModalAgendarComSlot(func.id, dias[0], `${hh}:${mm}`);
+      });
       bodyRow.appendChild(colDiv);
     });
 
@@ -2652,28 +2747,46 @@ async function abrirDetalheAgendamento(id) {
 
   // Header info
   const tel = cliente?.telefone || '';
+  const semCliente = !cliente;
   document.getElementById('comanda-header-info').innerHTML = `
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between gap-3">
       <div>
-        <div class="font-bold text-gray-800 text-base">${esc(cliente?.nome || '—')}</div>
-        <div class="text-xs text-gray-500 mt-0.5 flex gap-3">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-gray-800 text-base">${esc(cliente?.nome || '—')}</span>
+          ${semCliente ? `<button onclick="abrirModalCliente()" class="text-xs font-semibold px-2 py-0.5 rounded-lg text-white" style="background:#1a1a1a">+ Cadastrar</button>` : ''}
+        </div>
+        <div class="text-xs text-gray-500 mt-0.5 flex gap-3 flex-wrap">
           ${func ? `<span>👩 ${esc(func.nome.split(' ')[0])}</span>` : ''}
           <span>📅 ${d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'})} às ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>
+          ${servico ? `<span>✂️ ${esc(servico.nome)}</span>` : ''}
         </div>
       </div>
-      ${tel ? `<span class="text-xs text-gray-500">${esc(tel)}</span>` : ''}
+      ${tel ? `<span class="text-xs text-gray-500 flex-shrink-0">${esc(tel)}</span>` : ''}
     </div>`;
 
-  // WhatsApp
+  // WhatsApp / Add telefone
   const num = fmtWhatsAppNum(tel);
   document.getElementById('btn-whatsapp-comanda').style.display = num ? '' : 'none';
+  const addTelBtn = document.getElementById('btn-add-whatsapp-comanda');
+  if (addTelBtn) addTelBtn.style.display = (!semCliente && !tel) ? '' : 'none';
 
-  // Preenche cascata categoria → serviço no painel de add item
-  popularItemCat();
+  // Botão Anotações (só quando tem cliente)
+  const anotacoesBtn = document.getElementById('btn-anotacoes-comanda');
+  if (anotacoesBtn) anotacoesBtn.style.display = !semCliente ? '' : 'none';
 
   // Exibe/oculta botões de ação conforme status
   const fechado = ag.status === 'concluido' || ag.status === 'cancelado';
-  document.getElementById('btn-excluir-comanda').style.display  = ag.status === 'cancelado' ? '' : 'none';
+
+  // Botão editar ag
+  const editBtn = document.getElementById('btn-editar-ag');
+  if (editBtn) editBtn.style.display = fechado ? 'none' : '';
+
+  // Fecha painel de edição se estava aberto
+  document.getElementById('comanda-editar-panel')?.classList.add('hidden');
+
+  // Preenche cascata categoria → serviço no painel de add item
+  popularItemCat();
+  document.getElementById('btn-excluir-comanda').style.display  = !fechado ? '' : 'none';
   document.getElementById('btn-faltou-comanda').style.display   = (ag.status==='faltou'||fechado) ? 'none' : '';
   document.getElementById('btn-cancelar-comanda').style.display = ag.status==='cancelado' ? 'none' : '';
   document.getElementById('btn-fechar-comanda').style.display   = fechado ? 'none' : '';
@@ -3059,6 +3172,133 @@ function enviarWhatsApp() {
   const msg = `Olá ${primeiro}! 😊\n\nPassando para confirmar seu atendimento no *Studio Érika Daiany*:\n\n📅 ${dataFmt} às ${horaFmt}\n✂️ ${servico?.nome || 'Atendimento'}\n👩 ${func1}${total > 0 ? `\n💰 ${fmtPreco(total)}` : ''}\n\nTe esperamos! 💇‍♀️`;
 
   window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function adicionarWhatsAppComanda() {
+  const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  if (!ag || !ag.cliente_id) return;
+  fecharModal('modal-comanda');
+  editarCliente(ag.cliente_id);
+}
+
+function abrirAnotacoesComanda() {
+  const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  if (!ag) return;
+  const cliente = clientes.find(c => c.id === ag.cliente_id);
+  if (!cliente) return;
+  document.getElementById('anotacoes-cliente-nome').textContent = cliente.nome;
+  document.getElementById('anotacoes-texto').value = cliente.observacoes || '';
+  abrirModal('modal-anotacoes');
+}
+
+async function salvarAnotacoes() {
+  const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  if (!ag || !ag.cliente_id) return;
+  const texto = document.getElementById('anotacoes-texto').value.trim();
+  try {
+    const { error } = await db.from('clientes').update({ observacoes: texto }).eq('id', ag.cliente_id);
+    if (error) throw error;
+    const cli = clientes.find(c => c.id === ag.cliente_id);
+    if (cli) cli.observacoes = texto;
+    fecharModal('modal-anotacoes');
+    showToast('Anotações salvas', 'success');
+  } catch(e) { showToast('Erro ao salvar anotações', 'error'); }
+}
+
+function toggleEditarAg() {
+  const painel = document.getElementById('comanda-editar-panel');
+  if (!painel) return;
+  if (painel.classList.contains('hidden')) {
+    const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+    if (!ag) return;
+    _popularCategoriasEditarAg(ag.servico_id);
+    const d = new Date(ag.data_hora);
+    document.getElementById('edit-ag-data').value  = d.toISOString().split('T')[0];
+    document.getElementById('edit-ag-hora').value  = d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('edit-ag-valor').value = ag.valor_cobrado || '';
+    painel.classList.remove('hidden');
+  } else {
+    painel.classList.add('hidden');
+  }
+}
+
+function _popularCategoriasEditarAg(preServicoId) {
+  const cats = [...new Set(servicos.filter(s => s.ativo && s.categoria).map(s => s.categoria))].sort();
+  const selCat = document.getElementById('edit-ag-cat');
+  if (!selCat) return;
+  const servPre = preServicoId ? servicos.find(s => s.id === preServicoId) : null;
+  const catPre  = servPre?.categoria || '';
+  selCat.innerHTML = `<option value="">Todas as categorias</option>` +
+    cats.map(c => `<option value="${esc(c)}"${c===catPre?' selected':''}>${esc(c)}</option>`).join('');
+  _popularSubcatsEditar(preServicoId);
+}
+
+function _popularSubcatsEditar(preServicoId) {
+  const cat    = document.getElementById('edit-ag-cat')?.value || '';
+  const subcats = _subcatsDaCat(cat);
+  const selSub  = document.getElementById('edit-ag-subcat');
+  const wrap    = document.getElementById('edit-ag-subcat-wrap');
+  if (!selSub) return;
+  const servPre  = preServicoId ? servicos.find(s => s.id === preServicoId) : null;
+  const subcatPre = servPre?.subcategoria || '';
+  if (subcats.length === 0) {
+    if (wrap) wrap.classList.add('hidden');
+    selSub.value = '';
+  } else {
+    if (wrap) wrap.classList.remove('hidden');
+    selSub.innerHTML = `<option value="">Todas as subcategorias</option>` +
+      subcats.map(sc => `<option value="${esc(sc)}"${sc===subcatPre?' selected':''}>${esc(sc)}</option>`).join('');
+    if (subcatPre) selSub.value = subcatPre;
+  }
+  _popularServicosEditar(preServicoId);
+}
+
+function _popularServicosEditar(preSelectId) {
+  const cat    = document.getElementById('edit-ag-cat')?.value || '';
+  const subcat = document.getElementById('edit-ag-subcat')?.value || '';
+  const lista  = _servicosFiltrados(cat, subcat);
+  const sel    = document.getElementById('edit-ag-servico');
+  if (!sel) return;
+  sel.innerHTML = `<option value="">Selecione o serviço...</option>` +
+    lista.map(s => `<option value="${s.id}"${s.id===preSelectId?' selected':''}>${esc(s.nome)} — ${fmtPreco(s.preco)}</option>`).join('');
+  if (preSelectId) sel.value = preSelectId;
+}
+
+function preencherValorEditarAg() {
+  const id = document.getElementById('edit-ag-servico')?.value;
+  const s  = servicos.find(sv => sv.id === id);
+  if (s) document.getElementById('edit-ag-valor').value = s.preco || '';
+}
+
+async function salvarEdicaoAg() {
+  const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  if (!ag) return;
+  const servicoId = document.getElementById('edit-ag-servico').value || ag.servico_id;
+  const data      = document.getElementById('edit-ag-data').value;
+  const hora      = document.getElementById('edit-ag-hora').value;
+  const valor     = document.getElementById('edit-ag-valor').value;
+  if (!data || !hora) { showToast('Informe data e horário', 'error'); return; }
+  const data_hora = new Date(data + 'T' + hora).toISOString();
+  try {
+    const { error } = await db.from('agendamentos').update({
+      servico_id: servicoId || null,
+      data_hora,
+      valor_cobrado: valor ? parseFloat(valor) : null
+    }).eq('id', ag.id);
+    if (error) throw error;
+    showToast('Agendamento atualizado', 'success');
+    await carregarAgendamentos();
+    renderCalendario();
+    await abrirDetalheAgendamento(ag.id);
+  } catch(e) { showToast('Erro ao salvar', 'error'); }
+}
+
+function abrirModalAgendarComSlot(funcId, dia, hora) {
+  abrirModalAgendar(dia);
+  const selFunc = document.getElementById('agendar-funcionaria');
+  if (selFunc) selFunc.value = funcId;
+  const selHora = document.getElementById('agendar-hora');
+  if (selHora) selHora.value = hora;
 }
 
 // =========================================================

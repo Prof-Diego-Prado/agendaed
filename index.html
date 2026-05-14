@@ -123,9 +123,12 @@
     /* Abas cliente */
     .cli-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; }
     .cli-tab.ativa { color: #72403e; border-bottom-color: #72403e; }
-    /* Abas estoque */
+    /* Abas estoque / funcionárias */
     .estoque-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; background: none; }
     .estoque-tab-ativa { color: #72403e !important; border-bottom-color: #72403e; }
+    /* Filtros remuneração */
+    .remu-filtro-btn { transition: all .15s; }
+    .remu-filtro-btn.ativo { background: #72403e; color: #fff; border-color: #72403e; }
 
 /* =========================================================
    MOBILE FIRST — breakpoint < 768px
@@ -432,15 +435,78 @@
 
   <!-- ====== VIEW: FUNCIONÁRIAS ====== -->
   <div id="view-funcionarias" class="view">
-    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0 flex-wrap gap-2">
       <h2 class="text-lg font-bold text-gray-800">Funcionárias</h2>
-      <button onclick="abrirModalFuncionaria()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+      <button id="btn-nova-func" onclick="abrirModalFuncionaria()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Nova funcionária
       </button>
     </div>
-    <div class="flex-1 overflow-auto p-6">
+    <!-- Abas -->
+    <div class="flex border-b border-gray-100 bg-white px-4 gap-1 flex-shrink-0">
+      <button id="tab-func-equipe" onclick="setFuncAba('equipe')" class="estoque-tab estoque-tab-ativa px-4 py-2.5 text-sm font-semibold">Equipe</button>
+      <button id="tab-func-remuneracao" onclick="setFuncAba('remuneracao')" class="estoque-tab px-4 py-2.5 text-sm font-semibold text-gray-400">Remuneração</button>
+    </div>
+
+    <!-- Aba Equipe -->
+    <div id="func-aba-equipe" class="flex-1 overflow-auto p-4 md:p-6">
       <div id="grid-funcionarias" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+    </div>
+
+    <!-- Aba Remuneração -->
+    <div id="func-aba-remuneracao" class="hidden flex-1 overflow-auto p-4 md:p-6 space-y-4">
+      <!-- Filtros rápidos -->
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="setRemuFiltro('hoje')"   id="remu-btn-hoje"   class="remu-filtro-btn px-4 py-1.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-500">Hoje</button>
+        <button onclick="setRemuFiltro('semana')" id="remu-btn-semana" class="remu-filtro-btn px-4 py-1.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-500">Semana</button>
+        <button onclick="setRemuFiltro('mensal')" id="remu-btn-mensal" class="remu-filtro-btn px-4 py-1.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-500">Mês</button>
+        <button onclick="setRemuFiltro('anual')"  id="remu-btn-anual"  class="remu-filtro-btn px-4 py-1.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-500">Ano</button>
+        <button onclick="setRemuFiltro('custom')" id="remu-btn-custom" class="remu-filtro-btn px-4 py-1.5 text-sm font-semibold rounded-xl border border-gray-200 text-gray-500">Personalizado</button>
+      </div>
+      <!-- Datas customizadas (oculto por padrão) -->
+      <div id="remu-custom-datas" class="hidden flex gap-3 flex-wrap items-end">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1">De</label>
+          <input type="date" id="remu-ini" class="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" onchange="renderRemuneracao()" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1">Até</label>
+          <input type="date" id="remu-fim" class="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" onchange="renderRemuneracao()" />
+        </div>
+      </div>
+      <!-- Cards resumo total -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#f6f0ea">
+              <i data-lucide="users" class="w-5 h-5" style="color:#72403e"></i>
+            </div>
+            <span class="text-sm font-semibold text-gray-500">Atendimentos</span>
+          </div>
+          <div id="remu-total-atend" class="text-2xl font-bold text-gray-800">0</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#d1fae5">
+              <i data-lucide="trending-up" class="w-5 h-5" style="color:#10b981"></i>
+            </div>
+            <span class="text-sm font-semibold text-gray-500">Faturamento Bruto</span>
+          </div>
+          <div id="remu-total-bruto" class="text-2xl font-bold text-gray-800">R$ 0,00</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#fef3c7">
+              <i data-lucide="wallet" class="w-5 h-5" style="color:#d97706"></i>
+            </div>
+            <span class="text-sm font-semibold text-gray-500">Total a Pagar</span>
+          </div>
+          <div id="remu-total-pagar" class="text-2xl font-bold" style="color:#72403e">R$ 0,00</div>
+        </div>
+      </div>
+      <!-- Cards por funcionária -->
+      <div id="remu-cards" class="space-y-4"></div>
     </div>
   </div>
 
@@ -1253,6 +1319,71 @@
   </div>
 </div>
 
+<!-- Modal Marcar Pagamento (Remuneração) -->
+<div id="modal-marcar-pago" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-marcar-pago')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h3 class="text-lg font-bold text-gray-800">Confirmar Pagamento</h3>
+      <button onclick="fecharModal('modal-marcar-pago')" class="p-2 hover:bg-gray-100 rounded-xl">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <div class="p-6 space-y-4">
+      <input type="hidden" id="mpago-func-id" />
+      <input type="hidden" id="mpago-ini" />
+      <input type="hidden" id="mpago-fim" />
+      <input type="hidden" id="mpago-bruto" />
+      <input type="hidden" id="mpago-comissao" />
+      <!-- Resumo -->
+      <div class="rounded-xl p-4 space-y-2" style="background:#f6f0ea">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Funcionária</span>
+          <span id="mpago-nome" class="font-semibold text-gray-800"></span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Período</span>
+          <span id="mpago-periodo" class="font-semibold text-gray-800"></span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Faturamento bruto</span>
+          <span id="mpago-bruto-fmt" class="font-semibold text-gray-800"></span>
+        </div>
+        <div class="flex justify-between text-sm border-t border-[#c2ac9f44] pt-2">
+          <span class="text-gray-600">Comissão / Salário</span>
+          <span id="mpago-comissao-fmt" class="font-bold" style="color:#72403e"></span>
+        </div>
+      </div>
+      <!-- Bonificação -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Bonificação extra <span class="font-normal text-gray-400">(opcional)</span></label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-semibold">R$</span>
+          <input type="number" id="mpago-bonus" min="0" step="0.01" placeholder="0,00"
+            class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white"
+            oninput="atualizarTotalMpago()" />
+        </div>
+      </div>
+      <!-- Observações -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Observações <span class="font-normal text-gray-400">(opcional)</span></label>
+        <textarea id="mpago-obs" rows="2" placeholder="Ex: Pagamento via PIX, vale descontado..."
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white resize-none"></textarea>
+      </div>
+      <!-- Total final -->
+      <div class="flex justify-between items-center rounded-xl px-4 py-3 border-2" style="border-color:#72403e22;background:#72403e08">
+        <span class="font-bold text-gray-700">Total a pagar</span>
+        <span id="mpago-total-final" class="text-xl font-bold" style="color:#72403e">R$ 0,00</span>
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button onclick="fecharModal('modal-marcar-pago')" class="flex-1 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
+        <button onclick="confirmarMarcarPago()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl shadow transition-all" style="background:linear-gradient(to right,#10b981,#059669)">
+          <i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i>Confirmar Pagamento
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Ajustar Quantidade Estoque Salão -->
 <div id="modal-ajustar-qty" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-ajustar-qty')">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm" onclick="event.stopPropagation()">
@@ -1472,6 +1603,8 @@ let movEstoque      = [];
 let comandaProdutos = [];
 let estoqueSoBaixo  = { salao: false, revenda: false };
 let estoqueAbaAtiva = { salao: 'estoque', revenda: 'estoque' };
+let funcAbaAtiva    = 'equipe';
+let remuFiltro      = 'mensal';
 
 function memoize(fn) {
   let lastKey, lastResult;
@@ -1621,7 +1754,7 @@ function renderView(view) {
   switch (view) {
     case 'agendamentos':    renderCalendario(); break;
     case 'clientes':        renderClientes(); break;
-    case 'funcionarias':    renderFuncionarias(); break;
+    case 'funcionarias':    renderFuncionarias(); setFuncAba(funcAbaAtiva); break;
     case 'servicos':        renderServicos(); setServicoAba(servicoAbaAtiva); break;
     case 'estoque-salao':   popularFiltrosCategorias(); renderEstoqueSalao(); break;
     case 'estoque-revenda': popularFiltrosCategorias(); renderEstoqueRevenda(); break;
@@ -2615,6 +2748,193 @@ function renderFuncionarias() {
     </div>
   `;
   lucide.createIcons();
+}
+
+// =========================================================
+// FUNCIONÁRIAS — ABAS E REMUNERAÇÃO
+// =========================================================
+function setFuncAba(aba) {
+  funcAbaAtiva = aba;
+  ['equipe', 'remuneracao'].forEach(a => {
+    document.getElementById(`func-aba-${a}`)?.classList.toggle('hidden', a !== aba);
+    const btn = document.getElementById(`tab-func-${a}`);
+    if (btn) {
+      btn.classList.toggle('estoque-tab-ativa', a === aba);
+      btn.classList.toggle('text-gray-400', a !== aba);
+    }
+  });
+  const btnNova = document.getElementById('btn-nova-func');
+  if (btnNova) btnNova.style.display = aba === 'remuneracao' ? 'none' : '';
+  if (aba === 'remuneracao') {
+    setRemuFiltro(remuFiltro, true);
+  }
+}
+
+function setRemuFiltro(f, forcar) {
+  if (f === 'custom') {
+    remuFiltro = 'custom';
+    document.getElementById('remu-custom-datas')?.classList.remove('hidden');
+    document.querySelectorAll('.remu-filtro-btn').forEach(b => b.classList.remove('ativo'));
+    document.getElementById('remu-btn-custom')?.classList.add('ativo');
+    return;
+  }
+  remuFiltro = f;
+  document.getElementById('remu-custom-datas')?.classList.add('hidden');
+  document.querySelectorAll('.remu-filtro-btn').forEach(b => b.classList.remove('ativo'));
+  document.getElementById(`remu-btn-${f}`)?.classList.add('ativo');
+  renderRemuneracao();
+}
+
+async function renderRemuneracao() {
+  const cardsEl = document.getElementById('remu-cards');
+  if (!cardsEl) return;
+  cardsEl.innerHTML = '<div class="text-center py-8 text-gray-400 text-sm">Carregando...</div>';
+
+  // Determina intervalo
+  let ini, fim;
+  if (remuFiltro === 'custom') {
+    ini = document.getElementById('remu-ini')?.value;
+    fim = document.getElementById('remu-fim')?.value;
+    if (!ini || !fim) { cardsEl.innerHTML = '<div class="text-center py-8 text-gray-400 text-sm">Selecione o período</div>'; return; }
+  } else {
+    [ini, fim] = calcularRangeFluxo(remuFiltro);
+  }
+
+  const iniISO = new Date(ini + 'T00:00:00').toISOString();
+  const fimISO = new Date(fim + 'T23:59:59').toISOString();
+
+  const [{ data: ags, error }, { data: todasComissoes }] = await Promise.all([
+    db.from('agendamentos').select('*, comanda_itens(*)').eq('status', 'concluido').gte('data_hora', iniISO).lte('data_hora', fimISO).order('data_hora'),
+    db.from('comissoes_servico').select('*'),
+  ]);
+  if (error) { cardsEl.innerHTML = `<div class="text-center py-8 text-red-400 text-sm">Erro: ${esc(error.message)}</div>`; return; }
+
+  // Agrupa por funcionária
+  const porFunc = {};
+  (ags || []).forEach(ag => {
+    const fid = ag.funcionario_id || '__sem__';
+    if (!porFunc[fid]) porFunc[fid] = [];
+    porFunc[fid].push(ag);
+  });
+
+  // Totais globais
+  let gtAtend = 0, gtBruto = 0, gtPagar = 0;
+
+  if (!Object.keys(porFunc).length) {
+    cardsEl.innerHTML = '<div class="text-center py-12 text-gray-400">Nenhum atendimento concluído neste período</div>';
+    document.getElementById('remu-total-atend').textContent = '0';
+    document.getElementById('remu-total-bruto').textContent = 'R$ 0,00';
+    document.getElementById('remu-total-pagar').textContent = 'R$ 0,00';
+    return;
+  }
+
+  cardsEl.innerHTML = Object.entries(porFunc).map(([fid, lista]) => {
+    const func       = funcionarios.find(f => f.id === fid);
+    const nome       = func?.nome || 'Sem funcionária';
+    const pctPadrao  = func?.percentual_comissao || 0;
+    const tipo       = func?.tipo_remuneracao || 'comissao';
+    const comissoesFn = (todasComissoes || []).filter(c => c.funcionario_id === fid);
+
+    let totalBruto = 0, totalComissao = 0;
+
+    const linhas = lista.map(ag => {
+      const serv  = servicos.find(s => s.id === ag.servico_id);
+      const cli   = clientes.find(c => c.id === ag.cliente_id);
+      const base  = Number(ag.valor_cobrado || 0);
+      const extras = (ag.comanda_itens || []).reduce((s, i) => s + (i.quantidade || 1) * (i.valor_unitario || 0), 0);
+      const total = base + extras;
+      totalBruto += total;
+
+      const comissaoServ = comissoesFn.find(c => c.servico_id === ag.servico_id);
+      const pctUsada = comissaoServ ? Number(comissaoServ.percentual) : pctPadrao;
+      const valorComissao = tipo === 'comissao' ? total * pctUsada / 100 : 0;
+      totalComissao += valorComissao;
+
+      const d = new Date(ag.data_hora);
+      const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const data = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      const formaPagto = ag.forma_pagamento ? `<span class="text-xs text-gray-400 capitalize">${esc(ag.forma_pagamento)}</span>` : '';
+      return `<tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors text-sm">
+        <td class="px-4 py-2.5 text-gray-500 whitespace-nowrap">${data} <span class="text-gray-400">${hora}</span></td>
+        <td class="px-4 py-2.5 font-medium text-gray-800">${esc(cli?.nome?.split(' ')[0] || '—')}</td>
+        <td class="px-4 py-2.5 text-gray-600">${esc(serv?.nome || '—')}</td>
+        <td class="px-4 py-2.5 text-center">${tipo === 'comissao' ? `<span class="badge bg-purple-100 text-purple-700">${pctUsada}%</span>` : '<span class="text-gray-400 text-xs">—</span>'}</td>
+        <td class="px-4 py-2.5 text-right font-semibold text-gray-800">${fmtPreco(total)}</td>
+        <td class="px-4 py-2.5 text-right font-bold" style="color:#72403e">${tipo === 'comissao' ? fmtPreco(valorComissao) : '—'}</td>
+      </tr>`;
+    }).join('');
+
+    if (tipo === 'fixo') totalComissao = func?.salario_fixo || 0;
+    const remuLabel = tipo === 'comissao' ? `Comissão (${pctPadrao}% base)` : 'Salário Fixo';
+    const pctMedia = totalBruto > 0 && tipo === 'comissao' ? (totalComissao / totalBruto * 100).toFixed(1) : null;
+
+    gtAtend += lista.length;
+    gtBruto += totalBruto;
+    gtPagar += totalComissao;
+
+    return `
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <!-- Header da funcionária -->
+      <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3" style="background:#f6f0ea55">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background:${func?.cor || '#997776'}">${iniciais(nome)}</div>
+          <div>
+            <div class="font-bold text-gray-800">${esc(nome)}</div>
+            <div class="text-xs text-gray-500 mt-0.5">${lista.length} atend. · ${remuLabel}${pctMedia ? ` · média ${pctMedia}%` : ''}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-6 text-right">
+          <div>
+            <div class="text-xs text-gray-400">Bruto</div>
+            <div class="font-bold text-gray-800">${fmtPreco(totalBruto)}</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-400">A pagar</div>
+            <div class="font-bold text-lg" style="color:#72403e">${fmtPreco(totalComissao)}</div>
+          </div>
+          <button onclick="abrirModalMarcarPago('${fid}','${ini}','${fim}',${totalBruto},${totalComissao})"
+            class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white rounded-xl transition-all hover:opacity-90"
+            style="background:linear-gradient(to right,#10b981,#059669)">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>Pagar
+          </button>
+        </div>
+      </div>
+      <!-- Histórico colapsável -->
+      <div>
+        <button onclick="toggleRemuHistorico(this)" class="w-full flex items-center justify-between px-5 py-2.5 text-xs font-semibold text-gray-500 hover:bg-gray-50 transition-colors">
+          <span>Ver histórico de atendimentos</span>
+          <i data-lucide="chevron-down" class="w-4 h-4 transition-transform"></i>
+        </button>
+        <div class="remu-historico hidden">
+          <table class="w-full text-sm">
+            <thead><tr class="text-xs text-gray-400 uppercase bg-gray-50 border-y border-gray-100">
+              <th class="px-4 py-2 text-left font-semibold">Data/Hora</th>
+              <th class="px-4 py-2 text-left font-semibold">Cliente</th>
+              <th class="px-4 py-2 text-left font-semibold">Serviço</th>
+              <th class="px-4 py-2 text-center font-semibold">%</th>
+              <th class="px-4 py-2 text-right font-semibold">Valor</th>
+              <th class="px-4 py-2 text-right font-semibold">Comissão</th>
+            </tr></thead>
+            <tbody>${linhas}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('remu-total-atend').textContent = gtAtend;
+  document.getElementById('remu-total-bruto').textContent = fmtPreco(gtBruto);
+  document.getElementById('remu-total-pagar').textContent = fmtPreco(gtPagar);
+  lucide.createIcons();
+}
+
+function toggleRemuHistorico(btn) {
+  const historico = btn.nextElementSibling;
+  const icon      = btn.querySelector('[data-lucide="chevron-down"]');
+  const aberto    = !historico.classList.contains('hidden');
+  historico.classList.toggle('hidden', aberto);
+  if (icon) icon.style.transform = aberto ? '' : 'rotate(180deg)';
+  btn.querySelector('span').textContent = aberto ? 'Ver histórico de atendimentos' : 'Ocultar histórico';
 }
 
 function renderListaComissoesServico(comissoesExistentes = []) {
@@ -3646,8 +3966,8 @@ async function gerarFechamento() {
       </table>
       <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-t border-gray-100">
         <span class="text-sm font-bold text-gray-700">A receber: <span style="color:#72403e">${fmtPreco(totalComissao)}</span></span>
-        <button onclick="marcarComoPago('${fid}','${ini}','${fim}',${totalBruto},${totalComissao})" class="px-4 py-1.5 text-xs font-semibold text-white rounded-xl" style="background:#10b981">
-          ✓ Marcar como Pago
+        <button onclick="abrirModalMarcarPago('${fid}','${ini}','${fim}',${totalBruto},${totalComissao})" class="px-4 py-1.5 text-xs font-semibold text-white rounded-xl flex items-center gap-1.5" style="background:#10b981">
+          <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Marcar como Pago
         </button>
       </div>
     </div>`;
@@ -3656,18 +3976,53 @@ async function gerarFechamento() {
   lucide.createIcons();
 }
 
-async function marcarComoPago(funcId, ini, fim, bruto, comissao) {
+function abrirModalMarcarPago(funcId, ini, fim, bruto, comissao) {
+  const func = funcionarios.find(f => f.id === funcId);
+  document.getElementById('mpago-func-id').value    = funcId;
+  document.getElementById('mpago-ini').value        = ini;
+  document.getElementById('mpago-fim').value        = fim;
+  document.getElementById('mpago-bruto').value      = bruto;
+  document.getElementById('mpago-comissao').value   = comissao;
+  document.getElementById('mpago-bonus').value      = '';
+  document.getElementById('mpago-obs').value        = '';
+  document.getElementById('mpago-nome').textContent = func?.nome || '—';
+  const iniFmt = new Date(ini + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  const fimFmt = new Date(fim + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+  document.getElementById('mpago-periodo').textContent      = `${iniFmt} – ${fimFmt}`;
+  document.getElementById('mpago-bruto-fmt').textContent    = fmtPreco(bruto);
+  document.getElementById('mpago-comissao-fmt').textContent = fmtPreco(comissao);
+  document.getElementById('mpago-total-final').textContent  = fmtPreco(comissao);
+  abrirModal('modal-marcar-pago');
+  lucide.createIcons();
+}
+
+function atualizarTotalMpago() {
+  const comissao = parseFloat(document.getElementById('mpago-comissao').value) || 0;
+  const bonus    = parseFloat(document.getElementById('mpago-bonus').value) || 0;
+  document.getElementById('mpago-total-final').textContent = fmtPreco(comissao + bonus);
+}
+
+async function confirmarMarcarPago() {
+  const funcId   = document.getElementById('mpago-func-id').value;
+  const ini      = document.getElementById('mpago-ini').value;
+  const fim      = document.getElementById('mpago-fim').value;
+  const bruto    = parseFloat(document.getElementById('mpago-bruto').value) || 0;
+  const comissao = parseFloat(document.getElementById('mpago-comissao').value) || 0;
+  const bonus    = parseFloat(document.getElementById('mpago-bonus').value) || 0;
+  const obs      = document.getElementById('mpago-obs').value.trim() || null;
   try {
     const { error } = await db.from('fechamentos').insert({
       funcionario_id: funcId || null,
       periodo_inicio: ini,
       periodo_fim:    fim,
       total_bruto:    bruto,
-      total_comissao: comissao,
+      total_comissao: comissao + bonus,
       status:         'pago',
+      observacoes:    obs,
     });
     if (error) throw error;
-    showToast('Pagamento registrado!', 'success');
+    fecharModal('modal-marcar-pago');
+    showToast(`Pagamento de ${fmtPreco(comissao + bonus)} registrado!`, 'success');
   } catch(e) {
     showToast('Erro: ' + e.message, 'error');
   }

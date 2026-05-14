@@ -12,7 +12,7 @@
     [x-cloak] { display: none !important; }
     /* Dark mode via CSS variables */
     :root {
-      --bg:       #f6f0ea;
+      --bg:       #fffbeb;
       --surface:  #ffffff;
       --surface2: #f9fafb;
       --border:   #e5e7eb;
@@ -74,7 +74,7 @@
 }
 .sidebar-item:hover { background: rgba(255,255,255,0.12); }
 .sidebar-item .sidebar-icon { width: 18px; height: 18px; flex-shrink: 0; }
-    .sidebar-item.active { background: white; color: #72403e; }
+    .sidebar-item.active { background: #f5c518; color: #1a1a1a; }
     .view { display: none; }
     .view.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -89,10 +89,10 @@
     .toast.error { background: #ef4444; }
     .badge { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
     input, select, textarea { outline: none; }
-    input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px #72403e; }
+    input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px #f5c518; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #c2ac9f; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb { background: #f5c518; border-radius: 999px; }
     .avatar-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: white; flex-shrink: 0; }
     #sidebar { transition: width 0.25s ease; overflow: hidden; }
     #sidebar.collapsed { width: 64px; }
@@ -101,9 +101,9 @@
     #sidebar.collapsed .studio-info { display: none; }
     #sidebar.collapsed .sidebar-footer { display: none; }
     #sidebar.collapsed .sidebar-item { justify-content: center; padding: 10px; }
-    .pagto-btn.pagto-ativo { border-color: #72403e !important; color: #72403e !important; background: #f6f0ea !important; }
-    .fluxo-filtro-btn.ativo { background: #72403e; color: white; border-color: #72403e; }
-    .fluxo-aba.ativa { color: #72403e; border-bottom-color: #72403e; }
+    .pagto-btn.pagto-ativo { border-color: #1a1a1a !important; color: #1a1a1a !important; background: #fffbeb !important; }
+    .fluxo-filtro-btn.ativo { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+    .fluxo-aba.ativa { color: #1a1a1a; border-bottom-color: #1a1a1a; }
     /* Typeahead */
     .typeahead-wrap { position: relative; }
     .typeahead-dropdown {
@@ -118,17 +118,17 @@
       border-bottom: 1px solid #f3f4f6; color: #374151;
     }
     .typeahead-item:last-child { border-bottom: none; }
-    .typeahead-item:hover, .typeahead-item.selected { background: #f6f0ea; color: #72403e; font-weight: 600; }
-    .typeahead-item mark { background: none; color: #72403e; font-weight: 700; }
+    .typeahead-item:hover, .typeahead-item.selected { background: #fffbeb; color: #1a1a1a; font-weight: 600; }
+    .typeahead-item mark { background: none; color: #1a1a1a; font-weight: 700; }
     /* Abas cliente */
     .cli-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; }
-    .cli-tab.ativa { color: #72403e; border-bottom-color: #72403e; }
+    .cli-tab.ativa { color: #1a1a1a; border-bottom-color: #1a1a1a; }
     /* Abas estoque / funcionárias */
     .estoque-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; background: none; }
-    .estoque-tab-ativa { color: #72403e !important; border-bottom-color: #72403e; }
+    .estoque-tab-ativa { color: #1a1a1a !important; border-bottom-color: #1a1a1a; }
     /* Filtros remuneração */
     .remu-filtro-btn { transition: all .15s; }
-    .remu-filtro-btn.ativo { background: #72403e; color: #fff; border-color: #72403e; }
+    .remu-filtro-btn.ativo { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
     /* Glow — botão Aniversariantes */
     @keyframes glow-pulse {
       0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,.0), 0 0 0 0 rgba(251,191,36,.0); }
@@ -257,7 +257,14 @@
 /* Esconde topbar mobile em desktop */
 #mobile-topbar { display: none; }
 #sidebar-overlay { display: none; }
-.serv-aba.ativa { color: #72403e; border-bottom-color: #72403e; }
+.serv-aba.ativa { color: #1a1a1a; border-bottom-color: #1a1a1a; }
+    /* Chips de profissional na agenda */
+    .prof-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 8px 3px 4px; border-radius:999px; border:2px solid transparent; cursor:pointer; font-size:11px; font-weight:700; color:#fff; transition:all .18s; opacity:.38; user-select:none; }
+    .prof-chip.ativa { opacity:1; }
+    .prof-chip .chip-ini { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; background:rgba(255,255,255,.25); flex-shrink:0; }
+    .chip-todas { display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px; border:2px solid #e5e7eb; cursor:pointer; font-size:11px; font-weight:700; color:#1a1a1a; background:#f5f5f5; transition:all .18s; }
+    .chip-todas.ativa { border-color:#f5c518; background:#f5c518; color:#1a1a1a; }
+    .func-oculta-badge { font-size:10px; font-weight:700; padding:1px 8px; border-radius:999px; background:#f3f4f6; color:#9ca3af; margin-top:2px; }
   </style>
 </head>
 <body class="font-sans h-screen overflow-hidden flex" style="background:var(--bg)">
@@ -266,7 +273,7 @@
 <div id="sidebar-overlay" onclick="fecharMobileSidebar()"></div>
 
 <!-- Topbar mobile (visível só em telas < 768px via CSS) -->
-<div id="mobile-topbar" class="fixed top-0 left-0 right-0 z-[130] flex items-center justify-between px-4 py-3 text-white shadow-lg" style="background:linear-gradient(to right,#72403e,#8d6137)">
+<div id="mobile-topbar" class="fixed top-0 left-0 right-0 z-[130] flex items-center justify-between px-4 py-3 text-white shadow-lg" style="background:linear-gradient(to right,#1a1a1a,#111111)">
   <button onclick="toggleMobileSidebar()" class="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
     <i data-lucide="menu" class="w-5 h-5"></i>
   </button>
@@ -277,10 +284,10 @@
 </div>
 
 <!-- ====== TELA DE LOGIN ====== -->
-<div id="tela-login" class="fixed inset-0 z-[200] flex items-center justify-center" style="background:linear-gradient(135deg,#72403e,#8d6137)">
+<div id="tela-login" class="fixed inset-0 z-[200] flex items-center justify-center" style="background:linear-gradient(135deg,#1a1a1a,#111111)">
   <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4">
     <div class="text-center mb-6">
-      <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:linear-gradient(135deg,#72403e,#8d6137)">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:linear-gradient(135deg,#1a1a1a,#111111)">
         <i data-lucide="scissors" class="w-7 h-7 text-white"></i>
       </div>
       <h1 class="text-xl font-bold text-gray-800">Studio Érika Daiany</h1>
@@ -298,7 +305,7 @@
         <input type="password" id="login-pin" maxlength="6" placeholder="••••" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-center text-xl tracking-widest"
           onkeydown="if(event.key==='Enter') fazerLogin()" />
       </div>
-      <button onclick="fazerLogin()" class="w-full py-3 text-sm font-semibold text-white rounded-xl transition-all" style="background:linear-gradient(to right,#72403e,#997776)">
+      <button onclick="fazerLogin()" class="w-full py-3 text-sm font-semibold text-white rounded-xl transition-all" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
         Entrar
       </button>
       <p id="login-erro" class="text-center text-sm text-red-500 hidden">PIN incorreto. Tente novamente.</p>
@@ -307,7 +314,7 @@
 </div>
 
 <!-- ============================================================ SIDEBAR -->
-<aside id="sidebar" class="w-64 flex-shrink-0 bg-gradient-to-b from-[#72403e] to-[#8d6137] flex flex-col text-white shadow-xl">
+<aside id="sidebar" class="w-64 flex-shrink-0 bg-gradient-to-b from-[#1a1a1a] to-[#111111] flex flex-col text-white shadow-xl">
   <div class="flex items-center justify-between px-4 py-4">
     <div class="flex items-center gap-3 studio-info">
       <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -389,7 +396,7 @@
           <button onclick="fazerLogout()" class="p-2 rounded-xl hover:bg-gray-100 transition-colors" title="Sair">
             <i data-lucide="log-out" class="w-5 h-5 text-gray-600"></i>
           </button>
-          <button onclick="abrirModalAgendar()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+          <button onclick="abrirModalAgendar()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
             <i data-lucide="plus" class="w-4 h-4"></i>
             Agendar
           </button>
@@ -399,14 +406,16 @@
         <button onclick="mudarDia(-1)" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
           <i data-lucide="chevron-left" class="w-4 h-4 text-gray-600"></i>
         </button>
-        <button onclick="irHoje()" class="px-3 py-1 text-xs font-medium text-[#72403e] bg-[#f6f0ea] hover:bg-[#c2ac9f]/30 rounded-lg transition-colors">Hoje</button>
+        <button onclick="irHoje()" class="px-3 py-1 text-xs font-medium text-[#1a1a1a] bg-[#fffbeb] hover:bg-[#f5c518]/30 rounded-lg transition-colors">Hoje</button>
         <button onclick="mudarDia(1)" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
           <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600"></i>
         </button>
         <h2 id="cal-titulo" class="text-sm font-semibold text-gray-600 ml-1"></h2>
+        <div id="filtro-prof-chips" class="flex items-center gap-1 flex-wrap ml-1"></div>
         <div class="flex bg-gray-100 rounded-lg p-0.5 ml-auto">
           <button id="btn-modo-dia" onclick="setModo('dia')" class="px-3 py-1 text-xs font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm">Dia</button>
           <button id="btn-modo-semana" onclick="setModo('semana')" class="px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-500">Semana</button>
+          <button id="btn-modo-mensal" onclick="setModo('mensal')" class="px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-500">Mês</button>
         </div>
       </div>
     </div>
@@ -425,7 +434,7 @@
           <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
           <input id="busca-cliente" type="text" placeholder="Buscar por nome..." oninput="filtrarClientes()" class="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl w-64 bg-gray-50 focus:bg-white transition-colors" />
         </div>
-        <button onclick="abrirModalCliente()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+        <button onclick="abrirModalCliente()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
           <i data-lucide="plus" class="w-4 h-4"></i>
           Novo cliente
         </button>
@@ -458,7 +467,7 @@
     <!-- Header -->
     <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0 flex-wrap gap-2">
       <h2 class="text-lg font-bold text-gray-800">Funcionárias</h2>
-      <button id="btn-nova-func" onclick="abrirModalFuncionaria()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+      <button id="btn-nova-func" onclick="abrirModalFuncionaria()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Nova funcionária
       </button>
@@ -499,8 +508,8 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <div class="flex items-center gap-3 mb-2">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#f6f0ea">
-              <i data-lucide="users" class="w-5 h-5" style="color:#72403e"></i>
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#fffbeb">
+              <i data-lucide="users" class="w-5 h-5" style="color:#1a1a1a"></i>
             </div>
             <span class="text-sm font-semibold text-gray-500">Atendimentos</span>
           </div>
@@ -522,7 +531,7 @@
             </div>
             <span class="text-sm font-semibold text-gray-500">Total a Pagar</span>
           </div>
-          <div id="remu-total-pagar" class="text-2xl font-bold" style="color:#72403e">R$ 0,00</div>
+          <div id="remu-total-pagar" class="text-2xl font-bold" style="color:#1a1a1a">R$ 0,00</div>
         </div>
       </div>
       <!-- Cards por funcionária -->
@@ -537,7 +546,7 @@
       <div class="px-4 md:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
         <h2 class="text-lg font-bold text-gray-800">Serviços</h2>
         <div class="flex gap-2">
-          <button id="btn-novo-servico" onclick="abrirModalServico()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+          <button id="btn-novo-servico" onclick="abrirModalServico()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
             <i data-lucide="plus" class="w-4 h-4"></i>
             <span id="btn-novo-servico-label">Novo serviço</span>
           </button>
@@ -590,7 +599,7 @@
   <div id="view-estoque-salao" class="view">
     <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0 gap-3 flex-wrap">
       <h2 class="text-lg font-bold text-gray-800">Estoque do Salão</h2>
-      <button onclick="abrirModalEstoqueSalao()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+      <button onclick="abrirModalEstoqueSalao()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Novo item
       </button>
@@ -654,7 +663,7 @@
   <div id="view-estoque-revenda" class="view">
     <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0 gap-3 flex-wrap">
       <h2 class="text-lg font-bold text-gray-800">Estoque Revenda</h2>
-      <button onclick="abrirModalEstoqueRevenda()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+      <button onclick="abrirModalEstoqueRevenda()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Novo produto
       </button>
@@ -780,7 +789,7 @@
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" onclick="fecharModal('modal-agendar')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
-        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
       </div>
     </form>
   </div>
@@ -797,7 +806,7 @@
         <span id="comanda-status-badge" class="badge text-xs px-2 py-0.5 rounded-full"></span>
       </div>
       <div class="flex items-center gap-2">
-        <button id="btn-anamnese-comanda" onclick="verAnamneseComanda()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#72403e] rounded-xl transition-colors" style="background:#f6f0ea">
+        <button id="btn-anamnese-comanda" onclick="verAnamneseComanda()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1a1a1a] rounded-xl transition-colors" style="background:#fffbeb">
           <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Ficha
         </button>
         <button id="btn-whatsapp-comanda" onclick="enviarWhatsApp()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-xl transition-colors" style="background:#25D366">
@@ -810,7 +819,7 @@
     </div>
 
     <!-- Info cliente -->
-    <div id="comanda-header-info" class="px-5 py-3 border-b text-sm" style="background:#f6f0ea;border-color:#c2ac9f44"></div>
+    <div id="comanda-header-info" class="px-5 py-3 border-b text-sm" style="background:#fffbeb;border-color:#f5c51844"></div>
 
     <!-- Lista de itens -->
     <div class="px-5 py-3 overflow-y-auto" style="max-height:260px">
@@ -821,6 +830,14 @@
     <div class="px-5 pb-4 border-t border-gray-100">
       <!-- Painel adicionar serviço -->
       <div id="add-item-panel" class="hidden pt-3 pb-2 space-y-2">
+        <div class="flex gap-2 mb-1">
+          <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-500 block mb-1">Categoria</label>
+            <select id="item-cat-select" onchange="popularItemServicos()" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50">
+              <option value="">Todas as categorias</option>
+            </select>
+          </div>
+        </div>
         <div class="flex gap-2 items-end">
           <div class="flex-1">
             <label class="text-xs font-semibold text-gray-500 block mb-1">Serviço</label>
@@ -830,7 +847,7 @@
             <label class="text-xs font-semibold text-gray-500 block mb-1">Valor R$</label>
             <input type="number" id="item-valor" step="0.01" min="0" placeholder="0,00" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
           </div>
-          <button onclick="confirmarAddItem()" class="px-3 py-2 text-white rounded-xl text-sm font-bold transition-colors" style="background:#72403e">+</button>
+          <button onclick="confirmarAddItem()" class="px-3 py-2 text-white rounded-xl text-sm font-bold transition-colors" style="background:#1a1a1a">+</button>
         </div>
         <input type="text" id="item-descricao-custom" placeholder="Ou descreva item livre (ex: Produto vendido)..." class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
       </div>
@@ -850,7 +867,7 @@
             <label class="text-xs font-semibold text-gray-500 block mb-1">Valor R$</label>
             <input type="number" id="produto-valor" step="0.01" min="0" placeholder="0,00" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
           </div>
-          <button onclick="confirmarAddProduto()" class="px-3 py-2 text-white rounded-xl text-sm font-bold transition-colors" style="background:#8d6137">+</button>
+          <button onclick="confirmarAddProduto()" class="px-3 py-2 text-white rounded-xl text-sm font-bold transition-colors" style="background:#111111">+</button>
         </div>
         <div id="comanda-produtos-lista" class="space-y-1 text-xs text-gray-500"></div>
       </div>
@@ -862,29 +879,29 @@
             <label class="text-xs font-semibold text-gray-500 block mb-1">Pacote de serviços</label>
             <select id="pacote-select" onchange="previewPacote()" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50"></select>
           </div>
-          <button onclick="confirmarAddPacote()" class="px-3 py-2 text-white rounded-xl text-sm font-bold transition-colors" style="background:#72403e">+</button>
+          <button onclick="confirmarAddPacote()" class="px-3 py-2 text-white rounded-xl text-sm font-bold transition-colors" style="background:#1a1a1a">+</button>
         </div>
         <div id="pacote-preview" class="text-xs text-gray-500 space-y-1"></div>
       </div>
 
       <div class="flex items-center justify-between pt-3 gap-2 flex-wrap">
         <div class="flex items-center gap-3">
-          <button id="btn-toggle-add-item" onclick="toggleAddItem()" class="flex items-center gap-1.5 text-sm font-semibold transition-colors" style="color:#72403e">
+          <button id="btn-toggle-add-item" onclick="toggleAddItem()" class="flex items-center gap-1.5 text-sm font-semibold transition-colors" style="color:#1a1a1a">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             Serviço
           </button>
-          <button id="btn-toggle-add-produto" onclick="toggleAddProduto()" class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-[#8d6137] transition-colors">
+          <button id="btn-toggle-add-produto" onclick="toggleAddProduto()" class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-[#111111] transition-colors">
             <i data-lucide="shopping-bag" class="w-4 h-4"></i>
             Produto
           </button>
-          <button id="btn-toggle-add-pacote" onclick="toggleAddPacote()" class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-[#72403e] transition-colors">
+          <button id="btn-toggle-add-pacote" onclick="toggleAddPacote()" class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-[#1a1a1a] transition-colors">
             <i data-lucide="package" class="w-4 h-4"></i>
             Pacote
           </button>
         </div>
         <div class="text-right">
           <div class="text-xs text-gray-400 mb-0.5">Total</div>
-          <div id="comanda-total" class="text-2xl font-bold" style="color:#72403e">R$ 0,00</div>
+          <div id="comanda-total" class="text-2xl font-bold" style="color:#1a1a1a">R$ 0,00</div>
         </div>
       </div>
     </div>
@@ -896,7 +913,7 @@
       </button>
       <button id="btn-faltou-comanda" onclick="atualizarStatusComanda('faltou')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors">Faltou</button>
       <button id="btn-cancelar-comanda" onclick="atualizarStatusComanda('cancelado')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors">Cancelar</button>
-      <button id="btn-fechar-comanda" onclick="fecharComanda()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl shadow flex items-center justify-center gap-1.5 transition-all" style="background:linear-gradient(to right,#72403e,#997776)">
+      <button id="btn-fechar-comanda" onclick="fecharComanda()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl shadow flex items-center justify-center gap-1.5 transition-all" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
         <i data-lucide="check-circle" class="w-4 h-4"></i>Fechar Comanda
       </button>
     </div>
@@ -934,7 +951,7 @@
       <div id="pagto-resumo-itens" class="space-y-1 text-sm"></div>
       <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
         <span class="font-bold text-gray-700">Total</span>
-        <span id="pagto-total" class="text-2xl font-bold" style="color:#72403e">R$ 0,00</span>
+        <span id="pagto-total" class="text-2xl font-bold" style="color:#1a1a1a">R$ 0,00</span>
       </div>
     </div>
     <div id="pagto-debitos-section" class="hidden px-5 py-3 border-b" style="background:#fff8f0">
@@ -973,7 +990,7 @@
       </div>
     </div>
     <div class="px-5 pb-5">
-      <button onclick="confirmarPagamento()" class="w-full py-3 text-sm font-bold text-white rounded-xl shadow-md transition-all" style="background:linear-gradient(to right,#72403e,#997776)">
+      <button onclick="confirmarPagamento()" class="w-full py-3 text-sm font-bold text-white rounded-xl shadow-md transition-all" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
         <i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i>Confirmar Fechamento
       </button>
     </div>
@@ -1024,7 +1041,7 @@
         </div>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="fecharModal('modal-cliente')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
-          <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+          <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
         </div>
       </form>
     </div>
@@ -1033,7 +1050,7 @@
     <div id="cli-aba-anamnese" class="hidden p-6 space-y-4 overflow-y-auto" style="max-height:70vh">
       <div class="flex items-center justify-between">
         <p class="text-xs text-gray-400">Informações salvas ao clicar em "Salvar" na aba Dados.</p>
-        <button id="btn-config-anamnese" onclick="abrirModalAnamTemplate()" class="hidden items-center gap-1 text-xs font-semibold text-[#72403e] hover:text-[#997776]">
+        <button id="btn-config-anamnese" onclick="abrirModalAnamTemplate()" class="hidden items-center gap-1 text-xs font-semibold text-[#1a1a1a] hover:text-[#4a4a4a]">
           <i data-lucide="settings-2" class="w-3.5 h-3.5"></i> Configurar
         </button>
       </div>
@@ -1057,12 +1074,12 @@
     </div>
     <div class="p-4 space-y-2 overflow-y-auto" style="max-height:60vh" id="anam-template-lista"></div>
     <div class="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
-      <button onclick="anamTemplateAddField()" class="flex items-center gap-1.5 text-sm font-semibold text-[#72403e] hover:text-[#997776]">
+      <button onclick="anamTemplateAddField()" class="flex items-center gap-1.5 text-sm font-semibold text-[#1a1a1a] hover:text-[#4a4a4a]">
         <i data-lucide="plus-circle" class="w-4 h-4"></i> Adicionar campo
       </button>
       <div class="flex gap-2">
         <button onclick="anamTemplateReset()" class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-xl">Restaurar padrão</button>
-        <button onclick="salvarAnamTemplate()" class="px-6 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow">Salvar</button>
+        <button onclick="salvarAnamTemplate()" class="px-6 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow">Salvar</button>
       </div>
     </div>
   </div>
@@ -1131,9 +1148,15 @@
             <input type="number" id="func-salario" min="0" step="0.01" placeholder="1500,00" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
           </div>
         </div>
-        <div class="flex items-center gap-3 py-1">
-          <input type="checkbox" id="func-ver-valores" class="w-4 h-4 rounded" />
-          <label for="func-ver-valores" class="text-sm text-gray-700">Pode ver os valores dos serviços da Érika</label>
+        <div class="flex flex-col gap-2 py-1">
+          <div class="flex items-center gap-3">
+            <input type="checkbox" id="func-ver-valores" class="w-4 h-4 rounded" />
+            <label for="func-ver-valores" class="text-sm text-gray-700">Pode ver os valores dos serviços da Érika</label>
+          </div>
+          <div class="flex items-center gap-3">
+            <input type="checkbox" id="func-exibir-agenda" class="w-4 h-4 rounded" />
+            <label for="func-exibir-agenda" class="text-sm text-gray-700">Exibir na agenda</label>
+          </div>
         </div>
         <!-- Comissões por serviço -->
         <div class="pt-2 border-t border-gray-100">
@@ -1146,7 +1169,7 @@
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" onclick="fecharModal('modal-funcionaria')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
-        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow hover:shadow-md transition-all flex items-center gap-2"><i data-lucide="save" class="w-4 h-4"></i>Salvar Ajustes</button>
       </div>
     </form>
   </div>
@@ -1181,7 +1204,7 @@
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cor da Categoria</label>
           <div class="flex items-center gap-2">
-            <input type="color" id="servico-cor-categoria" value="#997776" class="w-10 h-10 rounded-xl border border-gray-200 cursor-pointer p-1 flex-shrink-0" />
+            <input type="color" id="servico-cor-categoria" value="#4a4a4a" class="w-10 h-10 rounded-xl border border-gray-200 cursor-pointer p-1 flex-shrink-0" />
             <span class="text-xs text-gray-400">Tag na agenda</span>
           </div>
         </div>
@@ -1204,7 +1227,7 @@
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" onclick="fecharModal('modal-servico')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
-        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
       </div>
     </form>
   </div>
@@ -1242,7 +1265,7 @@
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" onclick="fecharModal('modal-pacote')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl">Cancelar</button>
-        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow" style="background:linear-gradient(to right,#72403e,#997776)">Salvar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">Salvar</button>
       </div>
     </form>
   </div>
@@ -1295,7 +1318,7 @@
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" onclick="fecharModal('modal-estoque-salao')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
-        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
       </div>
     </form>
   </div>
@@ -1342,7 +1365,7 @@
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" onclick="fecharModal('modal-estoque-revenda')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
-        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
       </div>
     </form>
   </div>
@@ -1380,7 +1403,7 @@
     </div>
     <div class="p-5 space-y-4">
       <input type="hidden" id="adiant-func-id" />
-      <div class="text-sm font-semibold text-gray-700 bg-[#f6f0ea] px-3 py-2 rounded-xl" id="adiant-func-nome"></div>
+      <div class="text-sm font-semibold text-gray-700 bg-[#fffbeb] px-3 py-2 rounded-xl" id="adiant-func-nome"></div>
       <div>
         <label class="block text-xs font-semibold text-gray-500 mb-1.5">Valor R$</label>
         <input type="number" id="adiant-valor" min="0.01" step="0.01" placeholder="0,00"
@@ -1396,7 +1419,7 @@
       </div>
       <div class="flex gap-2 pt-1">
         <button onclick="fecharModal('modal-adiantamento')" class="flex-1 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl">Cancelar</button>
-        <button onclick="salvarAdiantamento()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl" style="background:linear-gradient(to right,#72403e,#997776)">Salvar</button>
+        <button onclick="salvarAdiantamento()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">Salvar</button>
       </div>
     </div>
   </div>
@@ -1418,7 +1441,7 @@
       <input type="hidden" id="mpago-bruto" />
       <input type="hidden" id="mpago-comissao" />
       <!-- Resumo financeiro -->
-      <div class="rounded-xl p-4 space-y-2 text-sm" style="background:#f6f0ea">
+      <div class="rounded-xl p-4 space-y-2 text-sm" style="background:#fffbeb">
         <div class="flex justify-between">
           <span class="text-gray-600">Funcionária</span>
           <span id="mpago-nome" class="font-semibold text-gray-800"></span>
@@ -1431,9 +1454,9 @@
           <span class="text-gray-600">Faturamento bruto</span>
           <span id="mpago-bruto-fmt" class="font-semibold text-gray-800"></span>
         </div>
-        <div class="flex justify-between border-t border-[#c2ac9f44] pt-2">
+        <div class="flex justify-between border-t border-[#f5c51844] pt-2">
           <span class="text-gray-600">Comissão / Salário</span>
-          <span id="mpago-comissao-fmt" class="font-bold" style="color:#72403e"></span>
+          <span id="mpago-comissao-fmt" class="font-bold" style="color:#1a1a1a"></span>
         </div>
       </div>
       <!-- Adiantamentos do período -->
@@ -1467,7 +1490,7 @@
           class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white resize-none"></textarea>
       </div>
       <!-- Saldo devedor -->
-      <div class="rounded-xl px-4 py-3 space-y-1.5 border" style="border-color:#72403e33;background:#72403e08">
+      <div class="rounded-xl px-4 py-3 space-y-1.5 border" style="border-color:#1a1a1a33;background:#1a1a1a08">
         <div class="flex justify-between text-sm text-gray-600">
           <span>Comissão + Bônus</span>
           <span id="mpago-base-total">R$ 0,00</span>
@@ -1476,7 +1499,7 @@
           <span>− Adiantamentos</span>
           <span id="mpago-adiant-deduz">R$ 0,00</span>
         </div>
-        <div class="flex justify-between font-bold text-base border-t border-[#72403e22] pt-1.5" style="color:#72403e">
+        <div class="flex justify-between font-bold text-base border-t border-[#1a1a1a22] pt-1.5" style="color:#1a1a1a">
           <span>Saldo a pagar agora</span>
           <span id="mpago-total-final">R$ 0,00</span>
         </div>
@@ -1513,7 +1536,7 @@
       </div>
       <div class="flex justify-end gap-2">
         <button onclick="fecharModal('modal-ajustar-qty')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
-        <button onclick="confirmarAjusteQty()" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+        <button onclick="confirmarAjusteQty()" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
       </div>
     </div>
   </div>
@@ -1523,7 +1546,7 @@
 <div id="view-fechamento" class="view">
   <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
     <h2 class="text-lg font-bold text-gray-800">Fechamento de Pagamentos</h2>
-    <button onclick="gerarFechamento()" class="flex items-center gap-2 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md transition-all" style="background:linear-gradient(to right,#72403e,#997776)">
+    <button onclick="gerarFechamento()" class="flex items-center gap-2 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md transition-all" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
       <i data-lucide="calculator" class="w-4 h-4"></i>
       Calcular
     </button>
@@ -1556,7 +1579,7 @@
 <div id="view-fluxo-caixa" class="view">
   <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
     <h2 class="text-lg font-bold text-gray-800">Fluxo de Caixa</h2>
-    <button onclick="abrirModalDespesa()" class="flex items-center gap-2 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md" style="background:linear-gradient(to right,#72403e,#997776)">
+    <button onclick="abrirModalDespesa()" class="flex items-center gap-2 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
       <i data-lucide="plus" class="w-4 h-4"></i>Nova Despesa
     </button>
   </div>
@@ -1590,8 +1613,8 @@
       </div>
       <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <div class="flex items-center gap-3 mb-2">
-          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#f6f0ea">
-            <i data-lucide="wallet" class="w-5 h-5" style="color:#72403e"></i>
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#fffbeb">
+            <i data-lucide="wallet" class="w-5 h-5" style="color:#1a1a1a"></i>
           </div>
           <span class="text-sm font-semibold text-gray-500">Resultado Líquido</span>
         </div>
@@ -1664,7 +1687,7 @@
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" onclick="fecharModal('modal-despesa')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl">Cancelar</button>
-        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow" style="background:linear-gradient(to right,#72403e,#997776)">Salvar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">Salvar</button>
       </div>
     </form>
   </div>
@@ -1696,10 +1719,12 @@ let agendamentos   = [];
 let estoquesSalao  = [];
 let estoquesRevenda = [];
 let currentDate    = new Date();
-let modoCalendario = 'dia'; // 'dia' | 'semana'
+let modoCalendario = 'dia'; // 'dia' | 'semana' | 'mensal'
 let agendamentoSelecionadoId = null;
 let comandaItens   = [];
-let ordemFuncionarios = [];   // array de IDs na ordem das colunas
+let ordemFuncionarios = [];
+let profVisiveis      = new Set(); // IDs visíveis na agenda (vazio = todas)
+let agendaOcultas     = new Set(JSON.parse(localStorage.getItem('agenda_ocultas') || '[]'));
 let draggedFuncId  = null;
 let rangeCarregado = { inicio: null, fim: null };
 let despesas        = [];
@@ -1800,6 +1825,7 @@ async function init() {
   }
   await carregarDados();
   inicializarOrdem();
+  profVisiveis = new Set(); // inicializa mostrando todas
   adaptarUIParaPapel();
   verificarAniversariantesGlow();
   renderCalendario();
@@ -1906,14 +1932,21 @@ const SLOTS_TOTAL = ((HORA_FIM - HORA_INICIO) * 60) / SLOT_MIN;
 
 function setModo(modo) {
   modoCalendario = modo;
-  document.getElementById('btn-modo-dia').className    = modo === 'dia'    ? 'px-3 py-1 text-sm font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm' : 'px-3 py-1 text-sm font-medium rounded-md transition-all text-gray-500';
-  document.getElementById('btn-modo-semana').className = modo === 'semana' ? 'px-3 py-1 text-sm font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm' : 'px-3 py-1 text-sm font-medium rounded-md transition-all text-gray-500';
+  const ativo = 'px-3 py-1 text-xs font-medium rounded-md transition-all bg-white text-gray-800 shadow-sm';
+  const inativo = 'px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-500';
+  document.getElementById('btn-modo-dia').className    = modo === 'dia'    ? ativo : inativo;
+  document.getElementById('btn-modo-semana').className = modo === 'semana' ? ativo : inativo;
+  document.getElementById('btn-modo-mensal').className = modo === 'mensal' ? ativo : inativo;
   renderCalendario();
 }
 
 function mudarDia(delta) {
   if (modoCalendario === 'dia') {
     currentDate = new Date(currentDate.getTime() + delta * 86400000);
+  } else if (modoCalendario === 'mensal') {
+    const d = new Date(currentDate);
+    d.setMonth(d.getMonth() + delta);
+    currentDate = d;
   } else {
     currentDate = new Date(currentDate.getTime() + delta * 7 * 86400000);
   }
@@ -1944,11 +1977,60 @@ function fmtDiaSemana(date) {
   return nomes[date.getDay()];
 }
 
+function _renderProfChips() {
+  const wrap = document.getElementById('filtro-prof-chips');
+  if (!wrap) return;
+  const funcs = funcionariosOrdenados().filter(f => !agendaOcultas.has(f.id));
+  const todasAtivas = profVisiveis.size === 0;
+
+  let html = `<button class="chip-todas${todasAtivas ? ' ativa' : ''}" onclick="setProfFiltroTodas()">Todas</button>`;
+  funcs.forEach(f => {
+    const ini = iniciais(f.nome);
+    const ativa = todasAtivas || profVisiveis.has(f.id);
+    html += `<button class="prof-chip${ativa ? ' ativa' : ''}" style="background:${f.cor}" onclick="toggleProfChip('${f.id}')" title="${esc(f.nome)}">
+      <span class="chip-ini">${ini}</span>${esc(f.nome.split(' ')[0])}
+    </button>`;
+  });
+  wrap.innerHTML = html;
+}
+
+function toggleProfChip(id) {
+  const funcs = funcionariosOrdenados().filter(f => !agendaOcultas.has(f.id));
+  if (profVisiveis.size === 0) {
+    // Estavam todas visíveis → seleciona só essa
+    profVisiveis = new Set(funcs.map(f => f.id));
+    profVisiveis.delete(id);
+    if (profVisiveis.size === funcs.length) profVisiveis = new Set(); // sem efeito
+  } else if (profVisiveis.has(id)) {
+    profVisiveis.delete(id);
+    if (profVisiveis.size === 0) profVisiveis = new Set(); // deselecionar última = todas
+  } else {
+    profVisiveis.add(id);
+    if (profVisiveis.size === funcs.length) profVisiveis = new Set(); // todas = reset
+  }
+  renderCalendario();
+}
+
+function setProfFiltroTodas() {
+  profVisiveis = new Set();
+  renderCalendario();
+}
+
+function getFuncsVisiveis() {
+  const base = funcionariosOrdenados().filter(f => !agendaOcultas.has(f.id));
+  if (profVisiveis.size === 0) return base;
+  return base.filter(f => profVisiveis.has(f.id));
+}
+
 function renderCalendario() {
+  _renderProfChips();
+
   // Atualiza título
   const titulo = document.getElementById('cal-titulo');
   if (modoCalendario === 'dia') {
     titulo.textContent = currentDate.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  } else if (modoCalendario === 'mensal') {
+    titulo.textContent = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   } else {
     const dias = getDiasDaSemana(currentDate);
     titulo.textContent = dias[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) + ' – ' + dias[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -1957,7 +2039,9 @@ function renderCalendario() {
   const container = document.getElementById('calendario');
   container.innerHTML = '';
 
-  if (modoCalendario === 'dia') {
+  if (modoCalendario === 'mensal') {
+    renderCalendarioMensal(container);
+  } else if (modoCalendario === 'dia') {
     renderCalendarioDia(container, [currentDate]);
   } else {
     renderCalendarioDia(container, getDiasDaSemana(currentDate));
@@ -1994,7 +2078,7 @@ function renderCalendarioDia(container, dias) {
   // Se modo semana: para cada dia, para cada funcionária, uma coluna
   // Se modo dia: para cada funcionária, uma coluna
   const cols = [];
-  const funcOrds = funcionariosOrdenados();
+  const funcOrds = getFuncsVisiveis();
   if (modoCalendario === 'semana') {
     dias.forEach(dia => {
       funcOrds.forEach(func => {
@@ -2021,7 +2105,7 @@ function renderCalendarioDia(container, dias) {
       diaHdr.style.width = (diaFuncs.length * 160) + 'px';
       diaHdr.style.minWidth = (diaFuncs.length * 160) + 'px';
       const isHoje = dia.toDateString() === new Date().toDateString();
-      diaHdr.innerHTML = `<div class="text-xs text-gray-500 font-semibold uppercase py-1">${fmtDiaSemana(dia)}</div><div class="text-sm font-bold pb-2" style="color:${isHoje ? '#72403e' : '#374151'}">${dia.getDate().toString().padStart(2,'0')}/${(dia.getMonth()+1).toString().padStart(2,'0')}</div>`;
+      diaHdr.innerHTML = `<div class="text-xs text-gray-500 font-semibold uppercase py-1">${fmtDiaSemana(dia)}</div><div class="text-sm font-bold pb-2" style="color:${isHoje ? '#1a1a1a' : '#374151'}">${dia.getDate().toString().padStart(2,'0')}/${(dia.getMonth()+1).toString().padStart(2,'0')}</div>`;
       hdrRow.appendChild(diaHdr);
     });
     const hdrWrapper = document.createElement('div');
@@ -2114,7 +2198,7 @@ function renderCalendarioDia(container, dias) {
       fHdr.addEventListener('dragover', e => {
         if (draggedFuncId && draggedFuncId !== func.id) {
           e.preventDefault();
-          fHdr.style.background = '#f6f0ea';
+          fHdr.style.background = '#fffbeb';
         }
       });
       fHdr.addEventListener('dragleave', () => { fHdr.style.background = ''; });
@@ -2162,6 +2246,100 @@ function renderCalendarioDia(container, dias) {
     wrapper.appendChild(bodyRow);
     container.appendChild(wrapper);
   }
+}
+
+function renderCalendarioMensal(container) {
+  const funcsVis = getFuncsVisiveis().map(f => f.id);
+  const ano  = currentDate.getFullYear();
+  const mes  = currentDate.getMonth();
+  const primeiroDia = new Date(ano, mes, 1);
+  const ultimoDia  = new Date(ano, mes + 1, 0);
+  const diasNoMes  = ultimoDia.getDate();
+  const dowPrimeiro = primeiroDia.getDay(); // 0=Dom
+
+  const pad = n => String(n).padStart(2, '0');
+  const fmtKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const hoje = fmtKey(new Date());
+
+  // Filtra agendamentos do mês
+  const agsMes = agendamentos.filter(ag => {
+    const d = new Date(ag.data_hora);
+    const ok = d.getFullYear() === ano && d.getMonth() === mes;
+    if (!ok) return false;
+    return funcsVis.length === 0 || funcsVis.includes(ag.funcionario_id);
+  });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'flex-1 p-4 min-w-0';
+  wrap.style.minWidth = '0';
+
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);gap:4px;min-width:0';
+
+  const nomes = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  nomes.forEach(n => {
+    const h = document.createElement('div');
+    h.className = 'text-center text-xs font-bold text-gray-400 py-1 uppercase tracking-wide';
+    h.textContent = n;
+    grid.appendChild(h);
+  });
+
+  // células vazias antes do dia 1
+  for (let i = 0; i < dowPrimeiro; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'rounded-xl bg-gray-50 min-h-[80px]';
+    grid.appendChild(empty);
+  }
+
+  for (let dia = 1; dia <= diasNoMes; dia++) {
+    const diaKey = `${ano}-${pad(mes+1)}-${pad(dia)}`;
+    const agsNoDia = agsMes.filter(ag => fmtKey(new Date(ag.data_hora)) === diaKey);
+    const eHoje = diaKey === hoje;
+
+    const cell = document.createElement('div');
+    cell.className = 'rounded-xl border border-gray-100 bg-white min-h-[80px] p-1.5 cursor-pointer hover:border-[#f5c518] transition-colors overflow-hidden';
+    if (eHoje) cell.style.borderColor = '#1a1a1a';
+
+    const numEl = document.createElement('div');
+    numEl.className = 'text-xs font-bold mb-1 w-6 h-6 flex items-center justify-center rounded-full';
+    numEl.textContent = dia;
+    if (eHoje) {
+      numEl.style.background = '#1a1a1a';
+      numEl.style.color = 'white';
+    } else {
+      numEl.className += ' text-gray-600';
+    }
+    cell.appendChild(numEl);
+
+    const MAX_VIS = 3;
+    agsNoDia.slice(0, MAX_VIS).forEach(ag => {
+      const func = funcionarios.find(f => f.id === ag.funcionario_id);
+      const dot = document.createElement('div');
+      dot.className = 'text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-md mb-0.5 truncate cursor-pointer';
+      dot.style.background = func?.cor || '#1a1a1a';
+      dot.title = (clientes.find(c => c.id === ag.cliente_id)?.nome || '—') + ' · ' + func?.nome;
+      const hr = new Date(ag.data_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      dot.textContent = hr + ' ' + (clientes.find(c => c.id === ag.cliente_id)?.nome?.split(' ')[0] || '—');
+      dot.onclick = (ev) => { ev.stopPropagation(); abrirComanda(ag.id); };
+      cell.appendChild(dot);
+    });
+    if (agsNoDia.length > MAX_VIS) {
+      const more = document.createElement('div');
+      more.className = 'text-[10px] text-gray-400 font-semibold pl-1';
+      more.textContent = `+${agsNoDia.length - MAX_VIS} mais`;
+      cell.appendChild(more);
+    }
+
+    // Clicar no dia vazio navega para a visão diária
+    cell.onclick = () => {
+      currentDate = new Date(ano, mes, dia);
+      setModo('dia');
+    };
+    grid.appendChild(cell);
+  }
+
+  wrap.appendChild(grid);
+  container.appendChild(wrap);
 }
 
 function posicionarBloco(colDiv, ag) {
@@ -2381,12 +2559,8 @@ async function abrirDetalheAgendamento(id) {
   const num = fmtWhatsAppNum(tel);
   document.getElementById('btn-whatsapp-comanda').style.display = num ? '' : 'none';
 
-  // Preenche select de serviços
-  const sel = document.getElementById('item-select');
-  sel.innerHTML = '<option value="">Selecione o serviço...</option>' +
-    servicos.filter(s => s.ativo).map(s =>
-      `<option value="${s.id}" data-preco="${s.preco}">${esc(s.nome)} — ${fmtPreco(s.preco)}</option>`
-    ).join('');
+  // Preenche cascata categoria → serviço no painel de add item
+  popularItemCat();
 
   // Exibe/oculta botões de ação conforme status
   const fechado = ag.status === 'concluido' || ag.status === 'cancelado';
@@ -2433,9 +2607,9 @@ function renderItensComanda(ag, servico) {
 
   const podVerValor = isAdmin() || usuarioLogado?.ver_valores_erika;
   let html = `
-    <div class="flex items-center justify-between py-2 px-3 rounded-xl" style="background:#f6f0ea80">
+    <div class="flex items-center justify-between py-2 px-3 rounded-xl" style="background:#fffbeb80">
       <div class="flex items-center gap-2">
-        <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#c2ac9f44;color:#72403e">Principal</span>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#f5c51844;color:#1a1a1a">Principal</span>
         <span class="text-sm font-medium text-gray-800">${esc(servico?.nome || 'Serviço agendado')}</span>
       </div>
       <span class="text-sm font-bold text-gray-800">${podVerValor ? fmtPreco(baseVal) : '—'}</span>
@@ -2475,6 +2649,29 @@ function calcularTotalComanda() {
 function atualizarTotalComanda() {
   const totalEl = document.getElementById('comanda-total');
   if (totalEl) totalEl.textContent = fmtPreco(calcularTotalComanda());
+}
+
+function popularItemCat() {
+  const cats = [...new Set(servicos.filter(s => s.ativo && s.categoria).map(s => s.categoria))].sort();
+  const sel = document.getElementById('item-cat-select');
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Todas as categorias</option>' +
+    cats.map(c => `<option value="${esc(c)}"${c === prev ? ' selected' : ''}>${esc(c)}</option>`).join('');
+  popularItemServicos();
+}
+
+function popularItemServicos() {
+  const cat = document.getElementById('item-cat-select')?.value || '';
+  const lista = servicos.filter(s => s.ativo && (!cat || (s.categoria || '') === cat));
+  const sel = document.getElementById('item-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione o serviço...</option>' +
+    lista.map(s => {
+      const label = s.subcategoria ? `${s.nome} (${s.subcategoria}) — ${fmtPreco(s.preco)}` : `${s.nome} — ${fmtPreco(s.preco)}`;
+      return `<option value="${s.id}" data-preco="${s.preco}">${esc(label)}</option>`;
+    }).join('');
+  document.getElementById('item-valor').value = '';
 }
 
 function preencherValorItem() {
@@ -2696,7 +2893,7 @@ function verAnamneseComanda() {
   let html = nonBool.map(f => {
     const v = dados[f.id];
     const display = f.tipo === 'checkbox_group'
-      ? (v || '').split(',').map(s => s.trim()).filter(Boolean).map(s => `<span class="inline-block px-2 py-0.5 bg-[#f6f0ea] text-[#72403e] rounded-lg text-xs font-medium">${esc(s)}</span>`).join(' ')
+      ? (v || '').split(',').map(s => s.trim()).filter(Boolean).map(s => `<span class="inline-block px-2 py-0.5 bg-[#fffbeb] text-[#1a1a1a] rounded-lg text-xs font-medium">${esc(s)}</span>`).join(' ')
       : `<span class="text-sm text-gray-800">${esc(v)}</span>`;
     return `<div class="flex flex-col gap-1">
       <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">${esc(f.label)}</span>
@@ -3070,9 +3267,12 @@ function renderFuncionarias() {
         <p class="text-sm text-gray-500">${esc(f.cargo || '—')}</p>
         ${f.telefone ? `<p class="text-xs text-gray-400 mt-1">${esc(f.telefone)}</p>` : ''}
       </div>
-      <div class="flex items-center gap-2 mt-1">
-        <div class="w-4 h-4 rounded-full border-2 border-white shadow" style="background:${f.cor}"></div>
-        <span class="text-xs text-gray-400">Cor da agenda: ${f.cor}</span>
+      <div class="flex flex-col items-center gap-1 mt-1">
+        <div class="flex items-center gap-2">
+          <div class="w-4 h-4 rounded-full border-2 border-white shadow" style="background:${f.cor}"></div>
+          <span class="text-xs text-gray-400">Cor da agenda: ${f.cor}</span>
+        </div>
+        ${agendaOcultas.has(f.id) ? `<span class="func-oculta-badge">oculta da agenda</span>` : ''}
       </div>
       <div class="flex gap-2 w-full mt-2">
         <button onclick="editarFuncionaria('${f.id}')" class="flex-1 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center justify-center gap-1.5">
@@ -3081,11 +3281,11 @@ function renderFuncionarias() {
       </div>
     </div>
   `).join('') + `
-    <div class="bg-[#f6f0ea] rounded-2xl border-2 border-dashed border-[#c2ac9f] p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-[#c2ac9f]/20 transition-all" onclick="abrirModalFuncionaria()">
-      <div class="w-12 h-12 rounded-full bg-gradient-to-r from-[#997776] to-[#8d6137] flex items-center justify-center">
+    <div class="bg-[#fffbeb] rounded-2xl border-2 border-dashed border-[#f5c518] p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-[#f5c518]/20 transition-all" onclick="abrirModalFuncionaria()">
+      <div class="w-12 h-12 rounded-full bg-gradient-to-r from-[#4a4a4a] to-[#111111] flex items-center justify-center">
         <i data-lucide="plus" class="w-6 h-6 text-white"></i>
       </div>
-      <p class="text-sm font-semibold text-[#72403e]">Nova funcionária</p>
+      <p class="text-sm font-semibold text-[#1a1a1a]">Nova funcionária</p>
     </div>
   `;
   lucide.createIcons();
@@ -3201,7 +3401,7 @@ async function renderRemuneracao() {
         <td class="px-4 py-2.5 text-gray-600">${esc(serv?.nome || '—')}</td>
         <td class="px-4 py-2.5 text-center">${tipo === 'comissao' ? `<span class="badge bg-purple-100 text-purple-700">${pctUsada}%</span>` : '<span class="text-gray-400 text-xs">—</span>'}</td>
         <td class="px-4 py-2.5 text-right font-semibold text-gray-800">${fmtPreco(total)}</td>
-        <td class="px-4 py-2.5 text-right font-bold" style="color:#72403e">${tipo === 'comissao' ? fmtPreco(valorComissao) : '—'}</td>
+        <td class="px-4 py-2.5 text-right font-bold" style="color:#1a1a1a">${tipo === 'comissao' ? fmtPreco(valorComissao) : '—'}</td>
       </tr>`;
     }).join('');
 
@@ -3216,9 +3416,9 @@ async function renderRemuneracao() {
     return `
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       <!-- Header da funcionária -->
-      <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3" style="background:#f6f0ea55">
+      <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3" style="background:#fffbeb55">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background:${func?.cor || '#997776'}">${iniciais(nome)}</div>
+          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background:${func?.cor || '#4a4a4a'}">${iniciais(nome)}</div>
           <div>
             <div class="font-bold text-gray-800">${esc(nome)}</div>
             <div class="text-xs text-gray-500 mt-0.5">${lista.length} atend. · ${remuLabel}${pctMedia ? ` · média ${pctMedia}%` : ''}</div>
@@ -3231,7 +3431,7 @@ async function renderRemuneracao() {
           </div>
           <div>
             <div class="text-xs text-gray-400">A pagar</div>
-            <div class="font-bold text-lg" style="color:#72403e">${fmtPreco(totalComissao)}</div>
+            <div class="font-bold text-lg" style="color:#1a1a1a">${fmtPreco(totalComissao)}</div>
           </div>
           <div class="flex items-center gap-2">
             <button onclick="abrirModalAdiantamento('${fid}','${esc(nome)}')"
@@ -3313,6 +3513,7 @@ function abrirModalFuncionaria() {
   document.getElementById('func-comissao').value = '';
   document.getElementById('func-salario').value = '';
   document.getElementById('func-ver-valores').checked = false;
+  document.getElementById('func-exibir-agenda').checked = true;
   renderListaComissoesServico([]);
   toggleCampoComissao();
   abrirModal('modal-funcionaria');
@@ -3334,6 +3535,7 @@ async function editarFuncionaria(id) {
   document.getElementById('func-comissao').value = f.percentual_comissao || '';
   document.getElementById('func-salario').value = f.salario_fixo || '';
   document.getElementById('func-ver-valores').checked = f.ver_valores_erika || false;
+  document.getElementById('func-exibir-agenda').checked = !agendaOcultas.has(f.id);
   toggleCampoComissao();
   // Carrega comissões por serviço existentes
   const { data: comissoes } = await db.from('comissoes_servico').select('*').eq('funcionario_id', id);
@@ -3382,6 +3584,14 @@ async function salvarFuncionaria(e) {
         }
       });
       if (linhas.length) await db.from('comissoes_servico').insert(linhas);
+    }
+
+    // Salva preferência de visibilidade na agenda (localStorage)
+    const exibir = document.getElementById('func-exibir-agenda').checked;
+    if (funcId) {
+      if (exibir) agendaOcultas.delete(funcId);
+      else agendaOcultas.add(funcId);
+      localStorage.setItem('agenda_ocultas', JSON.stringify([...agendaOcultas]));
     }
 
     showToast(id ? 'Funcionária atualizada!' : 'Funcionária cadastrada!', 'success');
@@ -3461,7 +3671,7 @@ function renderServicos() {
     let header = '';
     if (cat !== lastCat) {
       lastCat = cat;
-      header = `<tr><td colspan="6" class="px-6 pt-4 pb-1"><div class="flex items-center gap-2">${corTag}<span class="text-xs font-bold uppercase tracking-wider text-[#72403e]">${esc(cat)}</span></div></td></tr>`;
+      header = `<tr><td colspan="6" class="px-6 pt-4 pb-1"><div class="flex items-center gap-2">${corTag}<span class="text-xs font-bold uppercase tracking-wider text-[#1a1a1a]">${esc(cat)}</span></div></td></tr>`;
     }
     return header + `
     <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
@@ -3479,6 +3689,9 @@ function renderServicos() {
           </button>
           <button onclick="toggleServico('${s.id}',${!s.ativo})" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600" title="${s.ativo ? 'Desativar' : 'Ativar'}">
             <i data-lucide="${s.ativo ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>
+          </button>
+          <button onclick="excluirServico('${s.id}')" class="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-gray-300 hover:text-red-500" title="Excluir permanentemente">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>
         </div>
       </td>
@@ -3498,7 +3711,7 @@ function abrirModalServico() {
   document.getElementById('servico-id').value = '';
   document.getElementById('servico-duracao-h').value = 1;
   document.getElementById('servico-duracao-m').value = 0;
-  document.getElementById('servico-cor-categoria').value = '#997776';
+  document.getElementById('servico-cor-categoria').value = '#4a4a4a';
   const cats = [...new Set(servicos.map(s => s.categoria).filter(Boolean))];
   document.getElementById('categorias-lista').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
   document.getElementById('subcategorias-lista').innerHTML = '';
@@ -3515,7 +3728,7 @@ function editarServico(id) {
   document.getElementById('servico-nome').value = s.nome || '';
   document.getElementById('servico-categoria').value = s.categoria || '';
   document.getElementById('servico-subcategoria').value = s.subcategoria || '';
-  document.getElementById('servico-cor-categoria').value = s.cor_categoria || '#997776';
+  document.getElementById('servico-cor-categoria').value = s.cor_categoria || '#4a4a4a';
   const h = Math.floor((s.duracao_min || 60) / 60);
   const m = (s.duracao_min || 60) % 60;
   document.getElementById('servico-duracao-h').value = h;
@@ -3566,6 +3779,21 @@ async function toggleServico(id, ativo) {
     const idx = servicos.findIndex(s => s.id === id);
     if (idx !== -1) servicos[idx].ativo = ativo;
     showToast(ativo ? 'Serviço ativado' : 'Serviço desativado', 'success');
+    renderServicos();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+async function excluirServico(id) {
+  const s = servicos.find(sv => sv.id === id);
+  if (!s) return;
+  if (!confirm(`Excluir permanentemente o serviço "${s.nome}"?\n\nEsta ação não pode ser desfeita.`)) return;
+  try {
+    const { error } = await db.from('servicos').delete().eq('id', id);
+    if (error) throw error;
+    servicos = servicos.filter(sv => sv.id !== id);
+    showToast('Serviço excluído!', 'success');
     renderServicos();
   } catch (e) {
     showToast('Erro: ' + e.message, 'error');
@@ -4010,12 +4238,12 @@ function previewPacote() {
   const prev   = document.getElementById('pacote-preview');
   if (!pac) { prev.innerHTML = ''; return; }
   const itens  = pacoteItens.filter(i => i.pacote_id === pac.id);
-  prev.innerHTML = `<div class="bg-[#f6f0ea] rounded-lg p-2 space-y-1">` +
+  prev.innerHTML = `<div class="bg-[#fffbeb] rounded-lg p-2 space-y-1">` +
     itens.map(i => {
       const s = servicos.find(sv => sv.id === i.servico_id);
       return s ? `<div class="flex justify-between"><span>${esc(s.nome)}</span><span class="text-gray-500">${fmtPreco(s.preco)}</span></div>` : '';
     }).join('') +
-    (pac.preco_promocional ? `<div class="flex justify-between font-bold border-t border-[#c2ac9f44] pt-1 mt-1"><span style="color:#72403e">Preço do pacote</span><span style="color:#72403e">${fmtPreco(pac.preco_promocional)}</span></div>` : '') +
+    (pac.preco_promocional ? `<div class="flex justify-between font-bold border-t border-[#f5c51844] pt-1 mt-1"><span style="color:#1a1a1a">Preço do pacote</span><span style="color:#1a1a1a">${fmtPreco(pac.preco_promocional)}</span></div>` : '') +
     `</div>`;
 }
 
@@ -4314,10 +4542,10 @@ function gerarJanelaRelatorio(inativas) {
     const primeiro = (c.nome || '').split(' ')[0];
     const msg = `Olá ${primeiro}! 😊\n\nSentimos sua falta no *Studio Érika Daiany*! ❤️\n\nJá faz ${semanas || 'algum tempo'} desde seu último atendimento. Que tal agendar um horário? Temos novidades esperando por você! ✂️💅\n\nEntre em contato ou responda essa mensagem para agendar. Te esperamos!`;
     const waUrl = `https://wa.me/${fmtNum(c.telefone)}?text=${encodeURIComponent(msg)}`;
-    const tagCor = c.diasSemVisita >= 9999 ? '#6b7280' : c.diasSemVisita >= 180 ? '#ef4444' : c.diasSemVisita >= 90 ? '#f59e0b' : '#8d6137';
+    const tagCor = c.diasSemVisita >= 9999 ? '#6b7280' : c.diasSemVisita >= 180 ? '#ef4444' : c.diasSemVisita >= 90 ? '#f59e0b' : '#111111';
     return `
       <div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:center;gap:16px">
-        <div style="width:48px;height:48px;border-radius:50%;background:#c2ac9f;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;flex-shrink:0">${(c.nome||'?')[0].toUpperCase()}</div>
+        <div style="width:48px;height:48px;border-radius:50%;background:#f5c518;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#1a1a1a;flex-shrink:0">${(c.nome||'?')[0].toUpperCase()}</div>
         <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:15px;color:#1f2937">${c.nome || '—'}</div>
           <div style="font-size:12px;color:#6b7280;margin-top:2px">${c.telefone || ''}</div>
@@ -4331,12 +4559,12 @@ function gerarJanelaRelatorio(inativas) {
   }).join('');
 
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Clientes Inativas — Studio Érika Daiany</title>
-  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#f6f0ea;padding:24px;min-height:100vh}
-  .header{background:linear-gradient(135deg,#72403e,#8d6137);color:white;border-radius:16px;padding:24px 28px;margin-bottom:24px}
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#fffbeb;padding:24px;min-height:100vh}
+  .header{background:linear-gradient(135deg,#1a1a1a,#111111);color:white;border-radius:16px;padding:24px 28px;margin-bottom:24px}
   h1{font-size:22px;font-weight:800}p{font-size:14px;opacity:.8;margin-top:4px}
   .stats{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap}
   .stat{background:white;border-radius:12px;padding:16px 20px;flex:1;min-width:140px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-  .stat-n{font-size:28px;font-weight:800;color:#72403e}.stat-l{font-size:12px;color:#6b7280;margin-top:2px}
+  .stat-n{font-size:28px;font-weight:800;color:#1a1a1a}.stat-l{font-size:12px;color:#6b7280;margin-top:2px}
   </style></head><body>
   <div class="header">
     <h1>💔 Clientes Inativas</h1>
@@ -4552,9 +4780,9 @@ async function gerarFechamento() {
 
     return `
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100" style="background:#f6f0ea88">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100" style="background:#fffbeb88">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background:${func?.cor||'#997776'}">${nome[0]}</div>
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background:${func?.cor||'#4a4a4a'}">${nome[0]}</div>
           <div>
             <div class="font-bold text-gray-800">${func?.nome || nome}</div>
             <div class="text-xs text-gray-500">${lista.length} atendimento${lista.length !== 1 ? 's' : ''} · ${remuLabel}</div>
@@ -4563,7 +4791,7 @@ async function gerarFechamento() {
         <div class="text-right">
           <div class="text-xs text-gray-500">Total bruto</div>
           <div class="font-bold text-gray-800 text-lg">${fmtPreco(totalBruto)}</div>
-          <div class="text-sm font-semibold mt-0.5" style="color:#72403e">${remuLabel}: ${fmtPreco(totalComissao)}</div>
+          <div class="text-sm font-semibold mt-0.5" style="color:#1a1a1a">${remuLabel}: ${fmtPreco(totalComissao)}</div>
         </div>
       </div>
       <table class="w-full">
@@ -4577,7 +4805,7 @@ async function gerarFechamento() {
         <tbody>${linhas}</tbody>
       </table>
       <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-t border-gray-100">
-        <span class="text-sm font-bold text-gray-700">A receber: <span style="color:#72403e">${fmtPreco(totalComissao)}</span></span>
+        <span class="text-sm font-bold text-gray-700">A receber: <span style="color:#1a1a1a">${fmtPreco(totalComissao)}</span></span>
         <button onclick="abrirModalMarcarPago('${fid}','${ini}','${fim}',${totalBruto},${totalComissao})" class="px-4 py-1.5 text-xs font-semibold text-white rounded-xl flex items-center gap-1.5" style="background:#10b981">
           <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Marcar como Pago
         </button>
@@ -4971,9 +5199,9 @@ function renderHistoricoCliente() {
   const pagtoLabel = { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito', cortesia:'Cortesia', fiado:'Fiado' };
 
   el.innerHTML = `
-    <div class="px-5 py-3 text-xs text-gray-400 flex justify-between" style="background:#f6f0ea55">
+    <div class="px-5 py-3 text-xs text-gray-400 flex justify-between" style="background:#fffbeb55">
       <span>${ags.length} atendimento${ags.length!==1?'s':''}</span>
-      <span class="font-semibold" style="color:#72403e">Total gasto: ${fmtPreco(totalGasto)}</span>
+      <span class="font-semibold" style="color:#1a1a1a">Total gasto: ${fmtPreco(totalGasto)}</span>
     </div>` +
     ags.map(ag => {
       const serv = servicos.find(s => s.id === ag.servico_id);
@@ -4989,7 +5217,7 @@ function renderHistoricoCliente() {
               ${ag.forma_pagamento ? `<span>${pagtoLabel[ag.forma_pagamento]||ag.forma_pagamento}</span>` : ''}
             </div>
           </div>
-          <span class="text-sm font-bold" style="color:#72403e">${fmtPreco(ag.valor_cobrado)}</span>
+          <span class="text-sm font-bold" style="color:#1a1a1a">${fmtPreco(ag.valor_cobrado)}</span>
         </div>
       </div>`;
     }).join('');
@@ -5018,7 +5246,7 @@ function renderPacotes() {
     const economia = precoAvulso - p.preco_promocional;
     return `
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <div class="px-5 py-4 border-b border-gray-100" style="background:#f6f0ea55">
+      <div class="px-5 py-4 border-b border-gray-100" style="background:#fffbeb55">
         <div class="flex items-start justify-between gap-2">
           <div>
             <div class="font-bold text-gray-800">${esc(p.nome)}</div>
@@ -5033,7 +5261,7 @@ function renderPacotes() {
       <div class="px-5 py-3 border-t border-gray-100 flex items-end justify-between">
         <div>
           <div class="text-xs text-gray-400 line-through">${fmtPreco(precoAvulso)}</div>
-          <div class="text-lg font-bold" style="color:#72403e">${fmtPreco(p.preco_promocional)}</div>
+          <div class="text-lg font-bold" style="color:#1a1a1a">${fmtPreco(p.preco_promocional)}</div>
           ${economia > 0 ? `<div class="text-xs font-semibold text-emerald-600">Economia de ${fmtPreco(economia)}</div>` : ''}
         </div>
         <div class="flex gap-2">

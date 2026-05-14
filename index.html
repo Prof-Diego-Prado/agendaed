@@ -2326,8 +2326,8 @@ async function salvarAgendamento(e) {
     if (err) throw err;
     showToast(id ? 'Agendamento atualizado!' : 'Agendamento criado!', 'success');
     fecharModal('modal-agendar');
-    const { data: ags } = await db.from('agendamentos').select('*').order('data_hora');
-    agendamentos = ags || [];
+    const result = await carregarAgendamentosRange(currentDate);
+    agendamentos = result.data || [];
     renderCalendario();
   } catch (e) {
     showToast('Erro: ' + e.message, 'error');
@@ -4413,8 +4413,13 @@ async function fazerLogin() {
 function fazerLogout() {
   usuarioLogado = null;
   sessionStorage.removeItem('usuario_logado');
-  document.getElementById('tela-login').style.display = 'flex';
   document.getElementById('login-pin').value = '';
+  const erro = document.getElementById('login-erro');
+  if (erro) erro.classList.add('hidden');
+  carregarLoginOpcoes().then(() => {
+    document.getElementById('tela-login').style.display = 'flex';
+    lucide.createIcons();
+  });
 }
 
 function adaptarUIParaPapel() {

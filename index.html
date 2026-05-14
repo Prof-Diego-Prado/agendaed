@@ -1677,10 +1677,10 @@
   </div>
 
   <!-- Body 2 colunas -->
-  <div class="flex-1 overflow-hidden flex min-h-0">
+  <div class="flex-1 overflow-hidden min-h-0" style="display:grid;grid-template-columns:1fr 320px">
 
     <!-- Col esquerda: filtros + resultados -->
-    <div class="flex-1 overflow-auto p-6 space-y-5">
+    <div class="overflow-auto p-6 space-y-5" style="min-width:0">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 grid grid-cols-3 gap-4">
         <div>
           <label class="block text-xs font-semibold text-gray-500 mb-1">Funcionária</label>
@@ -1701,7 +1701,7 @@
     </div>
 
     <!-- Col direita: calculadora + PIX -->
-    <div class="w-80 flex-shrink-0 border-l border-gray-100 overflow-y-auto flex flex-col gap-4 p-4" style="background:#f8fafc">
+    <div class="border-l border-gray-100 overflow-y-auto flex flex-col gap-4 p-4" style="background:#f8fafc;min-width:0">
 
       <!-- Calculadora -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

@@ -1681,61 +1681,61 @@
 
     <!-- Col esquerda: filtros + resultados -->
     <div class="flex-1 overflow-auto p-6 space-y-5">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-wrap gap-4 items-end">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 grid grid-cols-3 gap-4">
         <div>
           <label class="block text-xs font-semibold text-gray-500 mb-1">Funcionária</label>
-          <select id="fech-func" class="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 min-w-[180px]">
+          <select id="fech-func" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50">
             <option value="">Todas</option>
           </select>
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-500 mb-1">De</label>
-          <input type="date" id="fech-inicio" class="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
+          <input type="date" id="fech-inicio" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-500 mb-1">Até</label>
-          <input type="date" id="fech-fim" class="px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
+          <input type="date" id="fech-fim" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
         </div>
       </div>
       <div id="fech-resultado" class="space-y-4"></div>
     </div>
 
     <!-- Col direita: calculadora + PIX -->
-    <div class="w-72 flex-shrink-0 border-l border-gray-100 overflow-auto flex flex-col gap-4 p-4" style="background:#f8fafc">
+    <div class="w-80 flex-shrink-0 border-l border-gray-100 overflow-y-auto flex flex-col gap-4 p-4" style="background:#f8fafc">
 
       <!-- Calculadora -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
+        <div class="px-4 py-2 border-b border-gray-100 flex items-center gap-2">
           <i data-lucide="calculator" class="w-4 h-4 text-gray-400"></i>
           <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">Calculadora</span>
         </div>
-        <div class="p-3">
-          <div id="calc-display" class="w-full text-right text-2xl font-bold text-gray-800 bg-gray-50 rounded-xl px-4 py-3 mb-3 min-h-[3rem] overflow-hidden text-ellipsis" style="font-variant-numeric:tabular-nums">0</div>
-          <div id="calc-expr"   class="w-full text-right text-xs text-gray-400 px-2 mb-2 h-4 overflow-hidden text-ellipsis whitespace-nowrap"></div>
-          <div class="grid grid-cols-4 gap-1.5">
+        <div class="p-2.5">
+          <div id="calc-expr" class="w-full text-right text-xs text-gray-400 px-2 h-4 mb-1 overflow-hidden text-ellipsis whitespace-nowrap"></div>
+          <div id="calc-display" class="w-full text-right text-2xl font-bold text-gray-800 bg-gray-50 rounded-xl px-4 py-2 mb-2 overflow-hidden text-ellipsis" style="font-variant-numeric:tabular-nums">0</div>
+          <div class="grid grid-cols-4 gap-1">
             <!-- Row 1 -->
-            <button onclick="calcAction('C')"   class="calc-btn col-span-2 py-3 rounded-xl text-sm font-bold bg-red-50 text-red-500 hover:bg-red-100">C</button>
-            <button onclick="calcAction('%')"   class="calc-btn py-3 rounded-xl text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">%</button>
-            <button onclick="calcAction('/')"   class="calc-btn py-3 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">÷</button>
+            <button onclick="calcAction('C')"   class="calc-btn col-span-2 py-2.5 rounded-xl text-sm font-bold bg-red-50 text-red-500 hover:bg-red-100">C</button>
+            <button onclick="calcAction('%')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">%</button>
+            <button onclick="calcAction('/')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">÷</button>
             <!-- Row 2 -->
-            <button onclick="calcAction('7')"   class="calc-btn py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">7</button>
-            <button onclick="calcAction('8')"   class="calc-btn py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">8</button>
-            <button onclick="calcAction('9')"   class="calc-btn py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">9</button>
-            <button onclick="calcAction('*')"   class="calc-btn py-3 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">×</button>
+            <button onclick="calcAction('7')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">7</button>
+            <button onclick="calcAction('8')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">8</button>
+            <button onclick="calcAction('9')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">9</button>
+            <button onclick="calcAction('*')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">×</button>
             <!-- Row 3 -->
-            <button onclick="calcAction('4')"   class="calc-btn py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">4</button>
-            <button onclick="calcAction('5')"   class="calc-btn py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">5</button>
-            <button onclick="calcAction('6')"   class="calc-btn py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">6</button>
-            <button onclick="calcAction('-')"   class="calc-btn py-3 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">−</button>
+            <button onclick="calcAction('4')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">4</button>
+            <button onclick="calcAction('5')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">5</button>
+            <button onclick="calcAction('6')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">6</button>
+            <button onclick="calcAction('-')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">−</button>
             <!-- Row 4 -->
-            <button onclick="calcAction('1')"   class="calc-btn py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">1</button>
-            <button onclick="calcAction('2')"   class="calc-btn py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">2</button>
-            <button onclick="calcAction('3')"   class="calc-btn py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">3</button>
-            <button onclick="calcAction('+')"   class="calc-btn py-3 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">+</button>
+            <button onclick="calcAction('1')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">1</button>
+            <button onclick="calcAction('2')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">2</button>
+            <button onclick="calcAction('3')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">3</button>
+            <button onclick="calcAction('+')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">+</button>
             <!-- Row 5 -->
-            <button onclick="calcAction('0')"   class="calc-btn col-span-2 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">0</button>
-            <button onclick="calcAction('.')"   class="calc-btn py-3 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">,</button>
-            <button onclick="calcAction('=')"   class="calc-btn py-3 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#f5c518;color:#1a1a1a">=</button>
+            <button onclick="calcAction('0')"   class="calc-btn col-span-2 py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">0</button>
+            <button onclick="calcAction('.')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">,</button>
+            <button onclick="calcAction('=')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold hover:opacity-90" style="background:#f5c518;color:#1a1a1a">=</button>
           </div>
         </div>
       </div>

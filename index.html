@@ -839,6 +839,18 @@
         <div id="comanda-produtos-lista" class="space-y-1 text-xs text-gray-500"></div>
       </div>
 
+      <!-- Painel adicionar pacote -->
+      <div id="add-pacote-panel" class="hidden pt-3 pb-2 space-y-2">
+        <div class="flex gap-2 items-end">
+          <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-500 block mb-1">Pacote de serviços</label>
+            <select id="pacote-select" onchange="previewPacote()" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50"></select>
+          </div>
+          <button onclick="confirmarAddPacote()" class="px-3 py-2 text-white rounded-xl text-sm font-bold transition-colors" style="background:#72403e">+</button>
+        </div>
+        <div id="pacote-preview" class="text-xs text-gray-500 space-y-1"></div>
+      </div>
+
       <div class="flex items-center justify-between pt-3 gap-2 flex-wrap">
         <div class="flex items-center gap-3">
           <button id="btn-toggle-add-item" onclick="toggleAddItem()" class="flex items-center gap-1.5 text-sm font-semibold transition-colors" style="color:#72403e">
@@ -848,6 +860,10 @@
           <button id="btn-toggle-add-produto" onclick="toggleAddProduto()" class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-[#8d6137] transition-colors">
             <i data-lucide="shopping-bag" class="w-4 h-4"></i>
             Produto
+          </button>
+          <button id="btn-toggle-add-pacote" onclick="toggleAddPacote()" class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-[#72403e] transition-colors">
+            <i data-lucide="package" class="w-4 h-4"></i>
+            Pacote
           </button>
         </div>
         <div class="text-right">
@@ -980,86 +996,39 @@
 
     <!-- Aba Anamnese -->
     <div id="cli-aba-anamnese" class="hidden p-6 space-y-4 overflow-y-auto" style="max-height:70vh">
-      <p class="text-xs text-gray-400">Informações preenchidas são salvas automaticamente ao clicar em "Salvar" na aba Dados.</p>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tipo de cabelo</label>
-          <select id="anam-tipo-cabelo" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
-            <option value="">Selecione...</option>
-            <option value="liso">Liso</option>
-            <option value="ondulado">Ondulado</option>
-            <option value="cacheado">Cacheado</option>
-            <option value="crespo">Crespo</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Textura</label>
-          <select id="anam-textura" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
-            <option value="">Selecione...</option>
-            <option value="fino">Fino</option>
-            <option value="medio">Médio</option>
-            <option value="grosso">Grosso</option>
-          </select>
-        </div>
+      <div class="flex items-center justify-between">
+        <p class="text-xs text-gray-400">Informações salvas ao clicar em "Salvar" na aba Dados.</p>
+        <button id="btn-config-anamnese" onclick="abrirModalAnamTemplate()" class="hidden items-center gap-1 text-xs font-semibold text-[#72403e] hover:text-[#997776]">
+          <i data-lucide="settings-2" class="w-3.5 h-3.5"></i> Configurar
+        </button>
       </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Coloração anterior</label>
-        <select id="anam-coloracao" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
-          <option value="">Selecione...</option>
-          <option value="nenhuma">Nenhuma</option>
-          <option value="tintura">Tintura</option>
-          <option value="luzes">Luzes/Mechas</option>
-          <option value="descolorado">Descoloração</option>
-          <option value="progressiva">Progressiva</option>
-          <option value="relaxamento">Relaxamento</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Condição do couro cabeludo</label>
-        <div class="flex flex-wrap gap-2" id="anam-couro-check">
-          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="normal" onchange="syncAnamCheck()" /> Normal</label>
-          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="oleoso" onchange="syncAnamCheck()" /> Oleoso</label>
-          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="seco" onchange="syncAnamCheck()" /> Seco</label>
-          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="sensivel" onchange="syncAnamCheck()" /> Sensível</label>
-          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="caspa" onchange="syncAnamCheck()" /> Caspa</label>
-          <label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="queda" onchange="syncAnamCheck()" /> Queda</label>
-        </div>
-        <input type="hidden" id="anam-couro" />
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Alergias conhecidas</label>
-        <textarea id="anam-alergias" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none" placeholder="Ex: amônia, corante..."></textarea>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Medicamentos em uso</label>
-        <textarea id="anam-medicamentos" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none" placeholder="Ex: anticoagulantes..."></textarea>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <label class="flex items-center gap-2 text-sm cursor-pointer">
-          <input type="checkbox" id="anam-gestante" class="w-4 h-4 rounded" /> Gestante
-        </label>
-        <label class="flex items-center gap-2 text-sm cursor-pointer">
-          <input type="checkbox" id="anam-amamentando" class="w-4 h-4 rounded" /> Amamentando
-        </label>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Problemas de pele / sensibilidade</label>
-        <textarea id="anam-pele" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none" placeholder="Psoríase, dermatite, rosácea..."></textarea>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Expectativas / Objetivo</label>
-        <textarea id="anam-expectativa" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none" placeholder="O que a cliente deseja alcançar..."></textarea>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Observações adicionais</label>
-        <textarea id="anam-obs-extra" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none"></textarea>
-      </div>
+      <div id="anam-dynamic-fields" class="space-y-4"></div>
       <div class="text-xs text-gray-400 pt-1">Salve na aba "Dados" para gravar a anamnese.</div>
     </div>
 
     <!-- Aba Histórico -->
     <div id="cli-aba-historico" class="hidden" style="max-height:70vh;overflow-y:auto">
       <div id="cli-historico-conteudo" class="divide-y divide-gray-50"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Configurar Anamnese -->
+<div id="modal-anamnese-template" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-anamnese-template')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <h3 class="text-lg font-bold text-gray-800">Configurar Anamnese</h3>
+      <button onclick="fecharModal('modal-anamnese-template')" class="p-2 hover:bg-gray-100 rounded-xl"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></button>
+    </div>
+    <div class="p-4 space-y-2 overflow-y-auto" style="max-height:60vh" id="anam-template-lista"></div>
+    <div class="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
+      <button onclick="anamTemplateAddField()" class="flex items-center gap-1.5 text-sm font-semibold text-[#72403e] hover:text-[#997776]">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i> Adicionar campo
+      </button>
+      <div class="flex gap-2">
+        <button onclick="anamTemplateReset()" class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-xl">Restaurar padrão</button>
+        <button onclick="salvarAnamTemplate()" class="px-6 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow">Salvar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1168,6 +1137,11 @@
           <label class="block text-sm font-semibold text-gray-700 mb-1.5">Categoria</label>
           <input type="text" id="servico-categoria" list="categorias-lista" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Cabelo, Unhas..." />
           <datalist id="categorias-lista"></datalist>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Subcategoria</label>
+          <input type="text" id="servico-subcategoria" list="subcategorias-lista" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Corte, Coloração..." />
+          <datalist id="subcategorias-lista"></datalist>
         </div>
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cor da Categoria</label>
@@ -1362,6 +1336,37 @@
   </div>
 </div>
 
+<!-- Modal Adiantamento -->
+<div id="modal-adiantamento" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-adiantamento')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between p-5 border-b border-gray-100">
+      <h3 class="text-base font-bold text-gray-800">Registrar Adiantamento</h3>
+      <button onclick="fecharModal('modal-adiantamento')" class="p-2 hover:bg-gray-100 rounded-xl"><i data-lucide="x" class="w-4 h-4 text-gray-500"></i></button>
+    </div>
+    <div class="p-5 space-y-4">
+      <input type="hidden" id="adiant-func-id" />
+      <div class="text-sm font-semibold text-gray-700 bg-[#f6f0ea] px-3 py-2 rounded-xl" id="adiant-func-nome"></div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Valor R$</label>
+        <input type="number" id="adiant-valor" min="0.01" step="0.01" placeholder="0,00"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Data</label>
+        <input type="date" id="adiant-data" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Observações <span class="font-normal text-gray-400">(opcional)</span></label>
+        <input type="text" id="adiant-obs" placeholder="Ex: Adiantamento quinzenal, vale..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button onclick="fecharModal('modal-adiantamento')" class="flex-1 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl">Cancelar</button>
+        <button onclick="salvarAdiantamento()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl" style="background:linear-gradient(to right,#72403e,#997776)">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Marcar Pagamento (Remuneração) -->
 <div id="modal-marcar-pago" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-marcar-pago')">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
@@ -1371,34 +1376,48 @@
         <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
       </button>
     </div>
-    <div class="p-6 space-y-4">
+    <div class="p-5 space-y-3 overflow-y-auto" style="max-height:85vh">
       <input type="hidden" id="mpago-func-id" />
       <input type="hidden" id="mpago-ini" />
       <input type="hidden" id="mpago-fim" />
       <input type="hidden" id="mpago-bruto" />
       <input type="hidden" id="mpago-comissao" />
-      <!-- Resumo -->
-      <div class="rounded-xl p-4 space-y-2" style="background:#f6f0ea">
-        <div class="flex justify-between text-sm">
+      <!-- Resumo financeiro -->
+      <div class="rounded-xl p-4 space-y-2 text-sm" style="background:#f6f0ea">
+        <div class="flex justify-between">
           <span class="text-gray-600">Funcionária</span>
           <span id="mpago-nome" class="font-semibold text-gray-800"></span>
         </div>
-        <div class="flex justify-between text-sm">
+        <div class="flex justify-between">
           <span class="text-gray-600">Período</span>
           <span id="mpago-periodo" class="font-semibold text-gray-800"></span>
         </div>
-        <div class="flex justify-between text-sm">
+        <div class="flex justify-between">
           <span class="text-gray-600">Faturamento bruto</span>
           <span id="mpago-bruto-fmt" class="font-semibold text-gray-800"></span>
         </div>
-        <div class="flex justify-between text-sm border-t border-[#c2ac9f44] pt-2">
+        <div class="flex justify-between border-t border-[#c2ac9f44] pt-2">
           <span class="text-gray-600">Comissão / Salário</span>
           <span id="mpago-comissao-fmt" class="font-bold" style="color:#72403e"></span>
         </div>
       </div>
+      <!-- Adiantamentos do período -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">Adiantamentos</span>
+          <button onclick="abrirModalAdiantamentoFromPago()" class="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-gray-600">
+            <i data-lucide="plus" class="w-3 h-3"></i> Novo
+          </button>
+        </div>
+        <div id="mpago-adiant-lista" class="space-y-1 mb-2"></div>
+        <div class="flex justify-between text-sm font-semibold text-red-600 bg-red-50 rounded-lg px-3 py-1.5">
+          <span>Total adiantado</span>
+          <span id="mpago-adiant-total">R$ 0,00</span>
+        </div>
+      </div>
       <!-- Bonificação -->
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Bonificação extra <span class="font-normal text-gray-400">(opcional)</span></label>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Bonificação extra</label>
         <div class="relative">
           <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-semibold">R$</span>
           <input type="number" id="mpago-bonus" min="0" step="0.01" placeholder="0,00"
@@ -1408,19 +1427,29 @@
       </div>
       <!-- Observações -->
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Observações <span class="font-normal text-gray-400">(opcional)</span></label>
+        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Observações</label>
         <textarea id="mpago-obs" rows="2" placeholder="Ex: Pagamento via PIX, vale descontado..."
           class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white resize-none"></textarea>
       </div>
-      <!-- Total final -->
-      <div class="flex justify-between items-center rounded-xl px-4 py-3 border-2" style="border-color:#72403e22;background:#72403e08">
-        <span class="font-bold text-gray-700">Total a pagar</span>
-        <span id="mpago-total-final" class="text-xl font-bold" style="color:#72403e">R$ 0,00</span>
+      <!-- Saldo devedor -->
+      <div class="rounded-xl px-4 py-3 space-y-1.5 border" style="border-color:#72403e33;background:#72403e08">
+        <div class="flex justify-between text-sm text-gray-600">
+          <span>Comissão + Bônus</span>
+          <span id="mpago-base-total">R$ 0,00</span>
+        </div>
+        <div class="flex justify-between text-sm text-red-500">
+          <span>− Adiantamentos</span>
+          <span id="mpago-adiant-deduz">R$ 0,00</span>
+        </div>
+        <div class="flex justify-between font-bold text-base border-t border-[#72403e22] pt-1.5" style="color:#72403e">
+          <span>Saldo a pagar agora</span>
+          <span id="mpago-total-final">R$ 0,00</span>
+        </div>
       </div>
       <div class="flex gap-2 pt-1">
         <button onclick="fecharModal('modal-marcar-pago')" class="flex-1 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
         <button onclick="confirmarMarcarPago()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl shadow transition-all" style="background:linear-gradient(to right,#10b981,#059669)">
-          <i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i>Confirmar Pagamento
+          <i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i>Confirmar
         </button>
       </div>
     </div>
@@ -1648,6 +1677,7 @@ let estoqueSoBaixo  = { salao: false, revenda: false };
 let estoqueAbaAtiva = { salao: 'estoque', revenda: 'estoque' };
 let funcAbaAtiva    = 'equipe';
 let remuFiltro      = 'mensal';
+let adiantamentos   = [];
 
 function memoize(fn) {
   let lastKey, lastResult;
@@ -1742,7 +1772,7 @@ async function init() {
 
 async function carregarDados() {
   try {
-    const [f, c, s, a, es, er, dp, deb, pac, pit, mov] = await Promise.all([
+    const [f, c, s, a, es, er, dp, deb, pac, pit, mov, adiant] = await Promise.all([
       db.from('funcionarios').select('*').eq('ativo', true).order('nome'),
       db.from('clientes').select('*').order('nome'),
       db.from('servicos').select('*').order('nome'),
@@ -1754,6 +1784,7 @@ async function carregarDados() {
       db.from('pacotes').select('*').order('nome'),
       db.from('pacote_itens').select('*'),
       db.from('mov_estoque').select('*').order('created_at', { ascending: false }).limit(500),
+      db.from('adiantamentos').select('*').order('created_at', { ascending: false }),
     ]);
     if (f.error) throw f.error;
     if (c.error) throw c.error;
@@ -1769,6 +1800,7 @@ async function carregarDados() {
     pacotes         = pac.data || [];
     pacoteItens     = pit.data || [];
     movEstoque      = mov.data || [];
+    adiantamentos   = adiant?.data || [];
   } catch (e) {
     showToast('Erro ao carregar dados: ' + e.message, 'error');
   }
@@ -2297,9 +2329,12 @@ async function abrirDetalheAgendamento(id) {
   document.getElementById('btn-fechar-comanda').style.display   = fechado ? 'none' : '';
   document.getElementById('btn-toggle-add-item').style.display    = fechado ? 'none' : '';
   document.getElementById('btn-toggle-add-produto').style.display  = fechado ? 'none' : '';
+  document.getElementById('btn-toggle-add-pacote').style.display   = fechado ? 'none' : '';
   document.getElementById('add-item-panel').classList.add('hidden');
   document.getElementById('add-produto-panel').classList.add('hidden');
+  document.getElementById('add-pacote-panel').classList.add('hidden');
   document.getElementById('comanda-produtos-lista').innerHTML = '';
+  document.getElementById('pacote-preview').innerHTML = '';
 
   renderItensComanda(ag, servico);
 
@@ -2640,51 +2675,184 @@ function setClienteTab(aba) {
   if (tabs[idx]) tabs[idx].classList.add('ativa');
 
   if (aba === 'historico') renderHistoricoCliente();
+
+  const btnCfg = document.getElementById('btn-config-anamnese');
+  if (btnCfg) {
+    if (aba === 'anamnese' && isAdmin) {
+      btnCfg.classList.remove('hidden');
+      btnCfg.classList.add('flex');
+    } else {
+      btnCfg.classList.add('hidden');
+      btnCfg.classList.remove('flex');
+    }
+  }
+}
+
+// =========================================================
+// ANAMNESE DINÂMICA
+// =========================================================
+const ANAMNESE_DEFAULT = [
+  {id:'tipo_cabelo', label:'Tipo de cabelo',               tipo:'select',         opcoes:['Liso','Ondulado','Cacheado','Crespo']},
+  {id:'textura',     label:'Textura',                      tipo:'select',         opcoes:['Fino','Médio','Grosso']},
+  {id:'coloracao',   label:'Coloração anterior',           tipo:'select',         opcoes:['Nenhuma','Tintura','Luzes/Mechas','Descoloração','Progressiva','Relaxamento']},
+  {id:'couro',       label:'Condição do couro cabeludo',   tipo:'checkbox_group', opcoes:['Normal','Oleoso','Seco','Sensível','Caspa','Queda']},
+  {id:'alergias',    label:'Alergias conhecidas',          tipo:'textarea',       placeholder:'Ex: amônia, corante...'},
+  {id:'medicamentos',label:'Medicamentos em uso',          tipo:'textarea',       placeholder:'Ex: anticoagulantes...'},
+  {id:'gestante',    label:'Gestante',                     tipo:'boolean'},
+  {id:'amamentando', label:'Amamentando',                  tipo:'boolean'},
+  {id:'pele',        label:'Problemas de pele / sensibilidade', tipo:'textarea',  placeholder:'Psoríase, dermatite, rosácea...'},
+  {id:'expectativa', label:'Expectativas / Objetivo',      tipo:'textarea',       placeholder:'O que a cliente deseja alcançar...'},
+  {id:'obs_extra',   label:'Observações adicionais',       tipo:'textarea'},
+];
+
+function getAnamTemplate() {
+  try { const s = localStorage.getItem('anamnese_template'); return s ? JSON.parse(s) : ANAMNESE_DEFAULT; }
+  catch { return ANAMNESE_DEFAULT; }
+}
+
+function _renderAnamField(f, valor) {
+  if (f.tipo === 'boolean') return '';
+  let input = '';
+  if (f.tipo === 'select') {
+    const opts = (f.opcoes || []).map(o => `<option value="${esc(o)}"${valor===o?' selected':''}>${esc(o)}</option>`).join('');
+    input = `<select id="anam-dyn-${f.id}" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50"><option value="">Selecione...</option>${opts}</select>`;
+  } else if (f.tipo === 'textarea') {
+    input = `<textarea id="anam-dyn-${f.id}" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none" placeholder="${esc(f.placeholder||'')}">${esc(valor||'')}</textarea>`;
+  } else if (f.tipo === 'text') {
+    input = `<input type="text" id="anam-dyn-${f.id}" value="${esc(valor||'')}" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" placeholder="${esc(f.placeholder||'')}" />`;
+  } else if (f.tipo === 'checkbox_group') {
+    const vals = (valor || '').split(',').map(s => s.trim()).filter(Boolean);
+    const checks = (f.opcoes || []).map(o =>
+      `<label class="flex items-center gap-1.5 text-sm cursor-pointer"><input type="checkbox" value="${esc(o)}" ${vals.includes(o)?'checked':''} onchange="syncAnamGroup('${f.id}')" /> ${esc(o)}</label>`
+    ).join('');
+    input = `<div class="flex flex-wrap gap-2" id="anam-dyn-${f.id}-group">${checks}</div><input type="hidden" id="anam-dyn-${f.id}" value="${esc(valor||'')}" />`;
+  }
+  return `<div><label class="block text-sm font-semibold text-gray-700 mb-1.5">${esc(f.label)}</label>${input}</div>`;
+}
+
+function renderAnamneseDinamica(dados) {
+  dados = dados || {};
+  const template = getAnamTemplate();
+  const container = document.getElementById('anam-dynamic-fields');
+  if (!container) return;
+  const nonBool = template.filter(f => f.tipo !== 'boolean');
+  const bools   = template.filter(f => f.tipo === 'boolean');
+  let html = nonBool.map(f => _renderAnamField(f, dados[f.id])).join('');
+  if (bools.length) {
+    html += `<div class="grid grid-cols-2 gap-3">${bools.map(f =>
+      `<label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="anam-dyn-${f.id}" class="w-4 h-4 rounded" ${dados[f.id]?'checked':''} /> ${esc(f.label)}</label>`
+    ).join('')}</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function syncAnamGroup(fieldId) {
+  const vals = [];
+  document.querySelectorAll(`#anam-dyn-${fieldId}-group input[type="checkbox"]`).forEach(cb => { if (cb.checked) vals.push(cb.value); });
+  const hidden = document.getElementById('anam-dyn-' + fieldId);
+  if (hidden) hidden.value = vals.join(',');
 }
 
 function lerAnamnese() {
-  return {
-    tipo_cabelo:   document.getElementById('anam-tipo-cabelo')?.value || '',
-    textura:       document.getElementById('anam-textura')?.value || '',
-    coloracao:     document.getElementById('anam-coloracao')?.value || '',
-    couro:         document.getElementById('anam-couro')?.value || '',
-    alergias:      document.getElementById('anam-alergias')?.value || '',
-    medicamentos:  document.getElementById('anam-medicamentos')?.value || '',
-    gestante:      document.getElementById('anam-gestante')?.checked || false,
-    amamentando:   document.getElementById('anam-amamentando')?.checked || false,
-    pele:          document.getElementById('anam-pele')?.value || '',
-    expectativa:   document.getElementById('anam-expectativa')?.value || '',
-    obs_extra:     document.getElementById('anam-obs-extra')?.value || '',
-  };
+  const template = getAnamTemplate();
+  const dados = {};
+  template.forEach(f => {
+    const el = document.getElementById('anam-dyn-' + f.id);
+    if (!el) return;
+    dados[f.id] = f.tipo === 'boolean' ? el.checked : (el.value || '');
+  });
+  return dados;
 }
 
 function preencherAnamnese(dados) {
-  if (!dados) dados = {};
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
-  const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
-  set('anam-tipo-cabelo', dados.tipo_cabelo);
-  set('anam-textura',     dados.textura);
-  set('anam-coloracao',   dados.coloracao);
-  set('anam-alergias',    dados.alergias);
-  set('anam-medicamentos',dados.medicamentos);
-  set('anam-pele',        dados.pele);
-  set('anam-expectativa', dados.expectativa);
-  set('anam-obs-extra',   dados.obs_extra);
-  setChk('anam-gestante',    dados.gestante);
-  setChk('anam-amamentando', dados.amamentando);
-  const couroVals = (dados.couro || '').split(',').map(s => s.trim()).filter(Boolean);
-  document.querySelectorAll('#anam-couro-check input[type="checkbox"]').forEach(cb => {
-    cb.checked = couroVals.includes(cb.value);
-  });
-  document.getElementById('anam-couro').value = dados.couro || '';
+  renderAnamneseDinamica(dados || {});
 }
 
-function syncAnamCheck() {
-  const vals = [];
-  document.querySelectorAll('#anam-couro-check input[type="checkbox"]').forEach(cb => {
-    if (cb.checked) vals.push(cb.value);
+// Template builder
+let _anamTemplateBuffer = [];
+
+function abrirModalAnamTemplate() {
+  _anamTemplateBuffer = JSON.parse(JSON.stringify(getAnamTemplate()));
+  renderAnamTemplateLista();
+  abrirModal('modal-anamnese-template');
+}
+
+function renderAnamTemplateLista() {
+  const TIPO_LABELS = {text:'Texto curto',textarea:'Texto longo',select:'Lista',checkbox_group:'Múltipla escolha',boolean:'Sim/Não'};
+  const lista = document.getElementById('anam-template-lista');
+  if (!lista) return;
+  lista.innerHTML = _anamTemplateBuffer.map((f, i) => `
+    <div class="flex items-start gap-2 p-3 bg-gray-50 rounded-xl" data-anam-idx="${i}">
+      <div class="flex flex-col gap-1.5 flex-1 min-w-0">
+        <input type="text" value="${esc(f.label)}" class="anam-tpl-label px-2 py-1.5 border border-gray-200 rounded-lg text-sm bg-white w-full" placeholder="Nome do campo" />
+        <div class="flex gap-2 flex-wrap">
+          <select class="anam-tpl-tipo px-2 py-1.5 border border-gray-200 rounded-lg text-xs bg-white" onchange="_anamTemplateSetTipo(${i},this.value)">
+            ${Object.entries(TIPO_LABELS).map(([v,l])=>`<option value="${v}"${f.tipo===v?' selected':''}>${l}</option>`).join('')}
+          </select>
+          ${['select','checkbox_group'].includes(f.tipo)?`<input type="text" value="${esc((f.opcoes||[]).join(', '))}" class="anam-tpl-opcoes flex-1 min-w-0 px-2 py-1.5 border border-gray-200 rounded-lg text-xs bg-white" placeholder="Opções separadas por vírgula" />`:''}
+          ${['text','textarea'].includes(f.tipo)?`<input type="text" value="${esc(f.placeholder||'')}" class="anam-tpl-placeholder flex-1 min-w-0 px-2 py-1.5 border border-gray-200 rounded-lg text-xs bg-white" placeholder="Placeholder (opcional)" />`:''}
+        </div>
+      </div>
+      <div class="flex flex-col gap-0.5 flex-shrink-0">
+        <button onclick="anamTemplateMover(${i},-1)" ${i===0?'disabled':''} class="p-1 hover:bg-gray-200 rounded text-gray-400 disabled:opacity-30"><i data-lucide="chevron-up" class="w-4 h-4"></i></button>
+        <button onclick="anamTemplateMover(${i},1)" ${i===_anamTemplateBuffer.length-1?'disabled':''} class="p-1 hover:bg-gray-200 rounded text-gray-400 disabled:opacity-30"><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
+        <button onclick="anamTemplateRemover(${i})" class="p-1 hover:bg-red-100 rounded text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+      </div>
+    </div>`).join('');
+  lucide.createIcons();
+}
+
+function _anamTemplateSyncBuffer() {
+  document.querySelectorAll('#anam-template-lista [data-anam-idx]').forEach(row => {
+    const i = parseInt(row.dataset.anamIdx);
+    if (isNaN(i) || !_anamTemplateBuffer[i]) return;
+    const lbl = row.querySelector('.anam-tpl-label');
+    const opc = row.querySelector('.anam-tpl-opcoes');
+    const ph  = row.querySelector('.anam-tpl-placeholder');
+    if (lbl) _anamTemplateBuffer[i].label = lbl.value.trim();
+    if (opc) _anamTemplateBuffer[i].opcoes = opc.value.split(',').map(s=>s.trim()).filter(Boolean);
+    if (ph)  _anamTemplateBuffer[i].placeholder = ph.value.trim();
   });
-  document.getElementById('anam-couro').value = vals.join(',');
+}
+
+function _anamTemplateSetTipo(idx, tipo) {
+  _anamTemplateSyncBuffer();
+  _anamTemplateBuffer[idx].tipo = tipo;
+  renderAnamTemplateLista();
+}
+
+function anamTemplateMover(idx, dir) {
+  _anamTemplateSyncBuffer();
+  const target = idx + dir;
+  if (target < 0 || target >= _anamTemplateBuffer.length) return;
+  [_anamTemplateBuffer[idx], _anamTemplateBuffer[target]] = [_anamTemplateBuffer[target], _anamTemplateBuffer[idx]];
+  renderAnamTemplateLista();
+}
+
+function anamTemplateRemover(idx) {
+  _anamTemplateSyncBuffer();
+  _anamTemplateBuffer.splice(idx, 1);
+  renderAnamTemplateLista();
+}
+
+function anamTemplateAddField() {
+  _anamTemplateSyncBuffer();
+  _anamTemplateBuffer.push({ id: 'campo_' + Date.now(), label: '', tipo: 'text' });
+  renderAnamTemplateLista();
+  document.getElementById('anam-template-lista').lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+}
+
+function anamTemplateReset() {
+  _anamTemplateBuffer = JSON.parse(JSON.stringify(ANAMNESE_DEFAULT));
+  renderAnamTemplateLista();
+}
+
+function salvarAnamTemplate() {
+  _anamTemplateSyncBuffer();
+  const valid = _anamTemplateBuffer.filter(f => f.label.trim());
+  localStorage.setItem('anamnese_template', JSON.stringify(valid));
+  fecharModal('modal-anamnese-template');
+  showToast('Template de anamnese salvo!', 'success');
 }
 
 function abrirModalCliente() {
@@ -2936,11 +3104,17 @@ async function renderRemuneracao() {
             <div class="text-xs text-gray-400">A pagar</div>
             <div class="font-bold text-lg" style="color:#72403e">${fmtPreco(totalComissao)}</div>
           </div>
-          <button onclick="abrirModalMarcarPago('${fid}','${ini}','${fim}',${totalBruto},${totalComissao})"
-            class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white rounded-xl transition-all hover:opacity-90"
-            style="background:linear-gradient(to right,#10b981,#059669)">
-            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>Pagar
-          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="abrirModalAdiantamento('${fid}','${esc(nome)}')"
+              class="flex items-center gap-1 px-2.5 py-2 text-xs font-semibold rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 transition-all">
+              <i data-lucide="minus-circle" class="w-3.5 h-3.5"></i>Adiant.
+            </button>
+            <button onclick="abrirModalMarcarPago('${fid}','${ini}','${fim}',${totalBruto},${totalComissao})"
+              class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white rounded-xl transition-all hover:opacity-90"
+              style="background:linear-gradient(to right,#10b981,#059669)">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>Pagar
+            </button>
+          </div>
         </div>
       </div>
       <!-- Histórico colapsável -->
@@ -3124,27 +3298,38 @@ function renderServicos() {
   const tbody = document.getElementById('tabela-servicos');
   const tabela = tbody.closest('table');
   if (tabela) tabela.classList.add('mobile-card-list');
-  tbody.innerHTML = servicos.map(s => {
+  // group by categoria
+  const sorted = [...servicos].sort((a, b) => {
+    const ca = (a.categoria || 'Sem Categoria').localeCompare(b.categoria || 'Sem Categoria');
+    if (ca !== 0) return ca;
+    const sa = (a.subcategoria || '').localeCompare(b.subcategoria || '');
+    if (sa !== 0) return sa;
+    return (a.nome || '').localeCompare(b.nome || '');
+  });
+  let lastCat = null;
+  tbody.innerHTML = sorted.map(s => {
     const h = Math.floor((s.duracao_min || 0) / 60);
     const m = (s.duracao_min || 0) % 60;
     const durStr = h > 0 ? `${h}h${m > 0 ? m + 'min' : ''}` : `${m}min`;
     const corTag = s.cor_categoria
       ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.cor_categoria};margin-right:5px;flex-shrink:0"></span>`
       : '';
-    return `
+    const cat = s.categoria || 'Sem Categoria';
+    let header = '';
+    if (cat !== lastCat) {
+      lastCat = cat;
+      header = `<tr><td colspan="6" class="px-6 pt-4 pb-1"><div class="flex items-center gap-2">${corTag}<span class="text-xs font-bold uppercase tracking-wider text-[#72403e]">${esc(cat)}</span></div></td></tr>`;
+    }
+    return header + `
     <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-      <td class="px-6 py-4 font-semibold text-gray-800">${esc(s.nome)}</td>
-      <td class="px-6 py-4" data-label="Categoria">
-        <div class="flex items-center gap-1">
-          ${corTag}<span class="text-gray-500">${esc(s.categoria || '—')}</span>
-        </div>
-      </td>
-      <td class="px-6 py-4 text-gray-600" data-label="Duração">${durStr}</td>
-      <td class="px-6 py-4 font-semibold text-gray-800" data-label="Preço">${fmtPreco(s.preco)}</td>
-      <td class="px-6 py-4" data-label="Status">
+      <td class="px-6 py-3 font-semibold text-gray-800 pl-10">${esc(s.nome)}${s.subcategoria ? `<span class="ml-2 text-xs text-gray-400 font-normal">${esc(s.subcategoria)}</span>` : ''}</td>
+      <td class="px-6 py-3 text-gray-500" data-label="Subcategoria">${esc(s.subcategoria || '—')}</td>
+      <td class="px-6 py-3 text-gray-600" data-label="Duração">${durStr}</td>
+      <td class="px-6 py-3 font-semibold text-gray-800" data-label="Preço">${fmtPreco(s.preco)}</td>
+      <td class="px-6 py-3" data-label="Status">
         <span class="badge ${s.ativo ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}">${s.ativo ? 'Ativo' : 'Inativo'}</span>
       </td>
-      <td class="px-6 py-4 actions-cell">
+      <td class="px-6 py-3 actions-cell">
         <div class="flex items-center justify-end gap-2">
           <button onclick="editarServico('${s.id}')" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600">
             <i data-lucide="pencil" class="w-4 h-4"></i>
@@ -3159,6 +3344,11 @@ function renderServicos() {
   lucide.createIcons();
 }
 
+function _popularSubcatDatalist(cat) {
+  const subcats = [...new Set(servicos.filter(s => s.categoria === cat && s.subcategoria).map(s => s.subcategoria))];
+  document.getElementById('subcategorias-lista').innerHTML = subcats.map(sc => `<option value="${esc(sc)}">`).join('');
+}
+
 function abrirModalServico() {
   document.getElementById('modal-servico-titulo').textContent = 'Novo Serviço';
   document.getElementById('form-servico').reset();
@@ -3168,6 +3358,9 @@ function abrirModalServico() {
   document.getElementById('servico-cor-categoria').value = '#997776';
   const cats = [...new Set(servicos.map(s => s.categoria).filter(Boolean))];
   document.getElementById('categorias-lista').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
+  document.getElementById('subcategorias-lista').innerHTML = '';
+  const catInput = document.getElementById('servico-categoria');
+  catInput.oninput = () => _popularSubcatDatalist(catInput.value.trim());
   abrirModal('modal-servico');
 }
 
@@ -3178,6 +3371,7 @@ function editarServico(id) {
   document.getElementById('servico-id').value = s.id;
   document.getElementById('servico-nome').value = s.nome || '';
   document.getElementById('servico-categoria').value = s.categoria || '';
+  document.getElementById('servico-subcategoria').value = s.subcategoria || '';
   document.getElementById('servico-cor-categoria').value = s.cor_categoria || '#997776';
   const h = Math.floor((s.duracao_min || 60) / 60);
   const m = (s.duracao_min || 60) % 60;
@@ -3186,6 +3380,9 @@ function editarServico(id) {
   document.getElementById('servico-preco').value = s.preco || 0;
   const cats = [...new Set(servicos.map(sv => sv.categoria).filter(Boolean))];
   document.getElementById('categorias-lista').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
+  _popularSubcatDatalist(s.categoria || '');
+  const catInput = document.getElementById('servico-categoria');
+  catInput.oninput = () => _popularSubcatDatalist(catInput.value.trim());
   abrirModal('modal-servico');
 }
 
@@ -3198,6 +3395,7 @@ async function salvarServico(e) {
   const payload = {
     nome:          document.getElementById('servico-nome').value.trim(),
     categoria:     document.getElementById('servico-categoria').value.trim() || null,
+    subcategoria:  document.getElementById('servico-subcategoria').value.trim() || null,
     cor_categoria: document.getElementById('servico-cor-categoria').value || null,
     duracao_min,
     preco:         parseFloat(document.getElementById('servico-preco').value) || 0,
@@ -3633,6 +3831,78 @@ function removerComanadProduto(idx) {
   comandaProdutos.splice(idx, 1);
   renderComanadProdutos();
   atualizarTotalComanda();
+}
+
+// =========================================================
+// COMANDA — PACOTES DE SERVIÇO
+// =========================================================
+function toggleAddPacote() {
+  const panel     = document.getElementById('add-pacote-panel');
+  const isHidden  = panel.classList.contains('hidden');
+  document.getElementById('add-item-panel').classList.add('hidden');
+  document.getElementById('add-produto-panel').classList.add('hidden');
+  panel.classList.toggle('hidden', !isHidden);
+  if (isHidden) popularSelectPacotes();
+}
+
+function popularSelectPacotes() {
+  const sel = document.getElementById('pacote-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione um pacote...</option>' +
+    pacotes.filter(p => p.ativo !== false).map(p => {
+      const itens  = pacoteItens.filter(i => i.pacote_id === p.id);
+      const nomes  = itens.map(i => servicos.find(s => s.id === i.servico_id)?.nome || '').filter(Boolean);
+      return `<option value="${p.id}" data-itens='${JSON.stringify(itens.map(i => i.servico_id))}'>${esc(p.nome)} — ${nomes.length} serviço${nomes.length !== 1 ? 's' : ''}${p.preco_promocional ? ' · ' + fmtPreco(p.preco_promocional) : ''}</option>`;
+    }).join('');
+  document.getElementById('pacote-preview').innerHTML = '';
+}
+
+function previewPacote() {
+  const sel    = document.getElementById('pacote-select');
+  const pac    = pacotes.find(p => p.id === sel.value);
+  const prev   = document.getElementById('pacote-preview');
+  if (!pac) { prev.innerHTML = ''; return; }
+  const itens  = pacoteItens.filter(i => i.pacote_id === pac.id);
+  prev.innerHTML = `<div class="bg-[#f6f0ea] rounded-lg p-2 space-y-1">` +
+    itens.map(i => {
+      const s = servicos.find(sv => sv.id === i.servico_id);
+      return s ? `<div class="flex justify-between"><span>${esc(s.nome)}</span><span class="text-gray-500">${fmtPreco(s.preco)}</span></div>` : '';
+    }).join('') +
+    (pac.preco_promocional ? `<div class="flex justify-between font-bold border-t border-[#c2ac9f44] pt-1 mt-1"><span style="color:#72403e">Preço do pacote</span><span style="color:#72403e">${fmtPreco(pac.preco_promocional)}</span></div>` : '') +
+    `</div>`;
+}
+
+async function confirmarAddPacote() {
+  const sel = document.getElementById('pacote-select');
+  const pac = pacotes.find(p => p.id === sel.value);
+  if (!pac) { showToast('Selecione um pacote', 'error'); return; }
+
+  const agId   = agendamentoSelecionadoId;
+  const itens  = pacoteItens.filter(i => i.pacote_id === pac.id);
+  if (!itens.length) { showToast('Pacote sem itens cadastrados', 'error'); return; }
+
+  // Distribui preço promocional proporcionalmente, ou usa preço unitário de cada serviço
+  const total      = pac.preco_promocional ? Number(pac.preco_promocional) : itens.reduce((s, i) => s + (servicos.find(sv => sv.id === i.servico_id)?.preco || 0), 0);
+  const qtd        = itens.length;
+  const valorUnit  = parseFloat((total / qtd).toFixed(2));
+
+  try {
+    const linhas = itens.map((it, idx) => {
+      const serv  = servicos.find(sv => sv.id === it.servico_id);
+      // Último item absorve centavos de arredondamento
+      const valor = idx === qtd - 1 ? parseFloat((total - valorUnit * (qtd - 1)).toFixed(2)) : valorUnit;
+      return { agendamento_id: agId, servico_id: it.servico_id, descricao: (serv?.nome || 'Serviço') + ` [Pacote: ${pac.nome}]`, valor_unitario: valor, quantidade: 1 };
+    });
+    const { error } = await db.from('comanda_itens').insert(linhas);
+    if (error) throw error;
+    const { data } = await db.from('comanda_itens').select('*').eq('agendamento_id', agId).order('created_at');
+    comandaItens = data || [];
+    const ag = agendamentos.find(a => a.id === agId);
+    renderItensComanda(ag, servicos.find(s => s.id === ag?.servico_id));
+    document.getElementById('add-pacote-panel').classList.add('hidden');
+    document.getElementById('pacote-preview').innerHTML = '';
+    showToast(`Pacote "${pac.nome}" adicionado!`, 'success');
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }
 
 // =========================================================
@@ -4166,6 +4436,16 @@ async function gerarFechamento() {
   lucide.createIcons();
 }
 
+function _adiantamentosDoPeriodo(funcId, ini, fim) {
+  const iniMs = new Date(ini + 'T00:00:00').getTime();
+  const fimMs = new Date(fim + 'T23:59:59').getTime();
+  return adiantamentos.filter(a => {
+    if (a.funcionario_id !== funcId) return false;
+    const t = new Date(a.data + 'T12:00:00').getTime();
+    return t >= iniMs && t <= fimMs;
+  });
+}
+
 function abrirModalMarcarPago(funcId, ini, fim, bruto, comissao) {
   const func = funcionarios.find(f => f.id === funcId);
   document.getElementById('mpago-func-id').value    = funcId;
@@ -4181,15 +4461,95 @@ function abrirModalMarcarPago(funcId, ini, fim, bruto, comissao) {
   document.getElementById('mpago-periodo').textContent      = `${iniFmt} – ${fimFmt}`;
   document.getElementById('mpago-bruto-fmt').textContent    = fmtPreco(bruto);
   document.getElementById('mpago-comissao-fmt').textContent = fmtPreco(comissao);
-  document.getElementById('mpago-total-final').textContent  = fmtPreco(comissao);
+  _renderAdiantamentosNoPago(funcId, ini, fim);
+  atualizarTotalMpago();
   abrirModal('modal-marcar-pago');
   lucide.createIcons();
+}
+
+function _renderAdiantamentosNoPago(funcId, ini, fim) {
+  const lista  = _adiantamentosDoPeriodo(funcId, ini, fim);
+  const total  = lista.reduce((s, a) => s + Number(a.valor), 0);
+  const liEl   = document.getElementById('mpago-adiant-lista');
+  liEl.innerHTML = lista.length === 0
+    ? '<p class="text-xs text-gray-400 italic">Nenhum adiantamento neste período</p>'
+    : lista.map(a => `
+        <div class="flex items-center justify-between text-xs bg-red-50 rounded-lg px-3 py-1.5">
+          <span class="text-gray-600">${new Date(a.data+'T12:00:00').toLocaleDateString('pt-BR')}${a.observacoes ? ' · ' + esc(a.observacoes) : ''}</span>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-red-600">${fmtPreco(a.valor)}</span>
+            <button onclick="excluirAdiantamento('${a.id}')" class="text-red-300 hover:text-red-500 transition-colors">✕</button>
+          </div>
+        </div>`).join('');
+  document.getElementById('mpago-adiant-total').textContent = fmtPreco(total);
 }
 
 function atualizarTotalMpago() {
   const comissao = parseFloat(document.getElementById('mpago-comissao').value) || 0;
   const bonus    = parseFloat(document.getElementById('mpago-bonus').value) || 0;
-  document.getElementById('mpago-total-final').textContent = fmtPreco(comissao + bonus);
+  const funcId   = document.getElementById('mpago-func-id').value;
+  const ini      = document.getElementById('mpago-ini').value;
+  const fim      = document.getElementById('mpago-fim').value;
+  const adiant   = _adiantamentosDoPeriodo(funcId, ini, fim).reduce((s, a) => s + Number(a.valor), 0);
+  const base     = comissao + bonus;
+  const saldo    = Math.max(0, base - adiant);
+  document.getElementById('mpago-base-total').textContent  = fmtPreco(base);
+  document.getElementById('mpago-adiant-deduz').textContent = fmtPreco(adiant);
+  document.getElementById('mpago-total-final').textContent  = fmtPreco(saldo);
+}
+
+function abrirModalAdiantamento(funcId, nome) {
+  document.getElementById('adiant-func-id').value       = funcId;
+  document.getElementById('adiant-func-nome').textContent = nome;
+  document.getElementById('adiant-valor').value         = '';
+  document.getElementById('adiant-data').value          = new Date().toISOString().slice(0, 10);
+  document.getElementById('adiant-obs').value           = '';
+  abrirModal('modal-adiantamento');
+  lucide.createIcons();
+}
+
+function abrirModalAdiantamentoFromPago() {
+  const funcId = document.getElementById('mpago-func-id').value;
+  const nome   = document.getElementById('mpago-nome').textContent;
+  fecharModal('modal-marcar-pago');
+  abrirModalAdiantamento(funcId, nome);
+}
+
+async function salvarAdiantamento() {
+  const funcId = document.getElementById('adiant-func-id').value;
+  const valor  = parseFloat(document.getElementById('adiant-valor').value);
+  const data   = document.getElementById('adiant-data').value;
+  const obs    = document.getElementById('adiant-obs').value.trim() || null;
+  if (!valor || valor <= 0) { showToast('Informe um valor válido', 'error'); return; }
+  if (!data) { showToast('Informe a data', 'error'); return; }
+  const periodo = data.slice(0, 7); // "2026-05"
+  try {
+    const { data: rec, error } = await db.from('adiantamentos')
+      .insert({ funcionario_id: funcId, valor, data, periodo, observacoes: obs })
+      .select().single();
+    if (error) throw error;
+    adiantamentos.unshift(rec);
+    fecharModal('modal-adiantamento');
+    showToast(`Adiantamento de ${fmtPreco(valor)} registrado!`, 'success');
+    // Re-renderiza remuneração se estiver aberta
+    if (funcAbaAtiva === 'remuneracao') renderRemuneracao();
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function excluirAdiantamento(id) {
+  if (!confirm('Excluir este adiantamento?')) return;
+  try {
+    const { error } = await db.from('adiantamentos').delete().eq('id', id);
+    if (error) throw error;
+    adiantamentos = adiantamentos.filter(a => a.id !== id);
+    // Atualiza painel se modal estiver aberto
+    const funcId = document.getElementById('mpago-func-id').value;
+    const ini    = document.getElementById('mpago-ini').value;
+    const fim    = document.getElementById('mpago-fim').value;
+    _renderAdiantamentosNoPago(funcId, ini, fim);
+    atualizarTotalMpago();
+    showToast('Adiantamento removido', 'success');
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }
 
 async function confirmarMarcarPago() {
@@ -4200,6 +4560,8 @@ async function confirmarMarcarPago() {
   const comissao = parseFloat(document.getElementById('mpago-comissao').value) || 0;
   const bonus    = parseFloat(document.getElementById('mpago-bonus').value) || 0;
   const obs      = document.getElementById('mpago-obs').value.trim() || null;
+  const adiant   = _adiantamentosDoPeriodo(funcId, ini, fim).reduce((s, a) => s + Number(a.valor), 0);
+  const saldo    = Math.max(0, comissao + bonus - adiant);
   try {
     const { error } = await db.from('fechamentos').insert({
       funcionario_id: funcId || null,
@@ -4212,10 +4574,8 @@ async function confirmarMarcarPago() {
     });
     if (error) throw error;
     fecharModal('modal-marcar-pago');
-    showToast(`Pagamento de ${fmtPreco(comissao + bonus)} registrado!`, 'success');
-  } catch(e) {
-    showToast('Erro: ' + e.message, 'error');
-  }
+    showToast(`Fechamento: ${fmtPreco(comissao + bonus)} comissão · ${fmtPreco(adiant)} adiantado · ${fmtPreco(saldo)} pagos agora`, 'success');
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }
 
 // =========================================================

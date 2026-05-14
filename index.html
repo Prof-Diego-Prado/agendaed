@@ -347,6 +347,10 @@
       <i data-lucide="sparkles" class="sidebar-icon"></i>
       <span class="sidebar-label">Serviços</span>
     </button>
+    <button class="sidebar-item w-full" onclick="navTo('pacotes')">
+      <i data-lucide="package" class="sidebar-icon"></i>
+      <span class="sidebar-label">Pacotes</span>
+    </button>
     <div class="admin-only pt-3 pb-1 px-4 text-xs text-white/50 font-semibold uppercase tracking-widest sidebar-section-label">Estoque</div>
     <button class="sidebar-item admin-only w-full" onclick="navTo('estoque-salao')">
       <i data-lucide="package" class="sidebar-icon"></i>
@@ -554,7 +558,6 @@
       </div>
       <div class="flex px-4 md:px-6 gap-1">
         <button onclick="setServicoAba('servicos')" id="serv-aba-servicos" class="serv-aba px-4 py-2 text-sm font-semibold text-gray-500 border-b-2 border-transparent">Serviços</button>
-        <button onclick="setServicoAba('pacotes')" id="serv-aba-pacotes" class="serv-aba px-4 py-2 text-sm font-semibold text-gray-500 border-b-2 border-transparent">Pacotes</button>
       </div>
     </div>
     <!-- Filtro de categoria de serviços -->
@@ -585,8 +588,18 @@
         </table>
       </div>
     </div>
-    <!-- Aba Pacotes -->
-    <div id="serv-tab-pacotes" class="hidden flex-1 overflow-auto p-4 md:p-6">
+  </div>
+
+  <!-- ====== VIEW: PACOTES ====== -->
+  <div id="view-pacotes" class="view">
+    <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0">
+      <h2 class="text-lg font-bold text-gray-800">Pacotes</h2>
+      <button onclick="abrirModalPacote()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        Novo pacote
+      </button>
+    </div>
+    <div class="flex-1 overflow-auto p-4 md:p-6">
       <div id="grid-pacotes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       <div id="empty-pacotes" class="hidden text-center py-16 text-gray-400">
         <i data-lucide="package" class="w-12 h-12 mx-auto mb-3 opacity-30"></i>
@@ -1181,7 +1194,13 @@
             <span class="text-sm font-semibold text-gray-700">Comissão por serviço</span>
             <span class="text-xs text-gray-400">Deixe em branco para usar a % padrão</span>
           </div>
-          <div id="lista-comissoes-servico" class="space-y-1.5 max-h-56 overflow-y-auto pr-1"></div>
+          <select id="comissao-cat-filtro" onchange="filtrarComissoesServico()" class="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 mb-2">
+            <option value="">Todas as categorias</option>
+          </select>
+          <div id="lista-comissoes-servico" class="space-y-1.5 max-h-44 overflow-y-auto pr-1"></div>
+          <button type="button" onclick="salvarApenasComissoes()" class="mt-2 w-full py-1.5 text-xs font-semibold text-white rounded-lg transition-all" style="background:#1a1a1a">
+            <i data-lucide="save" class="inline w-3 h-3 mr-1"></i>Salvar Comissões
+          </button>
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
@@ -1910,6 +1929,7 @@ function renderView(view) {
     case 'clientes':        renderClientes(); break;
     case 'funcionarias':    renderFuncionarias(); setFuncAba(funcAbaAtiva); break;
     case 'servicos':        renderServicos(); setServicoAba(servicoAbaAtiva); break;
+    case 'pacotes':         renderPacotes(); break;
     case 'estoque-salao':   popularFiltrosCategorias(); renderEstoqueSalao(); break;
     case 'estoque-revenda': popularFiltrosCategorias(); renderEstoqueRevenda(); break;
     case 'fechamento':      renderFechamento(); break;
@@ -3545,21 +3565,65 @@ function toggleRemuHistorico(btn) {
   btn.querySelector('span').textContent = aberto ? 'Ver histórico de atendimentos' : 'Ocultar histórico';
 }
 
+let _comissoesCache = [];
+
+function _capturarInputsComissao() {
+  document.querySelectorAll('.comissao-servico-input').forEach(inp => {
+    const sid = inp.dataset.servicoId;
+    const pct = inp.value.trim();
+    const idx = _comissoesCache.findIndex(c => c.servico_id === sid);
+    if (pct !== '' && !isNaN(parseFloat(pct))) {
+      const obj = { servico_id: sid, percentual: parseFloat(pct) };
+      if (idx >= 0) _comissoesCache[idx] = obj; else _comissoesCache.push(obj);
+    } else {
+      if (idx >= 0) _comissoesCache.splice(idx, 1);
+    }
+  });
+}
+
 function renderListaComissoesServico(comissoesExistentes = []) {
+  _comissoesCache = comissoesExistentes.map(c => ({ servico_id: c.servico_id, percentual: c.percentual }));
+  const cats = [...new Set(servicos.filter(s => s.ativo && s.categoria).map(s => s.categoria))].sort();
+  const sel  = document.getElementById('comissao-cat-filtro');
+  if (sel) {
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">Todas as categorias</option>' +
+      cats.map(c => `<option value="${esc(c)}"${c===prev?' selected':''}>${esc(c)}</option>`).join('');
+  }
+  filtrarComissoesServico();
+}
+
+function filtrarComissoesServico() {
+  _capturarInputsComissao();
+  const cat  = document.getElementById('comissao-cat-filtro')?.value || '';
   const lista = document.getElementById('lista-comissoes-servico');
   if (!lista) return;
-  lista.innerHTML = servicos.map(s => {
-    const existente = comissoesExistentes.find(c => c.servico_id === s.id);
+  const filtrados = servicos.filter(s => s.ativo && (!cat || (s.categoria||'') === cat));
+  lista.innerHTML = filtrados.map(s => {
+    const existente = _comissoesCache.find(c => c.servico_id === s.id);
     const val = existente ? existente.percentual : '';
     return `<div class="flex items-center gap-2">
       <span class="flex-1 text-xs text-gray-600 truncate" title="${esc(s.nome)}">${esc(s.nome)}</span>
       <input type="number" min="0" max="100" step="1" placeholder="—"
-        data-servico-id="${s.id}"
-        value="${val}"
+        data-servico-id="${s.id}" value="${val}"
         class="comissao-servico-input w-16 px-2 py-1 border border-gray-200 rounded-lg text-xs text-right bg-gray-50 focus:bg-white" />
       <span class="text-xs text-gray-400">%</span>
     </div>`;
   }).join('');
+}
+
+async function salvarApenasComissoes() {
+  const funcId = document.getElementById('funcionaria-id').value;
+  if (!funcId) { showToast('Salve a funcionária primeiro', 'error'); return; }
+  _capturarInputsComissao();
+  try {
+    await db.from('comissoes_servico').delete().eq('funcionario_id', funcId);
+    const linhas = _comissoesCache.map(c => ({ funcionario_id: funcId, servico_id: c.servico_id, percentual: c.percentual }));
+    if (linhas.length) await db.from('comissoes_servico').insert(linhas);
+    showToast('Comissões salvas!', 'success');
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
 }
 
 function abrirModalFuncionaria() {
@@ -3633,17 +3697,11 @@ async function salvarFuncionaria(e) {
     }
     if (err) throw err;
 
-    // Salva comissões por serviço (apaga as antigas e reinsere as preenchidas)
+    // Salva comissões por serviço (usa cache + inputs visíveis)
     if (isAdmin() && funcId) {
+      _capturarInputsComissao();
       await db.from('comissoes_servico').delete().eq('funcionario_id', funcId);
-      const inputs = document.querySelectorAll('.comissao-servico-input');
-      const linhas = [];
-      inputs.forEach(inp => {
-        const pct = parseFloat(inp.value);
-        if (!isNaN(pct) && inp.value.trim() !== '') {
-          linhas.push({ funcionario_id: funcId, servico_id: inp.dataset.servicoId, percentual: pct });
-        }
-      });
+      const linhas = _comissoesCache.map(c => ({ funcionario_id: funcId, servico_id: c.servico_id, percentual: c.percentual }));
       if (linhas.length) await db.from('comissoes_servico').insert(linhas);
     }
 
@@ -3660,6 +3718,7 @@ async function salvarFuncionaria(e) {
     const { data } = await db.from('funcionarios').select('*').eq('ativo', true).order('nome');
     funcionarios = data || [];
     renderFuncionarias();
+    renderCalendario();
   } catch (e) {
     showToast('Erro: ' + e.message, 'error');
   }
@@ -3672,23 +3731,13 @@ let servicoAbaAtiva = 'servicos';
 
 function setServicoAba(aba) {
   servicoAbaAtiva = aba;
-  ['servicos','pacotes'].forEach(t => {
+  ['servicos'].forEach(t => {
     document.getElementById('serv-tab-' + t)?.classList.add('hidden');
     document.getElementById('serv-aba-' + t)?.classList.remove('ativa');
   });
   document.getElementById('serv-tab-' + aba)?.classList.remove('hidden');
   document.getElementById('serv-aba-' + aba)?.classList.add('ativa');
-  const btnLabel = document.getElementById('btn-novo-servico-label');
-  const btnEl    = document.getElementById('btn-novo-servico');
-  if (aba === 'pacotes') {
-    if (btnLabel) btnLabel.textContent = 'Novo pacote';
-    if (btnEl) btnEl.setAttribute('onclick', 'abrirModalPacote()');
-    renderPacotes();
-  } else {
-    if (btnLabel) btnLabel.textContent = 'Novo serviço';
-    if (btnEl) btnEl.setAttribute('onclick', 'abrirModalServico()');
-    renderServicos();
-  }
+  renderServicos();
 }
 
 // =========================================================

@@ -123,6 +123,9 @@
     /* Abas cliente */
     .cli-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; }
     .cli-tab.ativa { color: #72403e; border-bottom-color: #72403e; }
+    /* Abas estoque */
+    .estoque-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; background: none; }
+    .estoque-tab-ativa { color: #72403e !important; border-bottom-color: #72403e; }
 
 /* =========================================================
    MOBILE FIRST — breakpoint < 768px
@@ -489,14 +492,33 @@
 
   <!-- ====== VIEW: ESTOQUE SALÃO ====== -->
   <div id="view-estoque-salao" class="view">
-    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+    <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0 gap-3 flex-wrap">
       <h2 class="text-lg font-bold text-gray-800">Estoque do Salão</h2>
       <button onclick="abrirModalEstoqueSalao()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Novo item
       </button>
     </div>
-    <div class="flex-1 overflow-auto p-6">
+    <!-- Abas -->
+    <div class="flex border-b border-gray-100 bg-white px-4 gap-1 flex-shrink-0">
+      <button id="tab-es-estoque" onclick="setEstoqueAba('salao','estoque')" class="estoque-tab estoque-tab-ativa px-4 py-2.5 text-sm font-semibold">Estoque</button>
+      <button id="tab-es-historico" onclick="setEstoqueAba('salao','historico')" class="estoque-tab px-4 py-2.5 text-sm font-semibold text-gray-400">Histórico</button>
+    </div>
+    <!-- Filtros -->
+    <div id="filtros-es" class="bg-gray-50 border-b border-gray-100 px-4 py-2 flex items-center gap-3 flex-shrink-0 flex-wrap">
+      <div class="flex items-center gap-2">
+        <i data-lucide="filter" class="w-4 h-4 text-gray-400"></i>
+        <select id="es-cat-filtro" onchange="renderEstoqueSalao()" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white">
+          <option value="">Todas categorias</option>
+        </select>
+      </div>
+      <button id="btn-es-baixo" onclick="toggleEstoqueBaixo('salao')" class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-500 hover:border-red-300 hover:text-red-600 transition-colors">
+        <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+        Qtd. baixa
+      </button>
+    </div>
+    <!-- Aba Estoque -->
+    <div id="es-aba-estoque" class="flex-1 overflow-auto p-4 md:p-6">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table class="w-full text-sm">
           <thead>
@@ -513,18 +535,54 @@
         </table>
       </div>
     </div>
+    <!-- Aba Histórico -->
+    <div id="es-aba-historico" class="hidden flex-1 overflow-auto p-4 md:p-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100 bg-gray-50">
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Data</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Produto</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Tipo</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Qtd</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Motivo</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-hist-es"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- ====== VIEW: ESTOQUE REVENDA ====== -->
   <div id="view-estoque-revenda" class="view">
-    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
+    <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0 gap-3 flex-wrap">
       <h2 class="text-lg font-bold text-gray-800">Estoque Revenda</h2>
       <button onclick="abrirModalEstoqueRevenda()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Novo produto
       </button>
     </div>
-    <div class="flex-1 overflow-auto p-6">
+    <!-- Abas -->
+    <div class="flex border-b border-gray-100 bg-white px-4 gap-1 flex-shrink-0">
+      <button id="tab-er-estoque" onclick="setEstoqueAba('revenda','estoque')" class="estoque-tab estoque-tab-ativa px-4 py-2.5 text-sm font-semibold">Estoque</button>
+      <button id="tab-er-historico" onclick="setEstoqueAba('revenda','historico')" class="estoque-tab px-4 py-2.5 text-sm font-semibold text-gray-400">Histórico</button>
+    </div>
+    <!-- Filtros -->
+    <div id="filtros-er" class="bg-gray-50 border-b border-gray-100 px-4 py-2 flex items-center gap-3 flex-shrink-0 flex-wrap">
+      <div class="flex items-center gap-2">
+        <i data-lucide="filter" class="w-4 h-4 text-gray-400"></i>
+        <select id="er-cat-filtro" onchange="renderEstoqueRevenda()" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white">
+          <option value="">Todas categorias</option>
+        </select>
+      </div>
+      <button id="btn-er-baixo" onclick="toggleEstoqueBaixo('revenda')" class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-500 hover:border-red-300 hover:text-red-600 transition-colors">
+        <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+        Qtd. baixa
+      </button>
+    </div>
+    <!-- Aba Estoque -->
+    <div id="er-aba-estoque" class="flex-1 overflow-auto p-4 md:p-6">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table class="w-full text-sm">
           <thead>
@@ -539,6 +597,23 @@
             </tr>
           </thead>
           <tbody id="tabela-estoque-revenda"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Aba Histórico -->
+    <div id="er-aba-historico" class="hidden flex-1 overflow-auto p-4 md:p-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-100 bg-gray-50">
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Data</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Produto</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Tipo</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Qtd</th>
+              <th class="text-left px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Motivo</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-hist-er"></tbody>
         </table>
       </div>
     </div>
@@ -642,6 +717,7 @@
 
     <!-- Adicionar item -->
     <div class="px-5 pb-4 border-t border-gray-100">
+      <!-- Painel adicionar serviço -->
       <div id="add-item-panel" class="hidden pt-3 pb-2 space-y-2">
         <div class="flex gap-2 items-end">
           <div class="flex-1">
@@ -657,11 +733,37 @@
         <input type="text" id="item-descricao-custom" placeholder="Ou descreva item livre (ex: Produto vendido)..." class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
       </div>
 
-      <div class="flex items-center justify-between pt-3">
-        <button id="btn-toggle-add-item" onclick="toggleAddItem()" class="flex items-center gap-1.5 text-sm font-semibold transition-colors" style="color:#72403e">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          Adicionar serviço
-        </button>
+      <!-- Painel adicionar produto de revenda -->
+      <div id="add-produto-panel" class="hidden pt-3 pb-2 space-y-2">
+        <div class="flex gap-2 items-end">
+          <div class="flex-1">
+            <label class="text-xs font-semibold text-gray-500 block mb-1">Produto</label>
+            <select id="produto-select" onchange="preencherValorProduto()" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50"></select>
+          </div>
+          <div class="w-16">
+            <label class="text-xs font-semibold text-gray-500 block mb-1">Qtd</label>
+            <input type="number" id="produto-qty" min="1" value="1" onchange="atualizarTotalProduto()" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
+          </div>
+          <div class="w-24">
+            <label class="text-xs font-semibold text-gray-500 block mb-1">Valor R$</label>
+            <input type="number" id="produto-valor" step="0.01" min="0" placeholder="0,00" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50" />
+          </div>
+          <button onclick="confirmarAddProduto()" class="px-3 py-2 text-white rounded-xl text-sm font-bold transition-colors" style="background:#8d6137">+</button>
+        </div>
+        <div id="comanda-produtos-lista" class="space-y-1 text-xs text-gray-500"></div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 gap-2 flex-wrap">
+        <div class="flex items-center gap-3">
+          <button id="btn-toggle-add-item" onclick="toggleAddItem()" class="flex items-center gap-1.5 text-sm font-semibold transition-colors" style="color:#72403e">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            Serviço
+          </button>
+          <button id="btn-toggle-add-produto" onclick="toggleAddProduto()" class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-[#8d6137] transition-colors">
+            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            Produto
+          </button>
+        </div>
         <div class="text-right">
           <div class="text-xs text-gray-400 mb-0.5">Total</div>
           <div id="comanda-total" class="text-2xl font-bold" style="color:#72403e">R$ 0,00</div>
@@ -1167,6 +1269,10 @@
         <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nova quantidade</label>
         <input type="number" id="ajustar-qty" step="0.001" min="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm" />
       </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Motivo <span class="font-normal text-gray-400">(opcional)</span></label>
+        <input type="text" id="ajustar-motivo" placeholder="Ex: Compra, Quebra, Inventário..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+      </div>
       <div class="flex justify-end gap-2">
         <button onclick="fecharModal('modal-ajustar-qty')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
         <button onclick="confirmarAjusteQty()" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
@@ -1362,6 +1468,10 @@ let despesas        = [];
 let debitosClientes = [];
 let fluxoFiltro     = 'mensal';
 let fluxoAba        = 'entradas';
+let movEstoque      = [];
+let comandaProdutos = [];
+let estoqueSoBaixo  = { salao: false, revenda: false };
+let estoqueAbaAtiva = { salao: 'estoque', revenda: 'estoque' };
 
 function memoize(fn) {
   let lastKey, lastResult;
@@ -1455,7 +1565,7 @@ async function init() {
 
 async function carregarDados() {
   try {
-    const [f, c, s, a, es, er, dp, deb, pac, pit] = await Promise.all([
+    const [f, c, s, a, es, er, dp, deb, pac, pit, mov] = await Promise.all([
       db.from('funcionarios').select('*').eq('ativo', true).order('nome'),
       db.from('clientes').select('*').order('nome'),
       db.from('servicos').select('*').order('nome'),
@@ -1466,6 +1576,7 @@ async function carregarDados() {
       db.from('debitos_clientes').select('*').order('created_at', { ascending: false }),
       db.from('pacotes').select('*').order('nome'),
       db.from('pacote_itens').select('*'),
+      db.from('mov_estoque').select('*').order('created_at', { ascending: false }).limit(500),
     ]);
     if (f.error) throw f.error;
     if (c.error) throw c.error;
@@ -1480,6 +1591,7 @@ async function carregarDados() {
     debitosClientes = deb.data || [];
     pacotes         = pac.data || [];
     pacoteItens     = pit.data || [];
+    movEstoque      = mov.data || [];
   } catch (e) {
     showToast('Erro ao carregar dados: ' + e.message, 'error');
   }
@@ -1511,8 +1623,8 @@ function renderView(view) {
     case 'clientes':        renderClientes(); break;
     case 'funcionarias':    renderFuncionarias(); break;
     case 'servicos':        renderServicos(); setServicoAba(servicoAbaAtiva); break;
-    case 'estoque-salao':   renderEstoqueSalao(); break;
-    case 'estoque-revenda': renderEstoqueRevenda(); break;
+    case 'estoque-salao':   popularFiltrosCategorias(); renderEstoqueSalao(); break;
+    case 'estoque-revenda': popularFiltrosCategorias(); renderEstoqueRevenda(); break;
     case 'fechamento':      renderFechamento(); break;
     case 'fluxo-caixa':     renderFluxoCaixa(); break;
   }
@@ -1955,6 +2067,7 @@ async function abrirDetalheAgendamento(id) {
   if (!ag) return;
   agendamentoSelecionadoId = id;
 
+  comandaProdutos = [];
   try {
     const { data, error } = await db.from('comanda_itens')
       .select('*').eq('agendamento_id', id).order('created_at');
@@ -2005,8 +2118,11 @@ async function abrirDetalheAgendamento(id) {
   document.getElementById('btn-faltou-comanda').style.display  = (ag.status==='faltou'||fechado) ? 'none' : '';
   document.getElementById('btn-cancelar-comanda').style.display = ag.status==='cancelado' ? 'none' : '';
   document.getElementById('btn-fechar-comanda').style.display   = fechado ? 'none' : '';
-  document.getElementById('btn-toggle-add-item').style.display  = fechado ? 'none' : '';
+  document.getElementById('btn-toggle-add-item').style.display    = fechado ? 'none' : '';
+  document.getElementById('btn-toggle-add-produto').style.display  = fechado ? 'none' : '';
   document.getElementById('add-item-panel').classList.add('hidden');
+  document.getElementById('add-produto-panel').classList.add('hidden');
+  document.getElementById('comanda-produtos-lista').innerHTML = '';
 
   renderItensComanda(ag, servico);
 
@@ -2070,10 +2186,16 @@ function renderItensComanda(ag, servico) {
 function calcularTotalComanda() {
   const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
   if (!ag) return 0;
-  const servico = servicos.find(s => s.id === ag.servico_id);
-  const base    = Number(ag.valor_cobrado || servico?.preco || 0);
-  const extras  = comandaItens.reduce((acc, i) => acc + (i.quantidade||1) * (i.valor_unitario||0), 0);
-  return base + extras;
+  const servico  = servicos.find(s => s.id === ag.servico_id);
+  const base     = Number(ag.valor_cobrado || servico?.preco || 0);
+  const extras   = comandaItens.reduce((acc, i) => acc + (i.quantidade||1) * (i.valor_unitario||0), 0);
+  const produtos = comandaProdutos.reduce((acc, p) => acc + p.quantidade * p.preco_unitario, 0);
+  return base + extras + produtos;
+}
+
+function atualizarTotalComanda() {
+  const totalEl = document.getElementById('comanda-total');
+  if (totalEl) totalEl.textContent = fmtPreco(calcularTotalComanda());
 }
 
 function preencherValorItem() {
@@ -2139,6 +2261,11 @@ async function fecharComanda() {
       <span class="text-gray-600">${esc(item.descricao)} × ${item.quantidade||1}</span>
       <span class="font-semibold">${fmtPreco((item.quantidade||1)*(item.valor_unitario||0))}</span></div>`;
   });
+  comandaProdutos.forEach(p => {
+    resumoHtml += `<div class="flex justify-between py-1 border-b border-gray-50">
+      <span class="text-gray-600 flex items-center gap-1"><span class="text-xs bg-amber-100 text-amber-700 px-1.5 rounded-full font-semibold">Produto</span>${esc(p._nome)} × ${p.quantidade}</span>
+      <span class="font-semibold">${fmtPreco(p.quantidade * p.preco_unitario)}</span></div>`;
+  });
   document.getElementById('pagto-resumo-itens').innerHTML = resumoHtml || '<span class="text-gray-400 text-xs">Nenhum item</span>';
   document.getElementById('pagto-total').textContent = fmtPreco(total);
 
@@ -2176,9 +2303,9 @@ function selecionarPagto(btn) {
 async function confirmarPagamento() {
   const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
   if (!ag) return;
-  const total    = calcularTotalComanda();
-  const metodoBtn = document.querySelector('.pagto-btn.pagto-ativo');
-  const forma    = metodoBtn?.dataset?.metodo || 'dinheiro';
+  const total      = calcularTotalComanda();
+  const metodoBtn  = document.querySelector('.pagto-btn.pagto-ativo');
+  const forma      = metodoBtn?.dataset?.metodo || 'dinheiro';
   const abatimento = parseFloat(document.getElementById('pagto-abatimento')?.value) || 0;
   try {
     const { error } = await db.from('agendamentos')
@@ -2186,6 +2313,20 @@ async function confirmarPagamento() {
       .eq('id', agendamentoSelecionadoId);
     if (error) throw error;
     ag.status = 'concluido'; ag.valor_cobrado = total; ag.forma_pagamento = forma;
+
+    // Salvar produtos vendidos e dar baixa no estoque
+    for (const p of comandaProdutos) {
+      await db.from('comanda_produtos').insert({
+        agendamento_id: ag.id, produto_id: p.produto_id,
+        quantidade: p.quantidade, preco_unitario: p.preco_unitario,
+      });
+      const novaQty = Math.max(0, (estoquesRevenda.find(e => e.id === p.produto_id)?.quantidade || 0) - p.quantidade);
+      await db.from('estoque_revenda').update({ quantidade: novaQty, updated_at: new Date().toISOString() }).eq('id', p.produto_id);
+      const idx = estoquesRevenda.findIndex(e => e.id === p.produto_id);
+      if (idx !== -1) estoquesRevenda[idx].quantidade = novaQty;
+      await registrarMovEstoque('revenda', p.produto_id, 'saida', p.quantidade, 'Venda na comanda', ag.id);
+    }
+    comandaProdutos = [];
 
     if (forma === 'fiado') {
       await db.from('debitos_clientes').insert({
@@ -2727,13 +2868,95 @@ async function toggleServico(id, ativo) {
 }
 
 // =========================================================
+// ESTOQUE — ABAS, FILTROS E HISTÓRICO
+// =========================================================
+function setEstoqueAba(tipo, aba) {
+  estoqueAbaAtiva[tipo] = aba;
+  const prefix = tipo === 'salao' ? 'es' : 'er';
+  ['estoque', 'historico'].forEach(a => {
+    document.getElementById(`${prefix}-aba-${a}`)?.classList.toggle('hidden', a !== aba);
+    const btn = document.getElementById(`tab-${prefix}-${a}`);
+    if (btn) { btn.classList.toggle('estoque-tab-ativa', a === aba); btn.classList.toggle('text-gray-400', a !== aba); }
+  });
+  const filtros = document.getElementById(`filtros-${prefix}`);
+  if (filtros) filtros.classList.toggle('hidden', aba === 'historico');
+  if (aba === 'historico') renderHistoricoEstoque(tipo);
+  else tipo === 'salao' ? renderEstoqueSalao() : renderEstoqueRevenda();
+}
+
+function popularFiltrosCategorias() {
+  const catEs = [...new Set(estoquesSalao.map(i => i.categoria).filter(Boolean))].sort();
+  const selEs = document.getElementById('es-cat-filtro');
+  if (selEs) selEs.innerHTML = '<option value="">Todas categorias</option>' + catEs.map(c => `<option>${esc(c)}</option>`).join('');
+
+  const catEr = [...new Set(estoquesRevenda.map(i => i.categoria).filter(Boolean))].sort();
+  const selEr = document.getElementById('er-cat-filtro');
+  if (selEr) selEr.innerHTML = '<option value="">Todas categorias</option>' + catEr.map(c => `<option>${esc(c)}</option>`).join('');
+}
+
+function toggleEstoqueBaixo(tipo) {
+  estoqueSoBaixo[tipo] = !estoqueSoBaixo[tipo];
+  const btnId = tipo === 'salao' ? 'btn-es-baixo' : 'btn-er-baixo';
+  const btn = document.getElementById(btnId);
+  if (btn) {
+    btn.classList.toggle('bg-red-100', estoqueSoBaixo[tipo]);
+    btn.classList.toggle('text-red-700', estoqueSoBaixo[tipo]);
+    btn.classList.toggle('border-red-300', estoqueSoBaixo[tipo]);
+    btn.classList.toggle('bg-white', !estoqueSoBaixo[tipo]);
+    btn.classList.toggle('text-gray-500', !estoqueSoBaixo[tipo]);
+    btn.classList.toggle('border-gray-200', !estoqueSoBaixo[tipo]);
+  }
+  tipo === 'salao' ? renderEstoqueSalao() : renderEstoqueRevenda();
+}
+
+async function registrarMovEstoque(tipo_item, item_id, tipo_mov, quantidade, motivo, agendamento_id) {
+  const rec = { tipo_item, item_id, tipo_mov, quantidade, motivo: motivo || null, agendamento_id: agendamento_id || null };
+  const { data } = await db.from('mov_estoque').insert(rec).select().single();
+  if (data) movEstoque.unshift(data);
+}
+
+function renderHistoricoEstoque(tipo) {
+  const tbodyId = tipo === 'salao' ? 'tabela-hist-es' : 'tabela-hist-er';
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  const lista = movEstoque.filter(m => m.tipo_item === tipo);
+  const itens = tipo === 'salao' ? estoquesSalao : estoquesRevenda;
+  tbody.innerHTML = lista.length === 0
+    ? `<tr><td colspan="5" class="text-center py-10 text-gray-400 text-sm">Nenhuma movimentação registrada</td></tr>`
+    : lista.map(m => {
+        const item = itens.find(i => i.id === m.item_id);
+        const badge = m.tipo_mov === 'entrada'
+          ? '<span class="badge bg-emerald-100 text-emerald-700">Entrada</span>'
+          : '<span class="badge bg-red-100 text-red-700">Saída</span>';
+        return `<tr class="border-b border-gray-50 hover:bg-gray-50">
+          <td class="px-6 py-3 text-gray-500 text-xs">${fmtData(m.created_at)}</td>
+          <td class="px-6 py-3 font-medium text-gray-800">${esc(item?.produto || '—')}</td>
+          <td class="px-6 py-3">${badge}</td>
+          <td class="px-6 py-3 font-bold text-gray-800">${m.quantidade}</td>
+          <td class="px-6 py-3 text-gray-500 text-xs">${esc(m.motivo || '—')}</td>
+        </tr>`;
+      }).join('');
+  lucide.createIcons();
+}
+
+// =========================================================
 // ESTOQUE SALÃO
 // =========================================================
 function renderEstoqueSalao() {
+  popularFiltrosCategorias();
+  const catFiltro  = document.getElementById('es-cat-filtro')?.value || '';
+  const soBaixo    = estoqueSoBaixo.salao;
+  let lista = estoquesSalao;
+  if (catFiltro) lista = lista.filter(i => (i.categoria || '') === catFiltro);
+  if (soBaixo)   lista = lista.filter(i => parseFloat(i.quantidade) <= parseFloat(i.quantidade_minima));
+
   const tbody = document.getElementById('tabela-estoque-salao');
+  if (!tbody) return;
   const tabelaEs = tbody.closest('table');
   if (tabelaEs) tabelaEs.classList.add('mobile-card-list');
-  tbody.innerHTML = estoquesSalao.map(item => {
+  tbody.innerHTML = lista.length === 0
+    ? `<tr><td colspan="6" class="text-center py-10 text-gray-400 text-sm">${soBaixo || catFiltro ? 'Nenhum item encontrado' : 'Nenhum item cadastrado'}</td></tr>`
+    : lista.map(item => {
     const baixo = parseFloat(item.quantidade) <= parseFloat(item.quantidade_minima);
     return `
     <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors ${baixo ? 'bg-red-50' : ''}">
@@ -2763,8 +2986,7 @@ function renderEstoqueSalao() {
           </button>
         </div>
       </td>
-    </tr>
-  `;
+    </tr>`;
   }).join('');
   lucide.createIcons();
 }
@@ -2776,6 +2998,7 @@ async function ajustarQty(id, qtyAtual, delta, unidade) {
     if (error) throw error;
     const idx = estoquesSalao.findIndex(e => e.id === id);
     if (idx !== -1) estoquesSalao[idx].quantidade = novaQty;
+    await registrarMovEstoque('salao', id, delta > 0 ? 'entrada' : 'saida', Math.abs(delta), 'Ajuste rápido');
     renderEstoqueSalao();
   } catch (e) {
     showToast('Erro: ' + e.message, 'error');
@@ -2786,18 +3009,23 @@ function abrirAjusteModal(id, produto, qtyAtual) {
   document.getElementById('ajustar-id').value = id;
   document.getElementById('ajustar-produto-nome').textContent = produto;
   document.getElementById('ajustar-qty').value = qtyAtual;
+  document.getElementById('ajustar-motivo').value = '';
   abrirModal('modal-ajustar-qty');
 }
 
 async function confirmarAjusteQty() {
-  const id  = document.getElementById('ajustar-id').value;
-  const qty = parseFloat(document.getElementById('ajustar-qty').value);
+  const id     = document.getElementById('ajustar-id').value;
+  const qty    = parseFloat(document.getElementById('ajustar-qty').value);
+  const motivo = document.getElementById('ajustar-motivo')?.value?.trim() || 'Ajuste manual';
   if (isNaN(qty) || qty < 0) { showToast('Quantidade inválida', 'error'); return; }
   try {
+    const itemAtual = estoquesSalao.find(e => e.id === id);
+    const delta = qty - (parseFloat(itemAtual?.quantidade) || 0);
     const { error } = await db.from('estoque_salao').update({ quantidade: qty, updated_at: new Date().toISOString() }).eq('id', id);
     if (error) throw error;
     const idx = estoquesSalao.findIndex(e => e.id === id);
     if (idx !== -1) estoquesSalao[idx].quantidade = qty;
+    if (delta !== 0) await registrarMovEstoque('salao', id, delta > 0 ? 'entrada' : 'saida', Math.abs(delta), motivo);
     showToast('Quantidade atualizada!', 'success');
     fecharModal('modal-ajustar-qty');
     renderEstoqueSalao();
@@ -2861,19 +3089,32 @@ async function salvarEstoqueSalao(e) {
 // ESTOQUE REVENDA
 // =========================================================
 function renderEstoqueRevenda() {
+  popularFiltrosCategorias();
+  const catFiltro = document.getElementById('er-cat-filtro')?.value || '';
+  const soBaixo   = estoqueSoBaixo.revenda;
+  let lista = estoquesRevenda;
+  if (catFiltro) lista = lista.filter(i => (i.categoria || '') === catFiltro);
+  if (soBaixo)   lista = lista.filter(i => parseInt(i.quantidade) <= 0);
+
   const tbody = document.getElementById('tabela-estoque-revenda');
+  if (!tbody) return;
   const tabelaEr = tbody.closest('table');
   if (tabelaEr) tabelaEr.classList.add('mobile-card-list');
-  tbody.innerHTML = estoquesRevenda.map(item => {
+  tbody.innerHTML = lista.length === 0
+    ? `<tr><td colspan="7" class="text-center py-10 text-gray-400 text-sm">${soBaixo || catFiltro ? 'Nenhum item encontrado' : 'Nenhum produto cadastrado'}</td></tr>`
+    : lista.map(item => {
     const custo  = parseFloat(item.preco_custo) || 0;
     const venda  = parseFloat(item.preco_venda) || 0;
     const margem = custo > 0 ? ((venda - custo) / custo * 100).toFixed(1) : '—';
     const margemNum = custo > 0 ? (venda - custo) / custo * 100 : null;
+    const semEstoque = parseInt(item.quantidade) <= 0;
     return `
-    <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-      <td class="px-6 py-4 font-semibold text-gray-800">${esc(item.produto)}</td>
+    <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors ${semEstoque ? 'opacity-60' : ''}">
+      <td class="px-6 py-4 font-semibold text-gray-800">
+        ${semEstoque ? '<span title="Sem estoque" class="text-red-400 mr-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5 inline"></i></span>' : ''}${esc(item.produto)}
+      </td>
       <td class="px-6 py-4 text-gray-500" data-label="Categoria">${esc(item.categoria || '—')}</td>
-      <td class="px-6 py-4 font-bold text-gray-800" data-label="Qtd">${item.quantidade}</td>
+      <td class="px-6 py-4 font-bold ${semEstoque ? 'text-red-600' : 'text-gray-800'}" data-label="Qtd">${item.quantidade}</td>
       <td class="px-6 py-4 text-gray-600" data-label="Custo">${fmtPreco(item.preco_custo)}</td>
       <td class="px-6 py-4 font-semibold text-gray-800" data-label="Venda">${fmtPreco(item.preco_venda)}</td>
       <td class="px-6 py-4" data-label="Margem">
@@ -2891,8 +3132,7 @@ function renderEstoqueRevenda() {
           </button>
         </div>
       </td>
-    </tr>
-  `;
+    </tr>`;
   }).join('');
   lucide.createIcons();
 }
@@ -2959,6 +3199,76 @@ async function excluirEstoqueRevenda(id) {
   } catch (e) {
     showToast('Erro: ' + e.message, 'error');
   }
+}
+
+// =========================================================
+// COMANDA — PRODUTOS DE REVENDA
+// =========================================================
+function toggleAddProduto() {
+  const panel = document.getElementById('add-produto-panel');
+  const itemPanel = document.getElementById('add-item-panel');
+  const isHidden = panel.classList.contains('hidden');
+  itemPanel.classList.add('hidden');
+  panel.classList.toggle('hidden', !isHidden);
+  if (isHidden) popularSelectProdutos();
+}
+
+function popularSelectProdutos() {
+  const sel = document.getElementById('produto-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione o produto...</option>'
+    + estoquesRevenda.filter(p => parseInt(p.quantidade) > 0).map(p =>
+        `<option value="${p.id}" data-preco="${p.preco_venda}" data-qty="${p.quantidade}">${esc(p.produto)} (${p.quantidade} em estoque)</option>`
+      ).join('');
+}
+
+function preencherValorProduto() {
+  const sel = document.getElementById('produto-select');
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('produto-valor').value = opt?.dataset?.preco || '';
+}
+
+function atualizarTotalProduto() { /* valor já está no input */ }
+
+function confirmarAddProduto() {
+  const sel    = document.getElementById('produto-select');
+  const prodId = sel.value;
+  if (!prodId) { showToast('Selecione um produto', 'error'); return; }
+  const qty    = parseInt(document.getElementById('produto-qty').value) || 1;
+  const valor  = parseFloat(document.getElementById('produto-valor').value) || 0;
+  const prod   = estoquesRevenda.find(p => p.id === prodId);
+  if (!prod) return;
+  if (qty > parseInt(prod.quantidade)) { showToast('Quantidade maior que o estoque disponível', 'error'); return; }
+
+  const existing = comandaProdutos.find(p => p.produto_id === prodId);
+  if (existing) { existing.quantidade += qty; existing.preco_unitario = valor; }
+  else { comandaProdutos.push({ produto_id: prodId, quantidade: qty, preco_unitario: valor, _nome: prod.produto }); }
+
+  renderComanadProdutos();
+  document.getElementById('produto-select').value = '';
+  document.getElementById('produto-qty').value = 1;
+  document.getElementById('produto-valor').value = '';
+  atualizarTotalComanda();
+}
+
+function renderComanadProdutos() {
+  const lista = document.getElementById('comanda-produtos-lista');
+  if (!lista) return;
+  lista.innerHTML = comandaProdutos.map((p, i) =>
+    `<div class="flex items-center justify-between bg-amber-50 rounded-lg px-2 py-1">
+      <span class="font-medium text-amber-800">${esc(p._nome)} × ${p.quantidade}</span>
+      <div class="flex items-center gap-2">
+        <span class="text-amber-700 font-bold">${fmtPreco(p.preco_unitario * p.quantidade)}</span>
+        <button onclick="removerComanadProduto(${i})" class="text-red-400 hover:text-red-600 text-xs">✕</button>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function removerComanadProduto(idx) {
+  comandaProdutos.splice(idx, 1);
+  renderComanadProdutos();
+  atualizarTotalComanda();
 }
 
 // =========================================================

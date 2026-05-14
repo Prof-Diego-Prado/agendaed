@@ -3590,13 +3590,17 @@ function setEstoqueAba(tipo, aba) {
 }
 
 function popularFiltrosCategorias() {
-  const catEs = [...new Set(estoquesSalao.map(i => i.categoria).filter(Boolean))].sort();
-  const selEs = document.getElementById('es-cat-filtro');
-  if (selEs) selEs.innerHTML = '<option value="">Todas categorias</option>' + catEs.map(c => `<option>${esc(c)}</option>`).join('');
+  const selEs  = document.getElementById('es-cat-filtro');
+  const prevEs = selEs?.value || '';
+  const catEs  = [...new Set(estoquesSalao.map(i => i.categoria).filter(Boolean))].sort();
+  if (selEs) selEs.innerHTML = '<option value="">Todas categorias</option>' +
+    catEs.map(c => `<option value="${esc(c)}"${c === prevEs ? ' selected' : ''}>${esc(c)}</option>`).join('');
 
-  const catEr = [...new Set(estoquesRevenda.map(i => i.categoria).filter(Boolean))].sort();
-  const selEr = document.getElementById('er-cat-filtro');
-  if (selEr) selEr.innerHTML = '<option value="">Todas categorias</option>' + catEr.map(c => `<option>${esc(c)}</option>`).join('');
+  const selEr  = document.getElementById('er-cat-filtro');
+  const prevEr = selEr?.value || '';
+  const catEr  = [...new Set(estoquesRevenda.map(i => i.categoria).filter(Boolean))].sort();
+  if (selEr) selEr.innerHTML = '<option value="">Todas categorias</option>' +
+    catEr.map(c => `<option value="${esc(c)}"${c === prevEr ? ' selected' : ''}>${esc(c)}</option>`).join('');
 }
 
 function toggleEstoqueBaixo(tipo) {

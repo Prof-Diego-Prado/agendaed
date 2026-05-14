@@ -235,6 +235,7 @@
 /* Esconde topbar mobile em desktop */
 #mobile-topbar { display: none; }
 #sidebar-overlay { display: none; }
+.serv-aba.ativa { color: #72403e; border-bottom-color: #72403e; }
   </style>
 </head>
 <body class="font-sans h-screen overflow-hidden flex" style="background:var(--bg)">
@@ -442,14 +443,24 @@
 
   <!-- ====== VIEW: SERVIÇOS ====== -->
   <div id="view-servicos" class="view">
-    <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
-      <h2 class="text-lg font-bold text-gray-800">Serviços</h2>
-      <button onclick="abrirModalServico()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
-        <i data-lucide="plus" class="w-4 h-4"></i>
-        Novo serviço
-      </button>
+    <!-- Header com abas -->
+    <div class="bg-white border-b border-gray-100 flex-shrink-0">
+      <div class="px-4 md:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-lg font-bold text-gray-800">Serviços</h2>
+        <div class="flex gap-2">
+          <button id="btn-novo-servico" onclick="abrirModalServico()" class="flex items-center gap-2 bg-gradient-to-r from-[#72403e] to-[#997776] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span id="btn-novo-servico-label">Novo serviço</span>
+          </button>
+        </div>
+      </div>
+      <div class="flex px-4 md:px-6 gap-1">
+        <button onclick="setServicoAba('servicos')" id="serv-aba-servicos" class="serv-aba px-4 py-2 text-sm font-semibold text-gray-500 border-b-2 border-transparent">Serviços</button>
+        <button onclick="setServicoAba('pacotes')" id="serv-aba-pacotes" class="serv-aba px-4 py-2 text-sm font-semibold text-gray-500 border-b-2 border-transparent">Pacotes</button>
+      </div>
     </div>
-    <div class="flex-1 overflow-auto p-6">
+    <!-- Aba Serviços -->
+    <div id="serv-tab-servicos" class="flex-1 overflow-auto p-4 md:p-6">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table class="w-full text-sm">
           <thead>
@@ -464,6 +475,14 @@
           </thead>
           <tbody id="tabela-servicos"></tbody>
         </table>
+      </div>
+    </div>
+    <!-- Aba Pacotes -->
+    <div id="serv-tab-pacotes" class="hidden flex-1 overflow-auto p-4 md:p-6">
+      <div id="grid-pacotes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <div id="empty-pacotes" class="hidden text-center py-16 text-gray-400">
+        <i data-lucide="package" class="w-12 h-12 mx-auto mb-3 opacity-30"></i>
+        <p class="text-sm">Nenhum pacote cadastrado</p>
       </div>
     </div>
   </div>
@@ -959,20 +978,74 @@
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-1.5">Categoria</label>
-          <input type="text" id="servico-categoria" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Cabelo, Unhas..." />
+          <input type="text" id="servico-categoria" list="categorias-lista" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Cabelo, Unhas..." />
+          <datalist id="categorias-lista"></datalist>
         </div>
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Duração (min) *</label>
-          <input type="number" id="servico-duracao" required min="5" step="5" value="60" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cor da Categoria</label>
+          <div class="flex items-center gap-2">
+            <input type="color" id="servico-cor-categoria" value="#997776" class="w-10 h-10 rounded-xl border border-gray-200 cursor-pointer p-1 flex-shrink-0" />
+            <span class="text-xs text-gray-400">Tag na agenda</span>
+          </div>
         </div>
       </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Preço (R$) *</label>
-        <input type="number" id="servico-preco" required min="0" step="0.01" value="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Duração *</label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="servico-duracao-h" min="0" max="8" value="1" class="w-16 px-2 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-center" />
+            <span class="text-gray-400 font-semibold">h</span>
+            <input type="number" id="servico-duracao-m" min="0" max="55" step="5" value="0" class="w-16 px-2 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-center" />
+            <span class="text-gray-400 font-semibold">min</span>
+          </div>
+          <input type="hidden" id="servico-duracao" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Preço (R$) *</label>
+          <input type="number" id="servico-preco" required min="0" step="0.01" value="0" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+        </div>
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button type="button" onclick="fecharModal('modal-servico')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
         <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#72403e] to-[#997776] rounded-xl shadow hover:shadow-md transition-all">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Pacote -->
+<div id="modal-pacote" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-pacote')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <h3 id="modal-pacote-titulo" class="text-lg font-bold text-gray-800">Novo Pacote</h3>
+      <button onclick="fecharModal('modal-pacote')" class="p-2 hover:bg-gray-100 rounded-xl">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <form id="form-pacote" onsubmit="salvarPacote(event)" class="p-6 space-y-4">
+      <input type="hidden" id="pacote-id" />
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nome do Pacote *</label>
+        <input type="text" id="pacote-nome" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" placeholder="Ex: Pacote Noiva, Pacote Verão..." />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Descrição</label>
+        <textarea id="pacote-descricao" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none" placeholder="Descreva o pacote..."></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Preço Promocional (R$) *</label>
+        <input type="number" id="pacote-preco" required min="0" step="0.01" placeholder="0,00" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white" />
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-sm font-semibold text-gray-700">Serviços incluídos *</label>
+          <span id="pacote-preco-avulso" class="text-xs text-gray-400"></span>
+        </div>
+        <div id="pacote-servicos-lista" class="space-y-1.5 max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-gray-50"></div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="fecharModal('modal-pacote')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl">Cancelar</button>
+        <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow" style="background:linear-gradient(to right,#72403e,#997776)">Salvar</button>
       </div>
     </form>
   </div>
@@ -1273,6 +1346,8 @@ let currentView    = 'agendamentos';
 let funcionarios   = [];
 let clientes       = [];
 let servicos       = [];
+let pacotes        = [];
+let pacoteItens    = [];
 let agendamentos   = [];
 let estoquesSalao  = [];
 let estoquesRevenda = [];
@@ -1380,7 +1455,7 @@ async function init() {
 
 async function carregarDados() {
   try {
-    const [f, c, s, a, es, er, dp, deb] = await Promise.all([
+    const [f, c, s, a, es, er, dp, deb, pac, pit] = await Promise.all([
       db.from('funcionarios').select('*').eq('ativo', true).order('nome'),
       db.from('clientes').select('*').order('nome'),
       db.from('servicos').select('*').order('nome'),
@@ -1389,6 +1464,8 @@ async function carregarDados() {
       db.from('estoque_revenda').select('*').order('produto'),
       db.from('despesas').select('*').order('data', { ascending: false }),
       db.from('debitos_clientes').select('*').order('created_at', { ascending: false }),
+      db.from('pacotes').select('*').order('nome'),
+      db.from('pacote_itens').select('*'),
     ]);
     if (f.error) throw f.error;
     if (c.error) throw c.error;
@@ -1401,6 +1478,8 @@ async function carregarDados() {
     estoquesRevenda = er.data || [];
     despesas        = dp.data || [];
     debitosClientes = deb.data || [];
+    pacotes         = pac.data || [];
+    pacoteItens     = pit.data || [];
   } catch (e) {
     showToast('Erro ao carregar dados: ' + e.message, 'error');
   }
@@ -1431,7 +1510,7 @@ function renderView(view) {
     case 'agendamentos':    renderCalendario(); break;
     case 'clientes':        renderClientes(); break;
     case 'funcionarias':    renderFuncionarias(); break;
-    case 'servicos':        renderServicos(); break;
+    case 'servicos':        renderServicos(); setServicoAba(servicoAbaAtiva); break;
     case 'estoque-salao':   renderEstoqueSalao(); break;
     case 'estoque-revenda': renderEstoqueRevenda(); break;
     case 'fechamento':      renderFechamento(); break;
@@ -1754,6 +1833,10 @@ function posicionarBloco(colDiv, ag) {
   block.style.height = height + 'px';
   block.style.background = corBg;
   block.style.borderLeft = '3px solid ' + statusCor;
+  // Se o serviço tem cor de categoria, usa como acento no topo do bloco
+  if (servico?.cor_categoria) {
+    block.style.borderTop = '2px solid ' + servico.cor_categoria;
+  }
   block.style.color = '#374151';
 
   const hh = String(d.getHours()).padStart(2,'0');
@@ -2504,17 +2587,54 @@ async function salvarFuncionaria(e) {
 }
 
 // =========================================================
+// ABAS VIEW SERVIÇOS
+// =========================================================
+let servicoAbaAtiva = 'servicos';
+
+function setServicoAba(aba) {
+  servicoAbaAtiva = aba;
+  ['servicos','pacotes'].forEach(t => {
+    document.getElementById('serv-tab-' + t)?.classList.add('hidden');
+    document.getElementById('serv-aba-' + t)?.classList.remove('ativa');
+  });
+  document.getElementById('serv-tab-' + aba)?.classList.remove('hidden');
+  document.getElementById('serv-aba-' + aba)?.classList.add('ativa');
+  const btnLabel = document.getElementById('btn-novo-servico-label');
+  const btnEl    = document.getElementById('btn-novo-servico');
+  if (aba === 'pacotes') {
+    if (btnLabel) btnLabel.textContent = 'Novo pacote';
+    if (btnEl) btnEl.setAttribute('onclick', 'abrirModalPacote()');
+    renderPacotes();
+  } else {
+    if (btnLabel) btnLabel.textContent = 'Novo serviço';
+    if (btnEl) btnEl.setAttribute('onclick', 'abrirModalServico()');
+    renderServicos();
+  }
+}
+
+// =========================================================
 // SERVIÇOS
 // =========================================================
 function renderServicos() {
   const tbody = document.getElementById('tabela-servicos');
   const tabela = tbody.closest('table');
   if (tabela) tabela.classList.add('mobile-card-list');
-  tbody.innerHTML = servicos.map(s => `
+  tbody.innerHTML = servicos.map(s => {
+    const h = Math.floor((s.duracao_min || 0) / 60);
+    const m = (s.duracao_min || 0) % 60;
+    const durStr = h > 0 ? `${h}h${m > 0 ? m + 'min' : ''}` : `${m}min`;
+    const corTag = s.cor_categoria
+      ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.cor_categoria};margin-right:5px;flex-shrink:0"></span>`
+      : '';
+    return `
     <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
       <td class="px-6 py-4 font-semibold text-gray-800">${esc(s.nome)}</td>
-      <td class="px-6 py-4 text-gray-500" data-label="Categoria">${esc(s.categoria || '—')}</td>
-      <td class="px-6 py-4 text-gray-600" data-label="Duração">${s.duracao_min} min</td>
+      <td class="px-6 py-4" data-label="Categoria">
+        <div class="flex items-center gap-1">
+          ${corTag}<span class="text-gray-500">${esc(s.categoria || '—')}</span>
+        </div>
+      </td>
+      <td class="px-6 py-4 text-gray-600" data-label="Duração">${durStr}</td>
       <td class="px-6 py-4 font-semibold text-gray-800" data-label="Preço">${fmtPreco(s.preco)}</td>
       <td class="px-6 py-4" data-label="Status">
         <span class="badge ${s.ativo ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}">${s.ativo ? 'Ativo' : 'Inativo'}</span>
@@ -2529,8 +2649,8 @@ function renderServicos() {
           </button>
         </div>
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
   lucide.createIcons();
 }
 
@@ -2538,6 +2658,11 @@ function abrirModalServico() {
   document.getElementById('modal-servico-titulo').textContent = 'Novo Serviço';
   document.getElementById('form-servico').reset();
   document.getElementById('servico-id').value = '';
+  document.getElementById('servico-duracao-h').value = 1;
+  document.getElementById('servico-duracao-m').value = 0;
+  document.getElementById('servico-cor-categoria').value = '#997776';
+  const cats = [...new Set(servicos.map(s => s.categoria).filter(Boolean))];
+  document.getElementById('categorias-lista').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
   abrirModal('modal-servico');
 }
 
@@ -2548,19 +2673,29 @@ function editarServico(id) {
   document.getElementById('servico-id').value = s.id;
   document.getElementById('servico-nome').value = s.nome || '';
   document.getElementById('servico-categoria').value = s.categoria || '';
-  document.getElementById('servico-duracao').value = s.duracao_min || 60;
+  document.getElementById('servico-cor-categoria').value = s.cor_categoria || '#997776';
+  const h = Math.floor((s.duracao_min || 60) / 60);
+  const m = (s.duracao_min || 60) % 60;
+  document.getElementById('servico-duracao-h').value = h;
+  document.getElementById('servico-duracao-m').value = m;
   document.getElementById('servico-preco').value = s.preco || 0;
+  const cats = [...new Set(servicos.map(sv => sv.categoria).filter(Boolean))];
+  document.getElementById('categorias-lista').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
   abrirModal('modal-servico');
 }
 
 async function salvarServico(e) {
   e.preventDefault();
   const id = document.getElementById('servico-id').value;
+  const h  = parseInt(document.getElementById('servico-duracao-h').value) || 0;
+  const m  = parseInt(document.getElementById('servico-duracao-m').value) || 0;
+  const duracao_min = h * 60 + m || 30;
   const payload = {
-    nome:        document.getElementById('servico-nome').value.trim(),
-    categoria:   document.getElementById('servico-categoria').value.trim() || null,
-    duracao_min: parseInt(document.getElementById('servico-duracao').value),
-    preco:       parseFloat(document.getElementById('servico-preco').value),
+    nome:          document.getElementById('servico-nome').value.trim(),
+    categoria:     document.getElementById('servico-categoria').value.trim() || null,
+    cor_categoria: document.getElementById('servico-cor-categoria').value || null,
+    duracao_min,
+    preco:         parseFloat(document.getElementById('servico-preco').value) || 0,
   };
   try {
     let err;
@@ -2575,9 +2710,7 @@ async function salvarServico(e) {
     const { data } = await db.from('servicos').select('*').order('nome');
     servicos = data || [];
     renderServicos();
-  } catch (e) {
-    showToast('Erro: ' + e.message, 'error');
-  }
+  } catch (e) { showToast('Erro: ' + e.message, 'error'); }
 }
 
 async function toggleServico(id, ativo) {
@@ -3493,6 +3626,147 @@ function renderHistoricoCliente() {
         </div>
       </div>`;
     }).join('');
+}
+
+// =========================================================
+// PACOTES DE SERVIÇOS
+// =========================================================
+function renderPacotes() {
+  const grid  = document.getElementById('grid-pacotes');
+  const empty = document.getElementById('empty-pacotes');
+  if (!grid) return;
+  if (!pacotes.length) {
+    grid.innerHTML = '';
+    empty?.classList.remove('hidden');
+    return;
+  }
+  empty?.classList.add('hidden');
+  grid.innerHTML = pacotes.map(p => {
+    const itens = pacoteItens.filter(i => i.pacote_id === p.id);
+    const servNomes = itens.map(i => servicos.find(s => s.id === i.servico_id)?.nome || '?');
+    const precoAvulso = itens.reduce((sum, i) => {
+      const s = servicos.find(sv => sv.id === i.servico_id);
+      return sum + (s?.preco || 0);
+    }, 0);
+    const economia = precoAvulso - p.preco_promocional;
+    return `
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-gray-100" style="background:#f6f0ea55">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <div class="font-bold text-gray-800">${esc(p.nome)}</div>
+            ${p.descricao ? `<div class="text-xs text-gray-400 mt-0.5">${esc(p.descricao)}</div>` : ''}
+          </div>
+          <span class="badge ${p.ativo ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'} text-xs flex-shrink-0">${p.ativo ? 'Ativo' : 'Inativo'}</span>
+        </div>
+      </div>
+      <div class="px-5 py-3 space-y-1">
+        ${servNomes.map(n => `<div class="flex items-center gap-2 text-sm text-gray-600"><i data-lucide="check" style="width:14px;height:14px;color:#10b981;flex-shrink:0"></i>${esc(n)}</div>`).join('')}
+      </div>
+      <div class="px-5 py-3 border-t border-gray-100 flex items-end justify-between">
+        <div>
+          <div class="text-xs text-gray-400 line-through">${fmtPreco(precoAvulso)}</div>
+          <div class="text-lg font-bold" style="color:#72403e">${fmtPreco(p.preco_promocional)}</div>
+          ${economia > 0 ? `<div class="text-xs font-semibold text-emerald-600">Economia de ${fmtPreco(economia)}</div>` : ''}
+        </div>
+        <div class="flex gap-2">
+          <button onclick="editarPacote('${p.id}')" class="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </button>
+          <button onclick="excluirPacote('${p.id}')" class="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function abrirModalPacote(id) {
+  document.getElementById('modal-pacote-titulo').textContent = id ? 'Editar Pacote' : 'Novo Pacote';
+  document.getElementById('form-pacote').reset();
+  document.getElementById('pacote-id').value = id || '';
+  if (id) {
+    const p = pacotes.find(x => x.id === id);
+    if (p) {
+      document.getElementById('pacote-nome').value      = p.nome || '';
+      document.getElementById('pacote-descricao').value = p.descricao || '';
+      document.getElementById('pacote-preco').value     = p.preco_promocional || '';
+    }
+  }
+  // Lista de checkboxes de serviços
+  const selecionados = id ? pacoteItens.filter(i => i.pacote_id === id).map(i => i.servico_id) : [];
+  const lista = document.getElementById('pacote-servicos-lista');
+  lista.innerHTML = servicos.filter(s => s.ativo).map(s => `
+    <label class="flex items-center gap-2 text-sm cursor-pointer py-0.5">
+      <input type="checkbox" value="${s.id}" ${selecionados.includes(s.id) ? 'checked' : ''}
+        class="pacote-serv-check w-4 h-4 rounded" onchange="atualizarPrecoAvulso()" />
+      <span class="flex-1">${esc(s.nome)}</span>
+      <span class="text-gray-400 text-xs">${fmtPreco(s.preco)}</span>
+    </label>
+  `).join('');
+  atualizarPrecoAvulso();
+  abrirModal('modal-pacote');
+  lucide.createIcons();
+}
+
+function editarPacote(id) { abrirModalPacote(id); }
+
+function atualizarPrecoAvulso() {
+  const checks = document.querySelectorAll('.pacote-serv-check:checked');
+  const total  = Array.from(checks).reduce((s, cb) => {
+    const serv = servicos.find(sv => sv.id === cb.value);
+    return s + (serv?.preco || 0);
+  }, 0);
+  const el = document.getElementById('pacote-preco-avulso');
+  if (el) el.textContent = total > 0 ? `Preço avulso: ${fmtPreco(total)}` : '';
+}
+
+async function salvarPacote(e) {
+  e.preventDefault();
+  const id = document.getElementById('pacote-id').value;
+  const selecionados = Array.from(document.querySelectorAll('.pacote-serv-check:checked')).map(cb => cb.value);
+  if (!selecionados.length) { showToast('Selecione ao menos um serviço', 'error'); return; }
+  const payload = {
+    nome:              document.getElementById('pacote-nome').value.trim(),
+    descricao:         document.getElementById('pacote-descricao').value.trim() || null,
+    preco_promocional: parseFloat(document.getElementById('pacote-preco').value) || 0,
+  };
+  try {
+    let pacoteId = id;
+    let err;
+    if (id) {
+      ({ error: err } = await db.from('pacotes').update(payload).eq('id', id));
+    } else {
+      const { data: novo, error: e2 } = await db.from('pacotes').insert(payload).select().single();
+      err = e2; pacoteId = novo?.id;
+    }
+    if (err) throw err;
+    // Recria itens
+    await db.from('pacote_itens').delete().eq('pacote_id', pacoteId);
+    const itensPayload = selecionados.map(sid => ({ pacote_id: pacoteId, servico_id: sid }));
+    await db.from('pacote_itens').insert(itensPayload);
+    // Recarrega
+    const [{ data: pacs }, { data: pitens }] = await Promise.all([
+      db.from('pacotes').select('*').order('nome'),
+      db.from('pacote_itens').select('*'),
+    ]);
+    pacotes = pacs || []; pacoteItens = pitens || [];
+    showToast(id ? 'Pacote atualizado!' : 'Pacote criado!', 'success');
+    fecharModal('modal-pacote');
+    renderPacotes();
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function excluirPacote(id) {
+  if (!confirm('Excluir este pacote?')) return;
+  const { error } = await db.from('pacotes').delete().eq('id', id);
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+  pacotes = pacotes.filter(p => p.id !== id);
+  pacoteItens = pacoteItens.filter(i => i.pacote_id !== id);
+  showToast('Pacote excluído', 'success');
+  renderPacotes();
 }
 
 // =========================================================

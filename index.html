@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Studio Érika Daiany</title>
+  <link rel="icon" type="image/png" href="./logo.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { darkMode: 'class' };</script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -314,11 +315,15 @@
 </div>
 
 <!-- ============================================================ SIDEBAR -->
-<aside id="sidebar" class="w-64 flex-shrink-0 bg-gradient-to-b from-[#1a1a1a] to-[#111111] flex flex-col text-white shadow-xl">
-  <div class="flex items-center justify-between px-4 py-4">
+<aside id="sidebar" class="w-64 flex-shrink-0 bg-gradient-to-b from-[#1a1a1a] to-[#111111] flex flex-col text-white shadow-xl relative overflow-hidden">
+  <!-- marca d'água -->
+  <div class="pointer-events-none select-none absolute inset-0 flex items-end justify-center pb-6 z-0">
+    <img src="./logo.png" alt="" aria-hidden="true" style="width:180px;opacity:0.06;filter:invert(1)" />
+  </div>
+  <div class="flex items-center justify-between px-4 py-4 relative z-10">
     <div class="flex items-center gap-3 studio-info">
-      <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-        <i data-lucide="scissors" class="w-4 h-4"></i>
+      <div class="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0 p-1">
+        <img src="./logo.png" alt="ED" style="width:28px;height:28px;object-fit:contain;filter:invert(1)" />
       </div>
       <div>
         <p class="text-xs text-white/70 leading-none">Studio</p>
@@ -330,7 +335,7 @@
     </button>
   </div>
 
-  <nav class="flex-1 px-3 space-y-1">
+  <nav class="flex-1 px-3 space-y-1 relative z-10">
     <button class="sidebar-item active w-full" onclick="navTo('agendamentos')">
       <i data-lucide="calendar" class="sidebar-icon"></i>
       <span class="sidebar-label">Atendimentos</span>
@@ -379,7 +384,7 @@
     </button>
   </nav>
 
-  <div class="p-4 text-xs text-white/40 text-center sidebar-footer">
+  <div class="p-4 text-xs text-white/40 text-center sidebar-footer relative z-10">
     Studio Érika Daiany © 2026
   </div>
 </aside>

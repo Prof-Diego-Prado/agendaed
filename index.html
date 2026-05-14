@@ -784,6 +784,9 @@
         <span id="comanda-status-badge" class="badge text-xs px-2 py-0.5 rounded-full"></span>
       </div>
       <div class="flex items-center gap-2">
+        <button id="btn-anamnese-comanda" onclick="verAnamneseComanda()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#72403e] rounded-xl transition-colors" style="background:#f6f0ea">
+          <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Ficha
+        </button>
         <button id="btn-whatsapp-comanda" onclick="enviarWhatsApp()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-xl transition-colors" style="background:#25D366">
           <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
         </button>
@@ -882,6 +885,22 @@
       </button>
     </div>
 
+  </div>
+</div>
+
+<!-- Modal Anamnese Visualização -->
+<div id="modal-anamnese-view" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-anamnese-view')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800">Ficha de Anamnese</h3>
+        <p id="anamnese-view-cliente" class="text-sm text-gray-500 mt-0.5"></p>
+      </div>
+      <button onclick="fecharModal('modal-anamnese-view')" class="p-2 hover:bg-gray-100 rounded-xl">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <div id="anamnese-view-conteudo" class="p-6 space-y-4 overflow-y-auto" style="max-height:65vh"></div>
   </div>
 </div>
 
@@ -2586,6 +2605,56 @@ function fmtWhatsAppNum(tel) {
   if (!d || d.length < 8) return null;
   if (d.startsWith('55') && d.length >= 12) return d;
   return '55' + d;
+}
+
+function verAnamneseComanda() {
+  const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  if (!ag) return;
+  const cli = clientes.find(c => c.id === ag.cliente_id);
+  const dados = cli?.anamnese || {};
+  const template = getAnamTemplate();
+
+  document.getElementById('anamnese-view-cliente').textContent = cli?.nome || '';
+
+  const preenchidos = template.filter(f => {
+    const v = dados[f.id];
+    if (f.tipo === 'boolean') return !!v;
+    return v !== undefined && v !== null && v !== '';
+  });
+
+  if (!preenchidos.length) {
+    document.getElementById('anamnese-view-conteudo').innerHTML =
+      `<p class="text-sm text-gray-400 text-center py-10">Nenhuma informação de anamnese registrada para esta cliente.</p>`;
+    abrirModal('modal-anamnese-view');
+    return;
+  }
+
+  // Separate booleans to group them
+  const nonBool = preenchidos.filter(f => f.tipo !== 'boolean');
+  const bools   = preenchidos.filter(f => f.tipo === 'boolean');
+
+  let html = nonBool.map(f => {
+    const v = dados[f.id];
+    const display = f.tipo === 'checkbox_group'
+      ? (v || '').split(',').map(s => s.trim()).filter(Boolean).map(s => `<span class="inline-block px-2 py-0.5 bg-[#f6f0ea] text-[#72403e] rounded-lg text-xs font-medium">${esc(s)}</span>`).join(' ')
+      : `<span class="text-sm text-gray-800">${esc(v)}</span>`;
+    return `<div class="flex flex-col gap-1">
+      <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">${esc(f.label)}</span>
+      <div>${display}</div>
+    </div>`;
+  }).join('');
+
+  if (bools.length) {
+    html += `<div class="flex flex-col gap-1">
+      <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Informações adicionais</span>
+      <div class="flex flex-wrap gap-2">${bools.map(f =>
+        `<span class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold">✓ ${esc(f.label)}</span>`
+      ).join('')}</div>
+    </div>`;
+  }
+
+  document.getElementById('anamnese-view-conteudo').innerHTML = html;
+  abrirModal('modal-anamnese-view');
 }
 
 function enviarWhatsApp() {

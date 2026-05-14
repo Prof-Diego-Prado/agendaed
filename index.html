@@ -891,6 +891,9 @@
 
     <!-- Ações -->
     <div id="comanda-acoes" class="flex gap-2 px-5 pb-5 pt-2 border-t border-gray-100">
+      <button id="btn-excluir-comanda" onclick="excluirAgendamento()" class="hidden p-2.5 text-red-400 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 rounded-xl transition-all" title="Excluir agendamento">
+        <i data-lucide="trash-2" class="w-4 h-4"></i>
+      </button>
       <button id="btn-faltou-comanda" onclick="atualizarStatusComanda('faltou')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors">Faltou</button>
       <button id="btn-cancelar-comanda" onclick="atualizarStatusComanda('cancelado')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors">Cancelar</button>
       <button id="btn-fechar-comanda" onclick="fecharComanda()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl shadow flex items-center justify-center gap-1.5 transition-all" style="background:linear-gradient(to right,#72403e,#997776)">
@@ -2387,7 +2390,8 @@ async function abrirDetalheAgendamento(id) {
 
   // Exibe/oculta botões de ação conforme status
   const fechado = ag.status === 'concluido' || ag.status === 'cancelado';
-  document.getElementById('btn-faltou-comanda').style.display  = (ag.status==='faltou'||fechado) ? 'none' : '';
+  document.getElementById('btn-excluir-comanda').style.display  = ag.status === 'cancelado' ? '' : 'none';
+  document.getElementById('btn-faltou-comanda').style.display   = (ag.status==='faltou'||fechado) ? 'none' : '';
   document.getElementById('btn-cancelar-comanda').style.display = ag.status==='cancelado' ? 'none' : '';
   document.getElementById('btn-fechar-comanda').style.display   = fechado ? 'none' : '';
   document.getElementById('btn-toggle-add-item').style.display    = fechado ? 'none' : '';
@@ -2627,6 +2631,18 @@ async function confirmarPagamento() {
     const label = { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito', cortesia:'Cortesia', fiado:'Fiado' };
     showToast(`Comanda fechada · ${label[forma]||forma} · ${fmtPreco(total)}`, 'success');
     fecharModal('modal-pagamento');
+    renderCalendario();
+  } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function excluirAgendamento() {
+  if (!confirm('Excluir este agendamento definitivamente?')) return;
+  try {
+    const { error } = await db.from('agendamentos').delete().eq('id', agendamentoSelecionadoId);
+    if (error) throw error;
+    agendamentos = agendamentos.filter(a => a.id !== agendamentoSelecionadoId);
+    showToast('Agendamento excluído', 'success');
+    fecharModal('modal-comanda');
     renderCalendario();
   } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }

@@ -548,6 +548,16 @@
         <button onclick="setServicoAba('pacotes')" id="serv-aba-pacotes" class="serv-aba px-4 py-2 text-sm font-semibold text-gray-500 border-b-2 border-transparent">Pacotes</button>
       </div>
     </div>
+    <!-- Filtro de categoria de serviços -->
+    <div id="filtros-servicos" class="bg-gray-50 border-b border-gray-100 px-4 py-2 flex items-center gap-3 flex-shrink-0 flex-wrap">
+      <div class="flex items-center gap-2">
+        <i data-lucide="filter" class="w-4 h-4 text-gray-400"></i>
+        <select id="serv-cat-filtro" onchange="renderServicos()" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white min-w-[140px]">
+          <option value="">Todas categorias</option>
+        </select>
+      </div>
+      <button onclick="document.getElementById('serv-cat-filtro').value='';renderServicos()" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Limpar</button>
+    </div>
     <!-- Aba Serviços -->
     <div id="serv-tab-servicos" class="flex-1 overflow-auto p-4 md:p-6">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -740,10 +750,13 @@
             <option value="">Selecione...</option>
           </select>
         </div>
-        <div>
+        <div class="space-y-2">
           <label class="block text-sm font-semibold text-gray-700 mb-1.5">Serviço</label>
-          <select id="agendar-servico" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
-            <option value="">Selecione...</option>
+          <select id="agendar-categoria" onchange="popularServicosCategoria()" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
+            <option value="">Todas as categorias</option>
+          </select>
+          <select id="agendar-servico" required onchange="preencherValorServico()" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors">
+            <option value="">Selecione o serviço...</option>
           </select>
         </div>
       </div>
@@ -2243,9 +2256,9 @@ function abrirModalAgendar(dataPreset = null) {
   selFunc.innerHTML = '<option value="">Selecione...</option>' +
     funcionarios.map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
 
-  const selServ = document.getElementById('agendar-servico');
-  selServ.innerHTML = '<option value="">Selecione...</option>' +
-    servicos.filter(s => s.ativo).map(s => `<option value="${s.id}">${s.nome} — ${fmtPreco(s.preco)}</option>`).join('');
+  // Cascade categorias → serviços
+  _popularCategoriasAgendar();
+  popularServicosCategoria();
 
   // Data padrão
   const hoje = dataPreset || currentDate;
@@ -2253,6 +2266,37 @@ function abrirModalAgendar(dataPreset = null) {
 
   abrirModal('modal-agendar');
   lucide.createIcons();
+}
+
+function preencherValorServico() {
+  const id = document.getElementById('agendar-servico')?.value;
+  const s  = servicos.find(sv => sv.id === id);
+  if (s) document.getElementById('agendar-valor').value = s.preco || '';
+}
+
+function _popularCategoriasAgendar() {
+  const cats = [...new Set(servicos.filter(s => s.ativo && s.categoria).map(s => s.categoria))].sort();
+  const sel  = document.getElementById('agendar-categoria');
+  if (!sel) return;
+  sel.innerHTML = `<option value="">Todas as categorias</option>` +
+    cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+}
+
+function popularServicosCategoria(preSelectId = null) {
+  const cat  = document.getElementById('agendar-categoria')?.value || '';
+  const lista = servicos.filter(s => s.ativo && (!cat || (s.categoria || '') === cat));
+  const sel  = document.getElementById('agendar-servico');
+  if (!sel) return;
+  sel.innerHTML = `<option value="">Selecione o serviço...</option>` +
+    lista.map(s => {
+      const label = s.subcategoria ? `${s.nome} (${s.subcategoria}) — ${fmtPreco(s.preco)}` : `${s.nome} — ${fmtPreco(s.preco)}`;
+      return `<option value="${s.id}"${s.id === preSelectId ? ' selected' : ''}>${esc(label)}</option>`;
+    }).join('');
+  // Auto-fill valor se só um serviço
+  if (lista.length === 1 && !preSelectId) {
+    sel.value = lista[0].id;
+    document.getElementById('agendar-valor').value = lista[0].preco || '';
+  }
 }
 
 async function salvarAgendamento(e) {
@@ -3367,14 +3411,28 @@ function renderServicos() {
   const tbody = document.getElementById('tabela-servicos');
   const tabela = tbody.closest('table');
   if (tabela) tabela.classList.add('mobile-card-list');
-  // group by categoria
-  const sorted = [...servicos].sort((a, b) => {
+
+  // Popular dropdown de categorias
+  const catFiltroEl = document.getElementById('serv-cat-filtro');
+  const catFiltro   = catFiltroEl?.value || '';
+  const todasCats   = [...new Set(servicos.map(s => s.categoria).filter(Boolean))].sort();
+  if (catFiltroEl) {
+    const prev = catFiltroEl.value;
+    catFiltroEl.innerHTML = `<option value="">Todas categorias</option>` +
+      todasCats.map(c => `<option value="${esc(c)}"${c===prev?' selected':''}>${esc(c)}</option>`).join('');
+  }
+
+  // Aplicar filtro e ordenar por categoria → subcategoria → nome
+  let lista = [...servicos];
+  if (catFiltro) lista = lista.filter(s => (s.categoria || '') === catFiltro);
+  const sorted = lista.sort((a, b) => {
     const ca = (a.categoria || 'Sem Categoria').localeCompare(b.categoria || 'Sem Categoria');
     if (ca !== 0) return ca;
     const sa = (a.subcategoria || '').localeCompare(b.subcategoria || '');
     if (sa !== 0) return sa;
     return (a.nome || '').localeCompare(b.nome || '');
   });
+
   let lastCat = null;
   tbody.innerHTML = sorted.map(s => {
     const h = Math.floor((s.duracao_min || 0) / 60);

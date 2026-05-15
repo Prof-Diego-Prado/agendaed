@@ -2543,16 +2543,13 @@ function renderCalendarioDia(container, dias) {
     hdrWrapper.appendChild(bodyRow);
     container.appendChild(hdrWrapper);
   } else {
-    // Modo dia — colunas ordenáveis por drag-and-drop (livre, sem travamento)
-    const funcOrdenadosTodos = funcionariosOrdenados();
-
-    // Filtra: só mostra funcionária se tiver agendamento no dia (ou se for admin)
-    const funcOrdenados = isAdmin()
-      ? funcOrdenadosTodos
-      : funcOrdenadosTodos.filter(f => agendamentos.some(a => {
-          const d = new Date(a.data_hora);
-          return a.funcionario_id === f.id && d.toDateString() === currentDate.toDateString();
-        }));
+    // Modo dia — exibe apenas funcionárias com agendamento no dia (todos os perfis)
+    const funcOrdenados = getFuncsVisiveis().filter(f =>
+      agendamentos.some(a => {
+        const d = new Date(a.data_hora);
+        return a.funcionario_id === f.id && d.toDateString() === dias[0].toDateString();
+      })
+    );
 
     if (funcOrdenados.length === 0) {
       const msg = document.createElement('div');

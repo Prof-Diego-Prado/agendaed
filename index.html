@@ -4262,6 +4262,7 @@ async function salvarServico(e) {
   const payload = {
     nome:          document.getElementById('servico-nome').value.trim(),
     categoria:     document.getElementById('servico-categoria').value.trim() || null,
+    subcategoria:  document.getElementById('servico-subcategoria').value.trim() || null,
     cor_categoria: document.getElementById('servico-cor-categoria').value || null,
     duracao_min,
     preco:         parseFloat(document.getElementById('servico-preco').value) || 0,

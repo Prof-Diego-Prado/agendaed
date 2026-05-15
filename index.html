@@ -3354,7 +3354,8 @@ async function salvarEdicaoAg() {
     }).eq('id', ag.id);
     if (error) throw error;
     showToast('Agendamento atualizado', 'success');
-    await carregarAgendamentos();
+    const result = await carregarAgendamentosRange(currentDate);
+    agendamentos = result.data || [];
     renderCalendario();
     await abrirDetalheAgendamento(ag.id);
   } catch(e) { showToast('Erro ao salvar', 'error'); }

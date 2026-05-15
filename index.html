@@ -4260,12 +4260,11 @@ async function salvarServico(e) {
   const m  = parseInt(document.getElementById('servico-duracao-m').value) || 0;
   const duracao_min = h * 60 + m || 30;
   const payload = {
-    nome:          document.getElementById('servico-nome').value.trim(),
-    categoria:     document.getElementById('servico-categoria').value.trim() || null,
-    subcategoria:  document.getElementById('servico-subcategoria').value.trim() || null,
-    cor_categoria: document.getElementById('servico-cor-categoria').value || null,
+    nome:         document.getElementById('servico-nome').value.trim(),
+    categoria:    document.getElementById('servico-categoria').value.trim() || null,
+    subcategoria: document.getElementById('servico-subcategoria').value.trim() || null,
     duracao_min,
-    preco:         parseFloat(document.getElementById('servico-preco').value) || 0,
+    preco:        parseFloat(document.getElementById('servico-preco').value) || 0,
   };
   try {
     let err;

@@ -10,36 +10,91 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     [x-cloak] { display: none !important; }
-    /* Dark mode via CSS variables */
+
+    /* =====================================================
+       CRÈME & BORDEAUX — Redesign v2
+       ===================================================== */
     :root {
-      --bg:       #f8f9fa;
-      --surface:  #ffffff;
-      --surface2: #f9fafb;
-      --border:   #e5e7eb;
-      --text1:    #1f2937;
-      --text2:    #6b7280;
-      --text3:    #9ca3af;
-      --slot-alt: #fafafa;
-      --slot-border: #f1f5f9;
+      --accent:        #B87A50;
+      --accent-hover:  #9A6440;
+      --accent-light:  #F5E8DC;
+      --accent-glow:   rgba(184,122,80,.35);
+      --bg:            #FAF8F4;
+      --surface:       #FFFFFF;
+      --surface2:      #FAF5F0;
+      --surface3:      #F4EDE5;
+      --border:        #EDE5DC;
+      --border2:       #DECDBE;
+      --text1:         #1A1210;
+      --text2:         #7A6558;
+      --text3:         #AE9888;
+      --success:       #2E8B57;
+      --error:         #C0392B;
+      --slot-alt:      #FAF6F2;
+      --slot-border:   #EDE5DC;
+      --sidebar-from:  #1C0A15;
+      --sidebar-to:    #0D0408;
     }
+
+    /* Base typography */
+    *, body { font-family: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, sans-serif; }
+    h1, h2 { font-family: 'Cormorant Garamond', Georgia, serif; letter-spacing: -0.01em; }
+
+    /* Warm overrides for Tailwind defaults */
+    body                      { background: var(--bg) !important; }
+    .bg-white                 { background: var(--surface) !important; }
+    .bg-gray-50               { background: var(--surface2) !important; }
+    .bg-gray-100              { background: var(--surface3) !important; }
+    .bg-gray-200              { background: #E8DDD5 !important; }
+    .text-gray-800, .text-gray-700 { color: var(--text1) !important; }
+    .text-gray-600            { color: var(--text2) !important; }
+    .text-gray-500, .text-gray-400 { color: var(--text3) !important; }
+    .border-gray-100, .border-gray-200 { border-color: var(--border) !important; }
+    .border-b                 { border-color: var(--border) !important; }
+    .hover\:bg-gray-50:hover  { background: var(--surface2) !important; }
+    .hover\:bg-gray-100:hover { background: var(--surface3) !important; }
+    .divide-gray-50 > * + *   { border-color: var(--border) !important; }
+
+    /* Accent color overrides — copper/rose replaces yellow */
+    .bg-\[\#fffbeb\]              { background-color: var(--accent-light) !important; }
+    .bg-\[\#f5c518\]              { background-color: var(--accent) !important; }
+    .text-\[\#1a1a1a\]            { color: var(--text1) !important; }
+    .hover\:bg-\[\#f5c518\]\/30:hover { background-color: rgba(184,122,80,.18) !important; }
+    .hover\:bg-\[\#fffbeb\]:hover      { background-color: var(--accent-light) !important; }
+    [style*="background:#fffbeb"]      { background: var(--accent-light) !important; }
+    [style*="background:#f5c518"]      { background: var(--accent) !important; }
+    [style*="color:#f5c518"]           { color: var(--accent) !important; }
+    [style*="border-color:#f5c51844"]  { border-color: rgba(184,122,80,.28) !important; }
+
+    /* Primary action buttons: deep bordeaux instead of neutral gray */
+    .from-\[\#1a1a1a\] { --tw-gradient-from: #2D1020 !important; }
+    .to-\[\#4a4a4a\]   { --tw-gradient-to:   #5C2040 !important; }
+    [style*="background:linear-gradient(to right,#1a1a1a"] {
+      background: linear-gradient(135deg, #2D1020, #5C2040) !important;
+    }
+
+    /* Dark mode */
     html.dark {
-      --bg:       #111827;
-      --surface:  #1f2937;
-      --surface2: #111827;
-      --border:   #374151;
-      --text1:    #f9fafb;
-      --text2:    #d1d5db;
-      --text3:    #9ca3af;
-      --slot-alt: #1a2332;
-      --slot-border: #374151;
+      --bg:        #0D1117;
+      --surface:   #161B22;
+      --surface2:  #0D1117;
+      --border:    #30363D;
+      --text1:     #F0EDE8;
+      --text2:     #C9B8A8;
+      --text3:     #8B7B6B;
+      --slot-alt:  #131820;
+      --slot-border: #30363D;
     }
     html.dark body                    { background: var(--bg) !important; }
     html.dark .bg-white               { background: var(--surface) !important; }
     html.dark .bg-gray-50             { background: var(--surface2) !important; }
-    html.dark .bg-gray-100            { background: #374151 !important; }
-    html.dark .bg-gray-200            { background: #4b5563 !important; }
+    html.dark .bg-gray-100            { background: #21262D !important; }
+    html.dark .bg-gray-200            { background: #30363D !important; }
     html.dark .text-gray-800          { color: var(--text1) !important; }
     html.dark .text-gray-700          { color: var(--text1) !important; }
     html.dark .text-gray-600          { color: var(--text2) !important; }
@@ -48,59 +103,88 @@
     html.dark .border-gray-100        { border-color: var(--border) !important; }
     html.dark .border-gray-200        { border-color: var(--border) !important; }
     html.dark .border-b               { border-color: var(--border) !important; }
-    html.dark .shadow-sm, html.dark .shadow-2xl { box-shadow: 0 4px 16px rgba(0,0,0,.4) !important; }
+    html.dark .shadow-sm, html.dark .shadow-2xl { box-shadow: 0 4px 16px rgba(0,0,0,.5) !important; }
     html.dark .time-slot              { border-bottom-color: var(--slot-border) !important; }
     html.dark .time-slot:nth-child(even) { background: var(--slot-alt) !important; }
-    html.dark .hover\:bg-gray-50:hover{ background: #374151 !important; }
-    html.dark .hover\:bg-gray-100:hover{ background: #4b5563 !important; }
-    html.dark #comanda-header-info            { background: #1e2533 !important; border-color: #374151 !important; }
-    html.dark #comanda-header-info .font-bold { color: #ffffff !important; font-weight: 700 !important; }
-    html.dark #comanda-header-info .text-gray-800 { color: #ffffff !important; font-weight: 700 !important; }
-    html.dark #comanda-header-info .text-gray-500 { color: #d1d5db !important; font-weight: 600 !important; }
-    html.dark #comanda-editar-panel           { background: #1f2937 !important; }
+    html.dark .hover\:bg-gray-50:hover{ background: #21262D !important; }
+    html.dark .hover\:bg-gray-100:hover{ background: #30363D !important; }
+    html.dark #comanda-header-info            { background: #1B2030 !important; border-color: #30363D !important; }
+    html.dark #comanda-header-info .font-bold { color: #F0EDE8 !important; font-weight: 700 !important; }
+    html.dark #comanda-header-info .text-gray-800 { color: #F0EDE8 !important; font-weight: 700 !important; }
+    html.dark #comanda-header-info .text-gray-500 { color: #C9B8A8 !important; font-weight: 600 !important; }
+    html.dark #comanda-editar-panel           { background: #161B22 !important; }
     html.dark input, html.dark select, html.dark textarea {
-      background: #374151 !important;
+      background: #21262D !important;
       color: var(--text1) !important;
-      border-color: #4b5563 !important;
+      border-color: #30363D !important;
     }
+
+    /* Sidebar nav items */
     .sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-  background: transparent;
-  border: none;
-  color: white;
-}
-.sidebar-item:hover { background: rgba(255,255,255,0.12); }
-.sidebar-item .sidebar-icon { width: 18px; height: 18px; flex-shrink: 0; }
-    .sidebar-item.active { background: #f5c518; color: #1a1a1a; }
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 13px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 500;
+      letter-spacing: 0.005em;
+      transition: all 0.18s ease;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.62);
+    }
+    .sidebar-item:hover {
+      background: rgba(255,255,255,0.09);
+      color: rgba(255,255,255,0.92);
+    }
+    .sidebar-item .sidebar-icon { width: 17px; height: 17px; flex-shrink: 0; }
+    .sidebar-item.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      color: #FFF8F4;
+      font-weight: 600;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    /* View containers */
     .view { display: none; }
     .view.active { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; align-self: stretch; }
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+
+    /* Modals */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(15,8,12,0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
     .modal-backdrop.hidden { display: none; }
+
+    /* Calendar */
     .calendar-col { min-width: 160px; }
-    .time-slot { height: 40px; border-bottom: 1px solid #f1f5f9; position: relative; }
-    .time-slot:nth-child(even) { background: #fafafa; }
-    .appt-block { position: absolute; left: 2px; right: 2px; border-radius: 6px; padding: 3px 6px; font-size: 11px; font-weight: 600; cursor: pointer; overflow: hidden; z-index: 2; line-height: 1.3; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
-    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; color: white; box-shadow: 0 4px 20px rgba(0,0,0,0.15); transform: translateY(100px); opacity: 0; transition: all 0.3s ease; pointer-events: none; }
+    .time-slot { height: 40px; border-bottom: 1px solid var(--slot-border); position: relative; }
+    .time-slot:nth-child(even) { background: var(--slot-alt); }
+    .appt-block { position: absolute; left: 2px; right: 2px; border-radius: 7px; padding: 3px 6px; font-size: 11px; font-weight: 600; cursor: pointer; overflow: hidden; z-index: 2; line-height: 1.3; box-shadow: 0 2px 6px rgba(0,0,0,0.18); }
+
+    /* Toasts */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; padding: 13px 22px; border-radius: 14px; font-size: 13.5px; font-weight: 600; color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.22); transform: translateY(100px); opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; }
     .toast.show { transform: translateY(0); opacity: 1; }
-    .toast.success { background: #10b981; }
-    .toast.error { background: #ef4444; }
-    .badge { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .toast.success { background: linear-gradient(135deg, #2E7D52, #3AA870); }
+    .toast.error   { background: linear-gradient(135deg, #9B2335, #C83040); }
+
+    /* Badges */
+    .badge { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
+
+    /* Inputs */
     input, select, textarea { outline: none; }
-    input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px #f5c518; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #f5c518; border-radius: 999px; }
+    input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px var(--accent) !important; }
+
+    /* Scrollbar — thin & copper */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--surface2); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 999px; }
+
+    /* Avatar */
     .avatar-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: white; flex-shrink: 0; }
+
+    /* Sidebar collapse */
     #sidebar { transition: width 0.25s ease; overflow: hidden; }
     #sidebar.collapsed { width: 64px; }
     #sidebar.collapsed .sidebar-label { display: none; }
@@ -108,170 +192,147 @@
     #sidebar.collapsed .studio-info { display: none; }
     #sidebar.collapsed .sidebar-footer { display: none; }
     #sidebar.collapsed .sidebar-item { justify-content: center; padding: 10px; }
-    .pagto-btn.pagto-ativo { border-color: #1a1a1a !important; color: #1a1a1a !important; background: #fffbeb !important; }
-    .fluxo-filtro-btn.ativo { background: #1a1a1a; color: white; border-color: #1a1a1a; }
-    .fluxo-aba.ativa { color: #1a1a1a; border-bottom-color: #1a1a1a; }
+
+    /* Financial buttons */
+    .pagto-btn.pagto-ativo { border-color: var(--accent) !important; color: var(--accent) !important; background: var(--accent-light) !important; }
+    .fluxo-filtro-btn.ativo { background: var(--text1); color: white; border-color: var(--text1); }
+    .fluxo-aba.ativa { color: var(--text1); border-bottom-color: var(--accent); }
+
     /* Typeahead */
     .typeahead-wrap { position: relative; }
     .typeahead-dropdown {
       position: absolute; z-index: 200; left: 0; right: 0; top: 100%;
-      background: white; border: 1px solid #e5e7eb; border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.12); max-height: 220px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(50,20,10,.12); max-height: 220px;
       overflow-y: auto; display: none; margin-top: 4px;
     }
     .typeahead-dropdown.open { display: block; }
     .typeahead-item {
       padding: 10px 14px; font-size: 13px; cursor: pointer;
-      border-bottom: 1px solid #f3f4f6; color: #374151;
+      border-bottom: 1px solid var(--border); color: var(--text2);
     }
     .typeahead-item:last-child { border-bottom: none; }
-    .typeahead-item:hover, .typeahead-item.selected { background: #fffbeb; color: #1a1a1a; font-weight: 600; }
-    .typeahead-item mark { background: none; color: #1a1a1a; font-weight: 700; }
-    /* Abas cliente */
-    .cli-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; }
-    .cli-tab.ativa { color: #1a1a1a; border-bottom-color: #1a1a1a; }
-    /* Abas estoque / funcionárias */
-    .estoque-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; background: none; }
-    .estoque-tab-ativa { color: #1a1a1a !important; border-bottom-color: #1a1a1a; }
-    /* Filtros remuneração */
+    .typeahead-item:hover, .typeahead-item.selected { background: var(--accent-light); color: var(--text1); font-weight: 600; }
+    .typeahead-item mark { background: none; color: var(--accent); font-weight: 700; }
+
+    /* Tabs — all types unified */
+    .cli-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: var(--text3); border-bottom: 2px solid transparent; cursor: pointer; transition: color .15s; }
+    .cli-tab.ativa { color: var(--text1); border-bottom-color: var(--accent); }
+    .estoque-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; color: var(--text3); border-bottom: 2px solid transparent; cursor: pointer; background: none; transition: color .15s; }
+    .estoque-tab-ativa { color: var(--text1) !important; border-bottom-color: var(--accent); }
+    .serv-aba.ativa { color: var(--text1); border-bottom-color: var(--accent); }
     .remu-filtro-btn { transition: all .15s; }
-    .remu-filtro-btn.ativo { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
-    /* Glow — botão Aniversariantes */
+    .remu-filtro-btn.ativo { background: var(--text1); color: #fff; border-color: var(--text1); }
+
+    /* Birthday glow — warm amber/copper */
     @keyframes glow-pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,.0), 0 0 0 0 rgba(251,191,36,.0); }
-      50%       { box-shadow: 0 0 8px 3px rgba(251,191,36,.7), 0 0 16px 6px rgba(251,191,36,.3); }
+      0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow), 0 0 0 0 transparent; }
+      50%       { box-shadow: 0 0 10px 4px var(--accent-glow), 0 0 20px 8px rgba(184,122,80,.15); }
     }
     .glow-effect {
-      animation: glow-pulse 1.8s ease-in-out infinite;
-      border: 1.5px solid rgba(251,191,36,.6) !important;
+      animation: glow-pulse 2s ease-in-out infinite;
+      border: 1.5px solid rgba(184,122,80,.55) !important;
     }
-    /* Badge contador de aniversariantes */
     .birthday-badge {
       display: inline-flex; align-items: center; justify-content: center;
       min-width: 18px; height: 18px; padding: 0 5px;
-      background: #fbbf24; color: #78350f; border-radius: 999px;
+      background: var(--accent); color: #FFF8F4; border-radius: 999px;
       font-size: 10px; font-weight: 800; margin-left: auto; flex-shrink: 0;
     }
 
-/* =========================================================
-   MOBILE FIRST — breakpoint < 768px
-   ========================================================= */
+    /* =====================================================
+       MOBILE — breakpoint < 768px
+       ===================================================== */
+    @media (max-width: 767px) {
+      #sidebar {
+        position: fixed !important;
+        left: 0; top: 0; bottom: 0;
+        z-index: 150;
+        transform: translateX(-100%);
+        transition: transform 0.28s ease, width 0.01s;
+        width: 240px !important;
+        height: 100dvh;
+        box-shadow: 6px 0 40px rgba(0,0,0,0.4);
+      }
+      #sidebar.mobile-open { transform: translateX(0); }
+      #sidebar.collapsed {
+        width: 240px !important;
+        transform: translateX(-100%);
+      }
+      #sidebar.collapsed .sidebar-label,
+      #sidebar.collapsed .sidebar-section-label,
+      #sidebar.collapsed .studio-info,
+      #sidebar.collapsed .sidebar-footer { display: block !important; }
+      #sidebar.collapsed .sidebar-item {
+        justify-content: flex-start !important;
+        padding: 10px 14px !important;
+      }
+      #sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.52);
+        z-index: 140;
+      }
+      #sidebar-overlay.show { display: block; }
+      #mobile-topbar { display: flex !important; }
+      #btn-sidebar-collapse { display: none !important; }
+      .view > div:first-child { padding-left: 16px !important; padding-right: 16px !important; }
+      .mobile-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .mobile-card-list { display: block !important; }
+      .mobile-card-list thead { display: none !important; }
+      .mobile-card-list tbody tr {
+        display: flex; flex-direction: column;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        gap: 4px;
+      }
+      .mobile-card-list tbody td {
+        display: flex; align-items: center;
+        padding: 0 !important; border: none !important; font-size: 13px;
+      }
+      .mobile-card-list tbody td::before {
+        content: attr(data-label);
+        font-size: 10px; font-weight: 700; color: var(--text3);
+        text-transform: uppercase; letter-spacing: .04em;
+        min-width: 80px; flex-shrink: 0;
+      }
+      .mobile-card-list tbody td:first-child::before { content: none; }
+      .mobile-card-list tbody td.actions-cell { justify-content: flex-end; padding-top: 6px !important; }
+      .mobile-card-list tbody td.actions-cell::before { content: none; }
+      .view-header-mobile { flex-wrap: wrap; gap: 10px; }
+      .view-header-mobile > div, .view-header-mobile > button { flex-shrink: 0; }
+      .modal-backdrop { align-items: flex-end; padding: 0; }
+      .modal-backdrop > div {
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        max-height: 94dvh; overflow-y: auto;
+        width: 100% !important; max-width: 100% !important;
+      }
+      #view-fluxo-caixa .grid { grid-template-columns: 1fr !important; }
+      .toast { right: 16px; left: 16px; bottom: 80px; text-align: center; }
+    }
+    #mobile-topbar { display: none; }
+    #sidebar-overlay { display: none; }
 
-/* Sidebar como drawer no mobile */
-@media (max-width: 767px) {
-  #sidebar {
-    position: fixed !important;
-    left: 0; top: 0; bottom: 0;
-    z-index: 150;
-    transform: translateX(-100%);
-    transition: transform 0.28s ease, width 0.01s;
-    width: 240px !important;
-    height: 100dvh;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.25);
-  }
-  #sidebar.mobile-open {
-    transform: translateX(0);
-  }
-  #sidebar.collapsed {
-    width: 240px !important;
-    transform: translateX(-100%);
-  }
-  #sidebar.collapsed .sidebar-label,
-  #sidebar.collapsed .sidebar-section-label,
-  #sidebar.collapsed .studio-info,
-  #sidebar.collapsed .sidebar-footer {
-    display: block !important;
-  }
-  #sidebar.collapsed .sidebar-item {
-    justify-content: flex-start !important;
-    padding: 10px 14px !important;
-  }
-  /* Overlay escuro atrás do drawer */
-  #sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.45);
-    z-index: 140;
-  }
-  #sidebar-overlay.show { display: block; }
-
-  /* Topbar móvel */
-  #mobile-topbar { display: flex !important; }
-
-  /* Ocultar toggle de colapso no mobile */
-  #btn-sidebar-collapse { display: none !important; }
-
-  /* Padding reduzido nas views */
-  .view > div:first-child { padding-left: 16px !important; padding-right: 16px !important; }
-
-  /* Tables → scroll horizontal */
-  .mobile-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-  /* Cards de clientes em mobile */
-  .mobile-card-list { display: block !important; }
-  .mobile-card-list thead { display: none !important; }
-  .mobile-card-list tbody tr {
-    display: flex;
-    flex-direction: column;
-    padding: 14px 16px;
-    border-bottom: 1px solid #f3f4f6;
-    gap: 4px;
-  }
-  .mobile-card-list tbody td {
-    display: flex;
-    align-items: center;
-    padding: 0 !important;
-    border: none !important;
-    font-size: 13px;
-  }
-  .mobile-card-list tbody td::before {
-    content: attr(data-label);
-    font-size: 10px;
-    font-weight: 700;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    min-width: 80px;
-    flex-shrink: 0;
-  }
-  .mobile-card-list tbody td:first-child::before { content: none; }
-  .mobile-card-list tbody td.actions-cell { justify-content: flex-end; padding-top: 6px !important; }
-  .mobile-card-list tbody td.actions-cell::before { content: none; }
-
-  /* Header das views em mobile: empilha verticalmente */
-  .view-header-mobile { flex-wrap: wrap; gap: 10px; }
-  .view-header-mobile > div, .view-header-mobile > button { flex-shrink: 0; }
-
-  /* Modais ocupam mais altura em mobile */
-  .modal-backdrop { align-items: flex-end; padding: 0; }
-  .modal-backdrop > div {
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-    max-height: 94dvh;
-    overflow-y: auto;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Fluxo de caixa: cards em coluna */
-  #view-fluxo-caixa .grid { grid-template-columns: 1fr !important; }
-
-  /* Toast em baixo centralizado */
-  .toast { right: 16px; left: 16px; bottom: 80px; text-align: center; }
-}
-
-/* Esconde topbar mobile em desktop */
-#mobile-topbar { display: none; }
-#sidebar-overlay { display: none; }
-.serv-aba.ativa { color: #1a1a1a; border-bottom-color: #1a1a1a; }
-    /* Chips de profissional na agenda */
+    /* Prof filter chips */
     .prof-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 8px 3px 4px; border-radius:999px; border:2px solid transparent; cursor:pointer; font-size:11px; font-weight:700; color:#fff; transition:all .18s; opacity:.38; user-select:none; }
     .prof-chip.ativa { opacity:1; }
     .prof-chip .chip-ini { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; background:rgba(255,255,255,.25); flex-shrink:0; }
-    .chip-todas { display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px; border:2px solid #e5e7eb; cursor:pointer; font-size:11px; font-weight:700; color:#1a1a1a; background:#f5f5f5; transition:all .18s; }
-    .chip-todas.ativa { border-color:#f5c518; background:#f5c518; color:#1a1a1a; }
-    .func-oculta-badge { font-size:10px; font-weight:700; padding:1px 8px; border-radius:999px; background:#f3f4f6; color:#9ca3af; margin-top:2px; }
+    .chip-todas { display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px; border:2px solid var(--border2); cursor:pointer; font-size:11px; font-weight:700; color:var(--text1); background:var(--surface2); transition:all .18s; }
+    .chip-todas.ativa { border-color:var(--accent); background:var(--accent-light); color:var(--text1); }
+    .func-oculta-badge { font-size:10px; font-weight:700; padding:1px 8px; border-radius:999px; background:var(--surface3); color:var(--text3); margin-top:2px; }
+
+    /* Refined card shadow (warm tint) */
+    .shadow-sm { box-shadow: 0 2px 10px rgba(100,50,20,.07) !important; }
+    .shadow-2xl { box-shadow: 0 20px 60px rgba(50,15,10,.18) !important; }
+    .shadow-md { box-shadow: 0 4px 16px rgba(100,40,20,.12) !important; }
+
+    /* Section label in sidebar */
+    .sidebar-section-label-text {
+      font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: rgba(255,255,255,.3); padding: 14px 14px 4px;
+    }
   </style>
 </head>
 <body class="font-sans h-screen overflow-hidden flex" style="background:var(--bg)">
@@ -279,69 +340,89 @@
 <!-- Overlay do sidebar mobile -->
 <div id="sidebar-overlay" onclick="fecharMobileSidebar()"></div>
 
-<!-- Topbar mobile (visível só em telas < 768px via CSS) -->
-<div id="mobile-topbar" class="fixed top-0 left-0 right-0 z-[130] flex items-center justify-between px-4 py-3 text-white shadow-lg" style="background:linear-gradient(to right,#1a1a1a,#111111)">
+<!-- Topbar mobile -->
+<div id="mobile-topbar" class="fixed top-0 left-0 right-0 z-[130] flex items-center justify-between px-4 py-3 text-white shadow-lg" style="background:linear-gradient(135deg,var(--sidebar-from),var(--sidebar-to));border-bottom:1px solid rgba(255,255,255,0.06)">
   <button onclick="toggleMobileSidebar()" class="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
     <i data-lucide="menu" class="w-5 h-5"></i>
   </button>
-  <span class="font-bold text-sm tracking-wide">Studio Érika Daiany</span>
+  <span style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;letter-spacing:0.04em;color:rgba(255,255,255,0.92)">ED Beauty Studio</span>
   <button onclick="toggleDarkMode()" class="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
     <i data-lucide="moon" class="w-5 h-5"></i>
   </button>
 </div>
 
 <!-- ====== TELA DE LOGIN ====== -->
-<div id="tela-login" class="fixed inset-0 z-[200] flex items-center justify-center" style="background:linear-gradient(135deg,#1a1a1a,#111111)">
-  <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4">
-    <div class="text-center mb-6">
-      <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:linear-gradient(135deg,#1a1a1a,#111111)">
-        <i data-lucide="scissors" class="w-7 h-7 text-white"></i>
+<div id="tela-login" class="fixed inset-0 z-[200] flex items-center justify-center" style="background:linear-gradient(150deg,var(--sidebar-from) 0%,#2A0F20 45%,var(--sidebar-to) 100%)">
+  <!-- Decorative grain overlay -->
+  <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22300%22 height=%22300%22 filter=%22url(%23noise)%22 opacity=%220.04%22/%3E%3C/svg%3E');pointer-events:none;z-index:0"></div>
+  <!-- Decorative circle accent -->
+  <div style="position:absolute;top:-120px;right:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(184,122,80,.18) 0%,transparent 70%);pointer-events:none"></div>
+  <div style="position:absolute;bottom:-100px;left:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(184,122,80,.12) 0%,transparent 70%);pointer-events:none"></div>
+
+  <div class="relative z-10 w-full max-w-sm mx-4">
+    <!-- Top brand mark -->
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);backdrop-filter:blur(8px)">
+        <img src="./logo.png" alt="ED" style="width:36px;height:36px;object-fit:contain;filter:invert(1);opacity:0.9" />
       </div>
-      <h1 class="text-xl font-bold text-gray-800">Studio Érika Daiany</h1>
-      <p class="text-sm text-gray-500 mt-1">Faça login para continuar</p>
+      <h1 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:#FFFAF7;letter-spacing:0.02em;line-height:1.1">Studio Érika Daiany</h1>
+      <p style="font-size:13px;color:rgba(255,255,255,0.45);margin-top:6px;letter-spacing:0.03em">Gestão de Atendimentos</p>
     </div>
-    <div class="space-y-4">
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Funcionária</label>
-        <select id="login-funcionaria" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
-          <option value="">Selecione...</option>
-        </select>
+
+    <!-- Login card -->
+    <div style="background:rgba(255,255,255,0.96);border-radius:20px;padding:28px;box-shadow:0 24px 64px rgba(0,0,0,0.35),0 2px 8px rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.8)">
+      <div class="space-y-4">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Funcionária</label>
+          <select id="login-funcionaria" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;background:var(--surface2);color:var(--text1);transition:border-color .2s">
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">PIN de Acesso</label>
+          <input type="password" id="login-pin" maxlength="6" placeholder="• • • •" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:22px;background:var(--surface2);color:var(--text1);text-align:center;letter-spacing:.3em;transition:border-color .2s"
+            onkeydown="if(event.key==='Enter') fazerLogin()" />
+        </div>
+        <button onclick="fazerLogin()" style="width:100%;padding:13px;font-size:14px;font-weight:700;color:#FFF8F4;border-radius:12px;border:none;cursor:pointer;letter-spacing:0.04em;transition:all .2s;background:linear-gradient(135deg,#2D1020,#5C2040);box-shadow:0 4px 16px rgba(45,16,32,.4)">
+          ENTRAR
+        </button>
+        <p id="login-erro" class="hidden" style="text-align:center;font-size:13px;color:var(--error);font-weight:600;padding-top:4px">PIN incorreto. Tente novamente.</p>
       </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1.5">PIN</label>
-        <input type="password" id="login-pin" maxlength="6" placeholder="••••" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-center text-xl tracking-widest"
-          onkeydown="if(event.key==='Enter') fazerLogin()" />
-      </div>
-      <button onclick="fazerLogin()" class="w-full py-3 text-sm font-semibold text-white rounded-xl transition-all" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
-        Entrar
-      </button>
-      <p id="login-erro" class="text-center text-sm text-red-500 hidden">PIN incorreto. Tente novamente.</p>
     </div>
+
+    <!-- Footer note -->
+    <p style="text-align:center;margin-top:20px;font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:0.03em">© 2026 Studio Érika Daiany</p>
   </div>
 </div>
 
 <!-- ============================================================ SIDEBAR -->
-<aside id="sidebar" class="w-64 flex-shrink-0 bg-gradient-to-b from-[#1a1a1a] to-[#111111] flex flex-col text-white shadow-xl relative overflow-hidden">
-  <!-- marca d'água -->
-  <div class="pointer-events-none select-none absolute inset-0 flex items-end justify-center pb-6 z-0">
-    <img src="./logo.png" alt="" aria-hidden="true" style="width:180px;opacity:0.06;filter:invert(1)" />
+<aside id="sidebar" class="w-64 flex-shrink-0 flex flex-col text-white shadow-xl relative overflow-hidden" style="background:linear-gradient(185deg,var(--sidebar-from) 0%,#3A1228 50%,var(--sidebar-to) 100%)">
+
+  <!-- Decorative top accent line -->
+  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--accent),transparent);z-index:1"></div>
+
+  <!-- Watermark logo -->
+  <div class="pointer-events-none select-none absolute inset-0 flex items-end justify-center pb-4 z-0">
+    <img src="./logo.png" alt="" aria-hidden="true" style="width:160px;opacity:0.05;filter:invert(1) sepia(1) saturate(2) hue-rotate(330deg)" />
   </div>
-  <div class="flex items-center justify-between px-4 py-4 relative z-10">
+
+  <!-- Brand header -->
+  <div class="flex items-center justify-between px-4 py-4 relative z-10" style="border-bottom:1px solid rgba(255,255,255,0.06)">
     <div class="flex items-center gap-3 studio-info">
-      <div class="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0 p-1">
-        <img src="./logo.png" alt="ED" style="width:28px;height:28px;object-fit:contain;filter:invert(1)" />
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 p-1" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12)">
+        <img src="./logo.png" alt="ED" style="width:26px;height:26px;object-fit:contain;filter:invert(1);opacity:0.85" />
       </div>
       <div>
-        <p class="text-xs text-white/70 leading-none">Studio</p>
-        <p class="font-bold text-sm leading-tight">Érika Daiany</p>
+        <p style="font-size:9px;color:rgba(255,255,255,0.38);letter-spacing:.08em;text-transform:uppercase;font-weight:700">Beauty Studio</p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:rgba(255,255,255,0.95);letter-spacing:0.03em;line-height:1.1">ED</p>
       </div>
     </div>
-    <button id="btn-sidebar-collapse" onclick="toggleSidebar()" class="p-1.5 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0" title="Recolher menu">
+    <button id="btn-sidebar-collapse" onclick="toggleSidebar()" class="p-1.5 rounded-lg transition-colors flex-shrink-0" style="color:rgba(255,255,255,0.4)" title="Recolher menu">
       <i id="sidebar-toggle-icon" data-lucide="panel-left-close" class="w-4 h-4"></i>
     </button>
   </div>
 
-  <nav class="flex-1 px-3 space-y-1 relative z-10">
+  <nav class="flex-1 px-3 pt-3 space-y-0.5 relative z-10 overflow-y-auto">
     <button class="sidebar-item active w-full" onclick="navTo('agendamentos')">
       <i data-lucide="calendar" class="sidebar-icon"></i>
       <span class="sidebar-label">Atendimentos</span>
@@ -362,16 +443,18 @@
       <i data-lucide="package" class="sidebar-icon"></i>
       <span class="sidebar-label">Pacotes</span>
     </button>
-    <div class="admin-only pt-3 pb-1 px-4 text-xs text-white/50 font-semibold uppercase tracking-widest sidebar-section-label">Estoque</div>
+
+    <div class="admin-only sidebar-section-label" style="padding:16px 14px 5px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.28)">Estoque</div>
     <button class="sidebar-item admin-only w-full" onclick="navTo('estoque-salao')">
-      <i data-lucide="package" class="sidebar-icon"></i>
+      <i data-lucide="flask-conical" class="sidebar-icon"></i>
       <span class="sidebar-label">Estoque Salão</span>
     </button>
     <button class="sidebar-item admin-only w-full" onclick="navTo('estoque-revenda')">
       <i data-lucide="shopping-bag" class="sidebar-icon"></i>
       <span class="sidebar-label">Estoque Revenda</span>
     </button>
-    <div class="admin-only pt-3 pb-1 px-4 text-xs text-white/50 font-semibold uppercase tracking-widest sidebar-section-label">Relacionamento</div>
+
+    <div class="admin-only sidebar-section-label" style="padding:16px 14px 5px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.28)">Relacionamento</div>
     <button id="btn-aniversariantes" class="sidebar-item w-full" onclick="abrirModalAniversariantes()" title="Aniversariantes da semana">
       <i data-lucide="cake" class="sidebar-icon"></i>
       <span class="sidebar-label">Aniversariantes</span>
@@ -380,6 +463,8 @@
       <i data-lucide="heart-pulse" class="sidebar-icon"></i>
       <span class="sidebar-label">Clientes Inativas</span>
     </button>
+
+    <div class="admin-only sidebar-section-label" style="padding:16px 14px 5px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.28)">Financeiro</div>
     <button class="sidebar-item w-full admin-only" onclick="navTo('fluxo-caixa')" title="Fluxo de Caixa">
       <i data-lucide="trending-up" class="sidebar-icon"></i>
       <span class="sidebar-label">Fluxo de Caixa</span>
@@ -390,8 +475,8 @@
     </button>
   </nav>
 
-  <div class="p-4 text-xs text-white/40 text-center sidebar-footer relative z-10">
-    Studio Érika Daiany © 2026
+  <div class="p-4 text-center sidebar-footer relative z-10" style="border-top:1px solid rgba(255,255,255,0.05)">
+    <p style="font-size:10px;color:rgba(255,255,255,0.22);letter-spacing:.05em">© 2026 Studio Érika Daiany</p>
   </div>
 </aside>
 
@@ -403,7 +488,7 @@
     <!-- Header -->
     <div class="bg-white border-b border-gray-100 px-6 py-3 flex-shrink-0">
       <div class="flex items-center justify-between">
-        <h1 class="text-xl font-bold text-gray-800">Atendimentos</h1>
+        <h1 class="text-xl font-bold text-gray-800" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700">Atendimentos</h1>
         <div class="flex items-center gap-2">
           <button onclick="toggleDarkMode()" id="btn-dark" class="p-2 rounded-xl hover:bg-gray-100 transition-colors" title="Modo escuro">
             <i data-lucide="moon" class="w-5 h-5 text-gray-600"></i>
@@ -421,7 +506,7 @@
         <button onclick="mudarDia(-1)" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
           <i data-lucide="chevron-left" class="w-4 h-4 text-gray-600"></i>
         </button>
-        <button onclick="irHoje()" class="px-3 py-1 text-xs font-medium text-[#1a1a1a] bg-[#fffbeb] hover:bg-[#f5c518]/30 rounded-lg transition-colors">Hoje</button>
+        <button onclick="irHoje()" class="px-3 py-1 text-xs font-semibold rounded-lg transition-colors" style="color:var(--accent);background:var(--accent-light)">Hoje</button>
         <button onclick="mudarDia(1)" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
           <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600"></i>
         </button>
@@ -443,7 +528,7 @@
   <!-- ====== VIEW: CLIENTES ====== -->
   <div id="view-clientes" class="view">
     <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
-      <h2 class="text-lg font-bold text-gray-800">Clientes</h2>
+      <h2 class="text-lg font-bold text-gray-800" style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700">Clientes</h2>
       <div class="flex items-center gap-3">
         <div class="relative">
           <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
@@ -481,7 +566,7 @@
   <div id="view-funcionarias" class="view">
     <!-- Header -->
     <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0 flex-wrap gap-2">
-      <h2 class="text-lg font-bold text-gray-800">Funcionárias</h2>
+      <h2 class="text-lg font-bold text-gray-800" style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700">Funcionárias</h2>
       <button id="btn-nova-func" onclick="abrirModalFuncionaria()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Nova funcionária
@@ -559,7 +644,7 @@
     <!-- Header com abas -->
     <div class="bg-white border-b border-gray-100 flex-shrink-0">
       <div class="px-4 md:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 class="text-lg font-bold text-gray-800">Serviços</h2>
+        <h2 class="text-lg font-bold text-gray-800" style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700">Serviços</h2>
         <div class="flex gap-2">
           <button id="btn-novo-servico" onclick="abrirModalServico()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
             <i data-lucide="plus" class="w-4 h-4"></i>
@@ -604,7 +689,7 @@
   <!-- ====== VIEW: PACOTES ====== -->
   <div id="view-pacotes" class="view">
     <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0">
-      <h2 class="text-lg font-bold text-gray-800">Pacotes</h2>
+      <h2 class="text-lg font-bold text-gray-800" style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700">Pacotes</h2>
       <button onclick="abrirModalPacote()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Novo pacote
@@ -622,7 +707,7 @@
   <!-- ====== VIEW: ESTOQUE SALÃO ====== -->
   <div id="view-estoque-salao" class="view">
     <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0 gap-3 flex-wrap">
-      <h2 class="text-lg font-bold text-gray-800">Estoque do Salão</h2>
+      <h2 class="text-lg font-bold text-gray-800" style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700">Estoque do Salão</h2>
       <button onclick="abrirModalEstoqueSalao()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Novo item
@@ -686,7 +771,7 @@
   <!-- ====== VIEW: ESTOQUE REVENDA ====== -->
   <div id="view-estoque-revenda" class="view">
     <div class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0 gap-3 flex-wrap">
-      <h2 class="text-lg font-bold text-gray-800">Estoque Revenda</h2>
+      <h2 class="text-lg font-bold text-gray-800" style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700">Estoque Revenda</h2>
       <button onclick="abrirModalEstoqueRevenda()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Novo produto
@@ -753,7 +838,7 @@
 
   <!-- Header com filtros integrados — linha única -->
   <div class="bg-white border-b border-gray-100 px-5 py-3 flex items-center gap-3 flex-shrink-0" style="width:100%;min-width:0;overflow:hidden">
-    <h2 class="text-base font-bold text-gray-800 whitespace-nowrap flex-shrink-0">Fechamento de Pagamentos</h2>
+    <h2 class="whitespace-nowrap flex-shrink-0" style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:var(--text1)">Fechamento de Pagamentos</h2>
     <label class="text-xs font-semibold text-gray-400 whitespace-nowrap flex-shrink-0">Funcionária</label>
     <select id="fech-func" class="px-2 py-1.5 text-sm border border-gray-200 rounded-lg bg-gray-50 flex-shrink-0" style="max-width:130px">
       <option value="">Todas</option>
@@ -779,52 +864,52 @@
     </div>
 
     <!-- Painel direito: calculadora + PIX -->
-    <div class="absolute top-0 right-0 bottom-0 overflow-y-auto flex flex-col gap-4 p-3 border-l border-gray-100" style="width:332px;background:#f8fafc">
+    <div class="absolute top-0 right-0 bottom-0 overflow-y-auto flex flex-col gap-2 p-2 border-l border-gray-100" style="width:332px;background:var(--surface2)">
 
       <!-- Calculadora -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-3 py-2 border-b border-gray-100 flex items-center gap-2">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex-shrink-0">
+        <div class="px-3 py-1.5 border-b border-gray-100 flex items-center gap-2">
           <i data-lucide="calculator" class="w-3.5 h-3.5 text-gray-400"></i>
           <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">Calculadora</span>
         </div>
-        <div class="p-2.5">
-          <div id="calc-expr" class="w-full text-right text-xs text-gray-400 px-1 h-4 mb-1 overflow-hidden text-ellipsis whitespace-nowrap"></div>
-          <div id="calc-display" class="w-full text-right text-2xl font-bold text-gray-800 bg-gray-50 rounded-xl px-3 py-2 mb-2 overflow-hidden text-ellipsis" style="font-variant-numeric:tabular-nums">0</div>
+        <div class="p-2">
+          <div id="calc-expr" class="w-full text-right text-xs text-gray-400 px-1 h-4 mb-0.5 overflow-hidden text-ellipsis whitespace-nowrap"></div>
+          <div id="calc-display" class="w-full text-right text-xl font-bold text-gray-800 bg-gray-50 rounded-xl px-3 py-1.5 mb-1.5 overflow-hidden text-ellipsis" style="font-variant-numeric:tabular-nums">0</div>
           <div class="grid grid-cols-4 gap-1">
-            <button onclick="calcAction('C')"   class="calc-btn col-span-2 py-2.5 rounded-xl text-sm font-bold bg-red-50 text-red-500 hover:bg-red-100">C</button>
-            <button onclick="calcAction('%')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">%</button>
-            <button onclick="calcAction('/')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">÷</button>
-            <button onclick="calcAction('7')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">7</button>
-            <button onclick="calcAction('8')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">8</button>
-            <button onclick="calcAction('9')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">9</button>
-            <button onclick="calcAction('*')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">×</button>
-            <button onclick="calcAction('4')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">4</button>
-            <button onclick="calcAction('5')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">5</button>
-            <button onclick="calcAction('6')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">6</button>
-            <button onclick="calcAction('-')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">−</button>
-            <button onclick="calcAction('1')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">1</button>
-            <button onclick="calcAction('2')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">2</button>
-            <button onclick="calcAction('3')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">3</button>
-            <button onclick="calcAction('+')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#1a1a1a">+</button>
-            <button onclick="calcAction('0')"   class="calc-btn col-span-2 py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">0</button>
-            <button onclick="calcAction('.')"   class="calc-btn py-2.5 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">,</button>
-            <button onclick="calcAction('=')"   class="calc-btn py-2.5 rounded-xl text-sm font-bold hover:opacity-90" style="background:#f5c518;color:#1a1a1a">=</button>
+            <button onclick="calcAction('C')"   class="calc-btn col-span-2 py-2 rounded-xl text-sm font-bold bg-red-50 text-red-500 hover:bg-red-100">C</button>
+            <button onclick="calcAction('%')"   class="calc-btn py-2 rounded-xl text-sm font-bold bg-gray-100 text-gray-600 hover:bg-gray-200">%</button>
+            <button onclick="calcAction('/')"   class="calc-btn py-2 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#2D1020">÷</button>
+            <button onclick="calcAction('7')"   class="calc-btn py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">7</button>
+            <button onclick="calcAction('8')"   class="calc-btn py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">8</button>
+            <button onclick="calcAction('9')"   class="calc-btn py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">9</button>
+            <button onclick="calcAction('*')"   class="calc-btn py-2 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#2D1020">×</button>
+            <button onclick="calcAction('4')"   class="calc-btn py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">4</button>
+            <button onclick="calcAction('5')"   class="calc-btn py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">5</button>
+            <button onclick="calcAction('6')"   class="calc-btn py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">6</button>
+            <button onclick="calcAction('-')"   class="calc-btn py-2 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#2D1020">−</button>
+            <button onclick="calcAction('1')"   class="calc-btn py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">1</button>
+            <button onclick="calcAction('2')"   class="calc-btn py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">2</button>
+            <button onclick="calcAction('3')"   class="calc-btn py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">3</button>
+            <button onclick="calcAction('+')"   class="calc-btn py-2 rounded-xl text-sm font-bold text-white hover:opacity-90" style="background:#2D1020">+</button>
+            <button onclick="calcAction('0')"   class="calc-btn col-span-2 py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">0</button>
+            <button onclick="calcAction('.')"   class="calc-btn py-2 rounded-xl text-sm font-semibold bg-white border border-gray-100 hover:bg-gray-50 shadow-sm">,</button>
+            <button onclick="calcAction('=')"   class="calc-btn py-2 rounded-xl text-sm font-bold hover:opacity-90" style="background:var(--accent);color:#FFF8F4">=</button>
           </div>
         </div>
       </div>
 
       <!-- PIX -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-3 py-2 border-b border-gray-100 flex items-center gap-2">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex-shrink-0">
+        <div class="px-3 py-1.5 border-b border-gray-100 flex items-center gap-2">
           <i data-lucide="qr-code" class="w-3.5 h-3.5 text-gray-400"></i>
           <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">PIX</span>
         </div>
-        <div class="p-3 flex flex-col items-center gap-2">
-          <div id="pix-qrcode" class="rounded-xl overflow-hidden border border-gray-100 p-1.5"></div>
+        <div class="p-2 flex flex-col items-center gap-2">
+          <div id="pix-qrcode" class="rounded-xl overflow-hidden border border-gray-100 p-1"></div>
           <div class="text-center">
-            <div class="text-xs font-bold text-gray-700">Érika Daiany</div>
+            <div class="text-xs font-bold text-gray-700">ED Beauty Studio</div>
             <div class="text-xs text-gray-400 mt-0.5">CPF · 069.105.709-52</div>
-            <button onclick="copiarChavePix()" class="mt-2 flex items-center gap-1.5 mx-auto text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style="background:#1a1a1a">
+            <button onclick="copiarChavePix()" class="mt-1.5 flex items-center gap-1.5 mx-auto text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style="background:#2D1020">
               <i data-lucide="copy" class="w-3 h-3"></i> Copiar chave
             </button>
           </div>
@@ -838,7 +923,7 @@
   <!-- ====== VIEW: FLUXO DE CAIXA ====== -->
   <div id="view-fluxo-caixa" class="view">
   <div class="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
-    <h2 class="text-lg font-bold text-gray-800">Fluxo de Caixa</h2>
+    <h2 class="text-lg font-bold text-gray-800" style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700">Fluxo de Caixa</h2>
     <button onclick="abrirModalDespesa()" class="flex items-center gap-2 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
       <i data-lucide="plus" class="w-4 h-4"></i>Nova Despesa
     </button>
@@ -901,7 +986,7 @@
 <div id="modal-agendar" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-agendar')">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between p-6 border-b border-gray-100">
-      <h3 id="modal-agendar-titulo" class="text-lg font-bold text-gray-800">Novo Agendamento</h3>
+      <h3 id="modal-agendar-titulo" class="text-lg font-bold text-gray-800" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700">Novo Agendamento</h3>
       <button onclick="fecharModal('modal-agendar')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
         <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
       </button>
@@ -1217,61 +1302,108 @@
 
 <!-- Modal Pagamento -->
 <div id="modal-pagamento" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-pagamento')">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-      <h3 class="text-lg font-bold text-gray-800">Fechar Comanda</h3>
-      <button onclick="fecharModal('modal-pagamento')" class="p-2 hover:bg-gray-100 rounded-xl">
-        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+  <div class="bg-white rounded-2xl shadow-2xl w-full overflow-hidden" style="max-width:520px" onclick="event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100" style="background:linear-gradient(135deg,#2D1020,#5C2040)">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:rgba(255,255,255,0.12)">
+          <i data-lucide="receipt" class="w-4 h-4 text-white"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-white" style="font-family:'Cormorant Garamond',serif;font-size:18px">Fechar Comanda</h3>
+          <p class="text-xs" style="color:rgba(255,255,255,0.55)">ED Beauty Studio</p>
+        </div>
+      </div>
+      <button onclick="fecharModal('modal-pagamento')" class="p-2 rounded-xl transition-colors" style="color:rgba(255,255,255,0.6)" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+        <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
-    <div class="px-5 py-4 border-b border-gray-100">
-      <div class="text-xs font-semibold text-gray-400 uppercase mb-2">Resumo da Comanda</div>
-      <div id="pagto-resumo-itens" class="space-y-1 text-sm"></div>
-      <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
-        <span class="font-bold text-gray-700">Total</span>
-        <span id="pagto-total" class="text-2xl font-bold" style="color:#1a1a1a">R$ 0,00</span>
+
+    <div class="overflow-y-auto" style="max-height:80vh">
+
+      <!-- Extrato completo do atendimento -->
+      <div class="px-5 pt-4 pb-3 border-b border-gray-100">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="list" class="w-3.5 h-3.5" style="color:var(--accent)"></i>
+          <span class="text-xs font-bold uppercase tracking-wider" style="color:var(--text3)">Extrato do Atendimento</span>
+        </div>
+        <div id="pagto-resumo-itens" class="space-y-1.5 text-sm"></div>
+        <div class="flex justify-between items-center mt-3 pt-3 border-t" style="border-color:var(--border)">
+          <span class="font-bold text-gray-700 text-sm">Total do Atendimento</span>
+          <span id="pagto-total" class="text-2xl font-bold" style="color:var(--text1);font-family:'Cormorant Garamond',serif">R$ 0,00</span>
+        </div>
       </div>
-    </div>
-    <div id="pagto-debitos-section" class="hidden px-5 py-3 border-b" style="background:#fff8f0">
-      <div class="flex items-center gap-2 mb-2">
-        <i data-lucide="alert-triangle" class="w-4 h-4" style="color:#f59e0b"></i>
-        <span class="text-sm font-bold" style="color:#92400e">Cliente com débito em aberto</span>
+
+      <!-- Débitos em aberto -->
+      <div id="pagto-debitos-section" class="hidden px-5 py-3 border-b" style="background:#fff8f0">
+        <div class="flex items-center gap-2 mb-2">
+          <i data-lucide="alert-triangle" class="w-4 h-4" style="color:#f59e0b"></i>
+          <span class="text-sm font-bold" style="color:#92400e">Cliente com débito em aberto</span>
+        </div>
+        <div id="pagto-debitos-lista" class="text-xs text-gray-600 space-y-1 mb-3"></div>
+        <div>
+          <label class="text-xs font-semibold text-gray-600 block mb-1">Abater da dívida neste atendimento (R$)</label>
+          <input type="number" id="pagto-abatimento" min="0" step="0.01" placeholder="0,00"
+            class="w-full px-3 py-2 text-sm border border-amber-200 rounded-xl bg-amber-50 focus:bg-white" />
+        </div>
       </div>
-      <div id="pagto-debitos-lista" class="text-xs text-gray-600 space-y-1 mb-3"></div>
-      <div>
-        <label class="text-xs font-semibold text-gray-600 block mb-1">Abater da dívida neste atendimento (R$)</label>
-        <input type="number" id="pagto-abatimento" min="0" step="0.01" placeholder="0,00"
-          class="w-full px-3 py-2 text-sm border border-amber-200 rounded-xl bg-amber-50 focus:bg-white" />
+
+      <!-- Forma de Pagamento + PIX QR (layout 2 colunas quando PIX) -->
+      <div class="px-5 py-4">
+        <div class="flex items-center gap-2 mb-3">
+          <i data-lucide="credit-card" class="w-3.5 h-3.5" style="color:var(--accent)"></i>
+          <span class="text-xs font-bold uppercase tracking-wider" style="color:var(--text3)">Forma de Pagamento</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mb-4">
+          <button type="button" data-metodo="dinheiro" onclick="selecionarPagto(this)" class="pagto-btn pagto-ativo flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-xs font-semibold transition-all">
+            <i data-lucide="banknote" class="w-5 h-5"></i>Dinheiro
+          </button>
+          <button type="button" data-metodo="pix" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
+            <i data-lucide="qr-code" class="w-5 h-5"></i>Pix
+          </button>
+          <button type="button" data-metodo="debito" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
+            <i data-lucide="credit-card" class="w-5 h-5"></i>Débito
+          </button>
+          <button type="button" data-metodo="credito" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
+            <i data-lucide="credit-card" class="w-5 h-5"></i>Crédito
+          </button>
+          <button type="button" data-metodo="cortesia" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
+            <i data-lucide="gift" class="w-5 h-5"></i>Cortesia
+          </button>
+          <button type="button" data-metodo="fiado" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
+            <i data-lucide="clock" class="w-5 h-5"></i>Fiado
+          </button>
+        </div>
+
+        <!-- PIX QR — aparece ao selecionar Pix -->
+        <div id="pagto-pix-section" class="hidden rounded-2xl border overflow-hidden" style="border-color:var(--border);background:var(--surface2)">
+          <div class="flex items-center gap-2 px-4 py-2.5 border-b" style="border-color:var(--border);background:#2D1020">
+            <i data-lucide="qr-code" class="w-3.5 h-3.5" style="color:var(--accent-light)"></i>
+            <span class="text-xs font-bold uppercase tracking-wider" style="color:rgba(255,255,255,0.7)">QR Code PIX</span>
+          </div>
+          <div class="flex gap-4 items-center p-4">
+            <div id="pix-qrcode-modal" class="rounded-xl overflow-hidden border p-1 flex-shrink-0" style="border-color:var(--border);background:#fff"></div>
+            <div class="flex flex-col gap-1.5">
+              <p class="text-xs font-bold" style="color:var(--text1)">ED Beauty Studio</p>
+              <p class="text-xs" style="color:var(--text3)">CPF · 069.105.709-52</p>
+              <p class="text-xs" style="color:var(--text3)">Chave: 06910570952</p>
+              <button onclick="copiarChavePix()" class="mt-1 flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style="background:#2D1020;width:fit-content">
+                <i data-lucide="copy" class="w-3 h-3"></i> Copiar chave
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="px-5 py-4">
-      <div class="text-xs font-semibold text-gray-400 uppercase mb-3">Forma de Pagamento</div>
-      <div class="grid grid-cols-3 gap-2">
-        <button type="button" data-metodo="dinheiro" onclick="selecionarPagto(this)" class="pagto-btn pagto-ativo flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-xs font-semibold transition-all">
-          <i data-lucide="banknote" class="w-5 h-5"></i>Dinheiro
-        </button>
-        <button type="button" data-metodo="pix" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
-          <i data-lucide="qr-code" class="w-5 h-5"></i>Pix
-        </button>
-        <button type="button" data-metodo="debito" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
-          <i data-lucide="credit-card" class="w-5 h-5"></i>Débito
-        </button>
-        <button type="button" data-metodo="credito" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
-          <i data-lucide="credit-card" class="w-5 h-5"></i>Crédito
-        </button>
-        <button type="button" data-metodo="cortesia" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
-          <i data-lucide="gift" class="w-5 h-5"></i>Cortesia
-        </button>
-        <button type="button" data-metodo="fiado" onclick="selecionarPagto(this)" class="pagto-btn flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-gray-200 text-xs font-semibold transition-all text-gray-500">
-          <i data-lucide="clock" class="w-5 h-5"></i>Fiado
+
+      <!-- Confirmar -->
+      <div class="px-5 pb-5">
+        <button onclick="confirmarPagamento()" class="w-full py-3 text-sm font-bold text-white rounded-xl shadow-md transition-all" style="background:linear-gradient(135deg,#2D1020,#5C2040)">
+          <i data-lucide="check-circle" class="w-4 h-4 inline mr-1.5"></i>Confirmar Fechamento
         </button>
       </div>
-    </div>
-    <div class="px-5 pb-5">
-      <button onclick="confirmarPagamento()" class="w-full py-3 text-sm font-bold text-white rounded-xl shadow-md transition-all" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
-        <i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i>Confirmar Fechamento
-      </button>
-    </div>
+
+    </div><!-- /scroll -->
   </div>
 </div>
 
@@ -3082,19 +3214,28 @@ async function fecharComanda() {
 
   let resumoHtml = '';
   if (servico || baseVal > 0) {
-    resumoHtml += `<div class="flex justify-between py-1 border-b border-gray-50">
-      <span class="text-gray-600">${esc(servico?.nome || 'Serviço')}</span>
-      <span class="font-semibold">${fmtPreco(baseVal)}</span></div>`;
+    resumoHtml += `<div class="flex justify-between items-center py-1.5 border-b" style="border-color:var(--border)">
+      <span class="flex items-center gap-1.5" style="color:var(--text2)">
+        <span class="text-xs px-1.5 py-0.5 rounded-full font-semibold" style="background:var(--accent-light);color:var(--accent)">Serviço</span>
+        ${esc(servico?.nome || 'Serviço')}
+      </span>
+      <span class="font-bold" style="color:var(--text1)">${fmtPreco(baseVal)}</span></div>`;
   }
   comandaItens.forEach(item => {
-    resumoHtml += `<div class="flex justify-between py-1 border-b border-gray-50">
-      <span class="text-gray-600">${esc(item.descricao)} × ${item.quantidade||1}</span>
-      <span class="font-semibold">${fmtPreco((item.quantidade||1)*(item.valor_unitario||0))}</span></div>`;
+    resumoHtml += `<div class="flex justify-between items-center py-1.5 border-b" style="border-color:var(--border)">
+      <span class="flex items-center gap-1.5" style="color:var(--text2)">
+        <span class="text-xs px-1.5 py-0.5 rounded-full font-semibold" style="background:#EDE9FE;color:#6D28D9">Extra</span>
+        ${esc(item.descricao)} × ${item.quantidade||1}
+      </span>
+      <span class="font-bold" style="color:var(--text1)">${fmtPreco((item.quantidade||1)*(item.valor_unitario||0))}</span></div>`;
   });
   comandaProdutos.forEach(p => {
-    resumoHtml += `<div class="flex justify-between py-1 border-b border-gray-50">
-      <span class="text-gray-600 flex items-center gap-1"><span class="text-xs bg-amber-100 text-amber-700 px-1.5 rounded-full font-semibold">Produto</span>${esc(p._nome)} × ${p.quantidade}</span>
-      <span class="font-semibold">${fmtPreco(p.quantidade * p.preco_unitario)}</span></div>`;
+    resumoHtml += `<div class="flex justify-between items-center py-1.5 border-b" style="border-color:var(--border)">
+      <span class="flex items-center gap-1.5" style="color:var(--text2)">
+        <span class="text-xs px-1.5 py-0.5 rounded-full font-semibold" style="background:#FEF3C7;color:#B45309">Produto</span>
+        ${esc(p._nome)} × ${p.quantidade}
+      </span>
+      <span class="font-bold" style="color:var(--text1)">${fmtPreco(p.quantidade * p.preco_unitario)}</span></div>`;
   });
   document.getElementById('pagto-resumo-itens').innerHTML = resumoHtml || '<span class="text-gray-400 text-xs">Nenhum item</span>';
   document.getElementById('pagto-total').textContent = fmtPreco(total);
@@ -3128,6 +3269,25 @@ function selecionarPagto(btn) {
     b.classList.remove('pagto-ativo');
   });
   btn.classList.add('pagto-ativo');
+  const pixSection = document.getElementById('pagto-pix-section');
+  if (pixSection) {
+    if (btn.dataset.metodo === 'pix') {
+      pixSection.classList.remove('hidden');
+      iniciarPixQRModal();
+    } else {
+      pixSection.classList.add('hidden');
+    }
+  }
+}
+
+function iniciarPixQRModal() {
+  const el = document.getElementById('pix-qrcode-modal');
+  if (!el || el.dataset.gerado) return;
+  el.dataset.gerado = '1';
+  try {
+    new QRCode(el, { text: gerarPixPayload(), width: 150, height: 150, colorDark: '#2D1020', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  } catch(e) { el.innerHTML = '<div class="text-xs text-gray-400 p-4">QR indisponível</div>'; }
+  lucide.createIcons();
 }
 
 async function confirmarPagamento() {

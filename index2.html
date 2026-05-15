@@ -1560,7 +1560,7 @@
           </div>
         </div>
         <!-- Checkboxes inline -->
-        <div class="flex items-center gap-6 py-0.5">
+        <div class="flex items-center gap-6 py-0.5 flex-wrap">
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" id="func-ver-valores" class="w-4 h-4 rounded" />
             <span class="text-sm text-gray-700">Ver valores da Érika</span>
@@ -1568,6 +1568,10 @@
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" id="func-exibir-agenda" class="w-4 h-4 rounded" />
             <span class="text-sm text-gray-700">Exibir na agenda</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer" title="Oculta a coluna desta profissional na agenda quando não há atendimento marcado para o dia">
+            <input type="checkbox" id="func-ocultar-sem-ag" class="w-4 h-4 rounded" />
+            <span class="text-sm text-gray-700">Ocultar quando sem agendamento</span>
           </label>
         </div>
         <!-- Comissões por serviço -->
@@ -2054,6 +2058,7 @@ let comandaItens   = [];
 let ordemFuncionarios = [];
 let profVisiveis      = new Set(); // IDs visíveis na agenda (vazio = todas)
 let agendaOcultas     = new Set(JSON.parse(localStorage.getItem('agenda_ocultas') || '[]'));
+let ocultarSemAg      = new Set(JSON.parse(localStorage.getItem('ocultar_sem_ag')   || '[]'));
 let draggedFuncId  = null;
 let rangeCarregado = { inicio: null, fim: null };
 let despesas        = [];
@@ -2444,16 +2449,24 @@ function renderCalendarioDia(container, dias) {
 
   // Se modo semana: para cada dia, para cada funcionária, uma coluna
   // Se modo dia: para cada funcionária, uma coluna
+  const _temAgNoDia = (funcId, dia) =>
+    agendamentos.some(a => {
+      const d = new Date(a.data_hora);
+      return a.funcionario_id === funcId && d.toDateString() === dia.toDateString();
+    });
+
   const cols = [];
   const funcOrds = getFuncsVisiveis();
   if (modoCalendario === 'semana') {
     dias.forEach(dia => {
       funcOrds.forEach(func => {
+        if (ocultarSemAg.has(func.id) && !_temAgNoDia(func.id, dia)) return;
         cols.push({ dia, func });
       });
     });
   } else {
     funcOrds.forEach(func => {
+      if (ocultarSemAg.has(func.id) && !_temAgNoDia(func.id, dias[0])) return;
       cols.push({ dia: dias[0], func });
     });
   }
@@ -4200,6 +4213,7 @@ function abrirModalFuncionaria() {
   document.getElementById('func-salario').value = '';
   document.getElementById('func-ver-valores').checked = false;
   document.getElementById('func-exibir-agenda').checked = true;
+  document.getElementById('func-ocultar-sem-ag').checked = false;
   renderListaComissoesServico([]);
   toggleCampoComissao();
   abrirModal('modal-funcionaria');
@@ -4222,6 +4236,7 @@ async function editarFuncionaria(id) {
   document.getElementById('func-salario').value = f.salario_fixo || '';
   document.getElementById('func-ver-valores').checked = f.ver_valores_erika || false;
   document.getElementById('func-exibir-agenda').checked = !agendaOcultas.has(f.id);
+  document.getElementById('func-ocultar-sem-ag').checked = ocultarSemAg.has(f.id);
   toggleCampoComissao();
   // Carrega comissões por serviço existentes
   const { data: comissoes } = await db.from('comissoes_servico').select('*').eq('funcionario_id', id);
@@ -4267,11 +4282,16 @@ async function salvarFuncionaria(e) {
     }
 
     // Salva preferência de visibilidade na agenda (localStorage)
-    const exibir = document.getElementById('func-exibir-agenda').checked;
+    const exibir     = document.getElementById('func-exibir-agenda').checked;
+    const ocultarSem = document.getElementById('func-ocultar-sem-ag').checked;
     if (funcId) {
       if (exibir) agendaOcultas.delete(funcId);
       else agendaOcultas.add(funcId);
       localStorage.setItem('agenda_ocultas', JSON.stringify([...agendaOcultas]));
+
+      if (ocultarSem) ocultarSemAg.add(funcId);
+      else ocultarSemAg.delete(funcId);
+      localStorage.setItem('ocultar_sem_ag', JSON.stringify([...ocultarSemAg]));
     }
 
     showToast(id ? 'Funcionária atualizada!' : 'Funcionária cadastrada!', 'success');

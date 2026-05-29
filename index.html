@@ -322,6 +322,8 @@
     .chip-todas { display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px; border:2px solid var(--border2); cursor:pointer; font-size:11px; font-weight:700; color:var(--text1); background:var(--surface2); transition:all .18s; }
     .chip-todas.ativa { border-color:var(--accent); background:var(--accent-light); color:var(--text1); }
     .func-oculta-badge { font-size:10px; font-weight:700; padding:1px 8px; border-radius:999px; background:var(--surface3); color:var(--text3); margin-top:2px; }
+    .btn-excluir-func { flex:1; padding:8px 0; font-size:11px; font-weight:700; border-radius:12px; border:1.5px solid #fecaca; color:#dc2626; background:#fff5f5; transition:all .18s; display:flex; align-items:center; justify-content:center; gap:4px; cursor:pointer; }
+    .btn-excluir-func:hover { background:#fee2e2; border-color:#f87171; }
 
     /* Refined card shadow (warm tint) */
     .shadow-sm { box-shadow: 0 2px 10px rgba(100,50,20,.07) !important; }
@@ -1594,6 +1596,25 @@
         <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow hover:shadow-md transition-all flex items-center gap-2"><i data-lucide="save" class="w-4 h-4"></i>Salvar Ajustes</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Modal confirmar exclusão de funcionária -->
+<div id="modal-excluir-func" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-excluir-func')">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6" onclick="event.stopPropagation()">
+    <div class="flex flex-col items-center gap-4 text-center">
+      <div class="w-14 h-14 rounded-full flex items-center justify-center" style="background:#fee2e2">
+        <i data-lucide="user-x" class="w-7 h-7" style="color:#dc2626"></i>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-gray-800 mb-1">Excluir funcionária?</h3>
+        <p class="text-sm text-gray-500">A funcionária <strong id="excluir-func-nome"></strong> será desativada e removida da agenda. O histórico de atendimentos é preservado.</p>
+      </div>
+      <div class="flex gap-3 w-full pt-1">
+        <button onclick="fecharModal('modal-excluir-func')" class="flex-1 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
+        <button id="btn-confirmar-excluir-func" onclick="excluirFuncionaria()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors" style="background:#dc2626">Excluir</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3930,6 +3951,9 @@ function renderFuncionarias() {
         <button onclick="editarFuncionaria('${f.id}')" class="flex-1 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center justify-center gap-1.5">
           <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Editar
         </button>
+        ${isAdmin() ? `<button onclick="confirmarExcluirFuncionaria('${f.id}','${esc(f.nome)}')" class="btn-excluir-func" title="Desativar funcionária">
+          <i data-lucide="user-x" class="w-3.5 h-3.5"></i> Excluir
+        </button>` : ''}
       </div>
     </div>
   `).join('') + `
@@ -4299,6 +4323,49 @@ async function salvarFuncionaria(e) {
     renderCalendario();
   } catch (e) {
     showToast('Erro: ' + e.message, 'error');
+  }
+}
+
+// =========================================================
+// EXCLUIR FUNCIONÁRIA (soft delete — ativo = false)
+// =========================================================
+let _excluirFuncId = null;
+
+function confirmarExcluirFuncionaria(id, nome) {
+  _excluirFuncId = id;
+  document.getElementById('excluir-func-nome').textContent = nome;
+  abrirModal('modal-excluir-func');
+}
+
+async function excluirFuncionaria() {
+  if (!_excluirFuncId) return;
+  const btn = document.getElementById('btn-confirmar-excluir-func');
+  btn.disabled = true;
+  btn.textContent = 'Excluindo...';
+  try {
+    const { error } = await db.from('funcionarios').update({ ativo: false }).eq('id', _excluirFuncId);
+    if (error) throw error;
+
+    // Remove das preferências locais para não deixar lixo
+    agendaOcultas.delete(_excluirFuncId);
+    ocultarSemAg.delete(_excluirFuncId);
+    localStorage.setItem('agenda_ocultas', JSON.stringify([...agendaOcultas]));
+    localStorage.setItem('ocultar_sem_ag', JSON.stringify([...ocultarSemAg]));
+
+    fecharModal('modal-excluir-func');
+    showToast('Funcionária removida da agenda', 'success');
+
+    const { data } = await db.from('funcionarios').select('*').eq('ativo', true).order('nome');
+    funcionarios = data || [];
+    inicializarOrdem();
+    renderFuncionarias();
+    renderCalendario();
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Excluir';
+    _excluirFuncId = null;
   }
 }
 

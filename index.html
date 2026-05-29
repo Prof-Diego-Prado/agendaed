@@ -311,6 +311,37 @@
       }
       #view-fluxo-caixa .grid { grid-template-columns: 1fr !important; }
       .toast { right: 16px; left: 16px; bottom: 80px; text-align: center; }
+
+      /* ── AGENDA MOBILE ── */
+      /* Header de agendamentos: padding reduzido */
+      #view-agendamentos > div:first-child { padding: 10px 14px 8px !important; }
+      /* Título "Atendimentos" menor */
+      #view-agendamentos > div:first-child h1 { font-size: 18px !important; }
+      /* Botão Agendar: só ícone */
+      #view-agendamentos .btn-agendar-texto { display: none !important; }
+      /* Nav row: permite quebrar linha para chips ficarem embaixo */
+      #cal-nav-row { flex-wrap: wrap; gap: 6px; }
+      /* Data: tamanho menor e trunca para não empurrar chips */
+      #cal-titulo { font-size: 11px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+      /* Chips: linha própria, scroll horizontal, sem quebra */
+      #filtro-prof-chips {
+        order: 99;
+        width: 100%;
+        margin-left: 0 !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 3px;
+        gap: 5px !important;
+      }
+      #filtro-prof-chips::-webkit-scrollbar { display: none; }
+      /* Modo Dia/Semana/Mês: não cresce */
+      #cal-nav-row > div:last-child { margin-left: auto; flex-shrink: 0; }
+      /* Colunas: 150px para touch confortável */
+      .calendar-col { min-width: 150px !important; }
+      /* Coluna de horas: mais estreita */
+      #calendario > div:first-child { width: 44px !important; min-width: 44px !important; }
     }
     #mobile-topbar { display: none; }
     #sidebar-overlay { display: none; }
@@ -500,11 +531,11 @@
           </button>
           <button onclick="abrirModalAgendar()" class="flex items-center gap-2 bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all">
             <i data-lucide="plus" class="w-4 h-4"></i>
-            Agendar
+            <span class="btn-agendar-texto">Agendar</span>
           </button>
         </div>
       </div>
-      <div class="flex items-center gap-2 mt-2">
+      <div id="cal-nav-row" class="flex items-center gap-2 mt-2">
         <button onclick="mudarDia(-1)" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
           <i data-lucide="chevron-left" class="w-4 h-4 text-gray-600"></i>
         </button>
@@ -2129,16 +2160,24 @@ let usuarioLogado = JSON.parse(sessionStorage.getItem('usuario_logado') || 'null
 function isAdmin() { return usuarioLogado?.papel === 'admin'; }
 
 // Retorna funcionarios ativos na ordem definida pelo usuário
+// Admin (Erika/Proprietária) é sempre a primeira coluna, sem exceções
 function funcionariosOrdenados() {
-  if (!ordemFuncionarios.length) return funcionarios;
-  return [...funcionarios].sort((a, b) => {
-    const ia = ordemFuncionarios.indexOf(a.id);
-    const ib = ordemFuncionarios.indexOf(b.id);
-    if (ia === -1 && ib === -1) return 0;
-    if (ia === -1) return 1;
-    if (ib === -1) return -1;
-    return ia - ib;
-  });
+  let base;
+  if (!ordemFuncionarios.length) {
+    base = [...funcionarios];
+  } else {
+    base = [...funcionarios].sort((a, b) => {
+      const ia = ordemFuncionarios.indexOf(a.id);
+      const ib = ordemFuncionarios.indexOf(b.id);
+      if (ia === -1 && ib === -1) return 0;
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    });
+  }
+  const admins = base.filter(f => f.papel === 'admin');
+  const others = base.filter(f => f.papel !== 'admin');
+  return [...admins, ...others];
 }
 
 function inicializarOrdem() {

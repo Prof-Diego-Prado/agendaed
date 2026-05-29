@@ -23,7 +23,7 @@ update funcionarios set papel = 'funcionaria', ver_valores_erika = false
 where nome not ilike '%erica%' and nome not ilike '%érika%' and nome not ilike '%luiza%';
 
 -- 3. Comissões iniciais (ajuste conforme acordado)
-update funcionarios set percentual_comissao = 40 where nome ilike '%cibeli%';
+update funcionarios set percentual_comissao = 0, tipo_remuneracao = 'fixo' where nome ilike '%cibeli%';
 update funcionarios set percentual_comissao = 40 where nome ilike '%jaqueline%';
 update funcionarios set percentual_comissao = 40 where nome ilike '%priscila%';
 update funcionarios set percentual_comissao = 40 where nome ilike '%amanda%';

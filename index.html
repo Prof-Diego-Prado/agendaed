@@ -170,7 +170,7 @@
     .prof-avatar-ini { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0; }
     .prof-col-hdr { position: sticky; top: 0; z-index: 8; background: var(--surface); }
     /* Blue Agendar button */
-    .btn-agendar-blue { background: #2563EB; color: white; padding: 7px 18px; border-radius: 10px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; flex-shrink: 0; transition: background .15s; }
+    .btn-agendar-blue { background: #2563EB; color: white; padding: 5px 13px; border-radius: 8px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; flex-shrink: 0; transition: background .15s; }
     .btn-agendar-blue:active { background: #1d4ed8; }
     /* Modo dropdown */
     #modo-dropdown button:hover { background: var(--surface2); }
@@ -569,20 +569,20 @@
   <!-- ====== VIEW: AGENDAMENTOS ====== -->
   <div id="view-agendamentos" class="view active">
     <!-- App Bar -->
-    <div class="flex items-center gap-2 px-4 py-3 bg-white border-b border-gray-100 flex-shrink-0">
-      <button onclick="toggleMobileSidebar()" class="p-1.5 -ml-1 rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0 md:hidden">
-        <i data-lucide="menu" class="w-5 h-5 text-gray-700"></i>
+    <div class="flex items-center gap-1.5 px-3 py-1.5 bg-white border-b border-gray-100 flex-shrink-0">
+      <button onclick="toggleMobileSidebar()" class="p-1 -ml-0.5 rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0 md:hidden">
+        <i data-lucide="menu" class="w-4 h-4 text-gray-700"></i>
       </button>
-      <h1 class="flex-1 text-base font-bold text-gray-800" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:17px">Atendimentos</h1>
-      <button onclick="toggleDarkMode()" class="p-1.5 rounded-xl hover:bg-gray-100 transition-colors" title="Modo escuro">
-        <i data-lucide="moon" class="w-5 h-5 text-gray-600"></i>
+      <h1 class="flex-1 font-bold text-gray-800" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px">Atendimentos</h1>
+      <button onclick="toggleDarkMode()" class="p-1 rounded-xl hover:bg-gray-100 transition-colors" title="Modo escuro">
+        <i data-lucide="moon" class="w-4 h-4 text-gray-600"></i>
       </button>
-      <button onclick="carregarDados().then(()=>renderCalendario())" class="p-1.5 rounded-xl hover:bg-gray-100 transition-colors" title="Atualizar">
-        <i data-lucide="refresh-cw" class="w-5 h-5 text-gray-600"></i>
+      <button onclick="carregarDados().then(()=>renderCalendario())" class="p-1 rounded-xl hover:bg-gray-100 transition-colors" title="Atualizar">
+        <i data-lucide="refresh-cw" class="w-4 h-4 text-gray-600"></i>
       </button>
       <!-- Modo dropdown -->
       <div class="relative flex-shrink-0">
-        <button onclick="toggleModoDropdown()" class="flex items-center gap-1 px-3 py-1.5 text-xs font-bold border border-gray-200 rounded-lg bg-white text-gray-700 select-none">
+        <button onclick="toggleModoDropdown()" class="flex items-center gap-1 px-2.5 py-1 text-xs font-bold border border-gray-200 rounded-lg bg-white text-gray-700 select-none">
           <span id="modo-label">Dia</span>
           <i data-lucide="chevron-down" class="w-3 h-3"></i>
         </button>
@@ -594,21 +594,21 @@
       </div>
     </div>
     <!-- Nav Bar -->
-    <div class="flex items-center gap-1 px-3 py-2 bg-white border-b border-gray-100 flex-shrink-0">
-      <button onclick="mudarDia(-1)" class="p-2 rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0">
-        <i data-lucide="chevron-left" class="w-5 h-5 text-gray-500"></i>
+    <div class="flex items-center gap-0.5 px-2 py-1 bg-white border-b border-gray-100 flex-shrink-0">
+      <button onclick="mudarDia(-1)" class="p-1 rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0">
+        <i data-lucide="chevron-left" class="w-4 h-4 text-gray-500"></i>
       </button>
-      <button onclick="mudarDia(1)" class="p-2 rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0">
-        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
+      <button onclick="mudarDia(1)" class="p-1 rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0">
+        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-500"></i>
       </button>
-      <h2 id="cal-titulo" class="flex-1 text-sm font-bold text-center" style="color:#2563EB"></h2>
+      <h2 id="cal-titulo" class="flex-1 text-xs font-bold text-center" style="color:#2563EB"></h2>
       <div id="filtro-prof-chips" class="hidden"></div>
-      <button onclick="irHoje()" class="p-1.5 rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0" title="Hoje">
-        <i data-lucide="circle-dot" class="w-4 h-4 text-gray-500"></i>
+      <button onclick="irHoje()" class="p-1 rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0" title="Hoje">
+        <i data-lucide="circle-dot" class="w-3.5 h-3.5 text-gray-500"></i>
       </button>
-      <label class="flex items-center gap-1 px-2 py-1.5 rounded-xl hover:bg-gray-100 cursor-pointer select-none flex-shrink-0" title="Mostrar todas as profissionais">
-        <input type="checkbox" id="cb-todas-funcs" onchange="toggleMostrarTodasFuncs()" class="w-3.5 h-3.5 cursor-pointer" style="accent-color:#2563EB">
-        <span class="text-xs font-semibold" style="color:var(--text2)">Todas</span>
+      <label class="flex items-center gap-1 px-1.5 py-1 rounded-xl hover:bg-gray-100 cursor-pointer select-none flex-shrink-0" title="Mostrar todas as profissionais">
+        <input type="checkbox" id="cb-todas-funcs" onchange="toggleMostrarTodasFuncs()" class="w-3 h-3 cursor-pointer" style="accent-color:#2563EB">
+        <span style="font-size:11px;font-weight:700;color:var(--text2)">Todas</span>
       </label>
       <button onclick="abrirModalAgendar()" class="btn-agendar-blue flex-shrink-0">Agendar</button>
     </div>

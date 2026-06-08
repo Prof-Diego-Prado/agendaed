@@ -462,6 +462,10 @@
           <input type="password" id="login-pin" maxlength="6" placeholder="• • • •" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:22px;background:var(--surface2);color:var(--text1);text-align:center;letter-spacing:.3em;transition:border-color .2s"
             onkeydown="if(event.key==='Enter') fazerLogin()" />
         </div>
+        <div class="flex items-center gap-2" style="margin-top:2px">
+          <input type="checkbox" id="login-lembrar" style="accent-color:#5C2040;width:16px;height:16px;cursor:pointer;flex-shrink:0">
+          <label for="login-lembrar" style="font-size:13px;color:var(--text2);cursor:pointer;user-select:none">Manter conectado</label>
+        </div>
         <button onclick="fazerLogin()" style="width:100%;padding:13px;font-size:14px;font-weight:700;color:#FFF8F4;border-radius:12px;border:none;cursor:pointer;letter-spacing:0.04em;transition:all .2s;background:linear-gradient(135deg,#2D1020,#5C2040);box-shadow:0 4px 16px rgba(45,16,32,.4)">
           ENTRAR
         </button>
@@ -2212,7 +2216,15 @@ function calcularRangeFluxo(filtro) {
   return [fmt(ini), fmt(fim)];
 }
 
-let usuarioLogado = JSON.parse(sessionStorage.getItem('usuario_logado') || 'null');
+function _carregarSessao() {
+  try {
+    const salvo = JSON.parse(localStorage.getItem('usuario_logado_salvo') || 'null');
+    if (salvo?.expiry && Date.now() < salvo.expiry) return salvo.usuario;
+    if (salvo) localStorage.removeItem('usuario_logado_salvo');
+  } catch {}
+  return JSON.parse(sessionStorage.getItem('usuario_logado') || 'null');
+}
+let usuarioLogado = _carregarSessao();
 // { id, nome, papel, ver_valores_erika, percentual_comissao, tipo_remuneracao, pin }
 function isAdmin() { return usuarioLogado?.papel === 'admin'; }
 
@@ -5571,7 +5583,12 @@ async function fazerLogin() {
   const { data: func } = await db.from('funcionarios').select('*').eq('id',funcId).single();
   if (!func || func.pin !== pin) { erro.classList.remove('hidden'); erro.textContent='PIN incorreto. Tente novamente.'; return; }
   usuarioLogado = { id:func.id, nome:func.nome, papel:func.papel, ver_valores_erika:func.ver_valores_erika, percentual_comissao:func.percentual_comissao, tipo_remuneracao:func.tipo_remuneracao, pin:func.pin };
-  sessionStorage.setItem('usuario_logado', JSON.stringify(usuarioLogado));
+  if (document.getElementById('login-lembrar')?.checked) {
+    const DIAS_30 = 30 * 24 * 60 * 60 * 1000;
+    localStorage.setItem('usuario_logado_salvo', JSON.stringify({ usuario: usuarioLogado, expiry: Date.now() + DIAS_30 }));
+  } else {
+    sessionStorage.setItem('usuario_logado', JSON.stringify(usuarioLogado));
+  }
   document.getElementById('tela-login').style.display = 'none';
   erro.classList.add('hidden');
 
@@ -5592,6 +5609,7 @@ async function fazerLogin() {
 function fazerLogout() {
   usuarioLogado = null;
   sessionStorage.removeItem('usuario_logado');
+  localStorage.removeItem('usuario_logado_salvo');
   document.getElementById('login-pin').value = '';
   const erro = document.getElementById('login-erro');
   if (erro) erro.classList.add('hidden');

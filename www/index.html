@@ -2726,9 +2726,10 @@ function renderCalendarioDia(container, dias) {
     });
     let funcOrdenados;
     if (mostrarTodasFuncs) {
-      funcOrdenados = _todasBase; // mostra todas, Erika já vem primeiro via funcionariosOrdenados()
+      funcOrdenados = _todasBase;
     } else {
-      funcOrdenados = _todasBase.filter(f => _comAg(f.id));
+      // Admin (Erika) sempre aparece; demais apenas se tiverem agendamento no dia
+      funcOrdenados = _todasBase.filter(f => f.papel === 'admin' || _comAg(f.id));
     }
 
     if (funcOrdenados.length === 0) {
@@ -5541,7 +5542,25 @@ function gerarJanelaRelatorio(inativas) {
   window.open(url, '_blank');
 }
 
+function abrirMenuMobile() {
+  const el = document.getElementById('modal-menu-mobile');
+  if (!el) return;
+  el.style.display = 'flex';
+  lucide.createIcons();
+}
+
+function fecharMenuMobile() {
+  const el = document.getElementById('modal-menu-mobile');
+  if (el) el.style.display = 'none';
+}
+
 function toggleMobileSidebar() {
+  if (window.innerWidth < 768) {
+    const el = document.getElementById('modal-menu-mobile');
+    if (el && el.style.display === 'flex') fecharMenuMobile();
+    else abrirMenuMobile();
+    return;
+  }
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebar-overlay');
   const isOpen  = sidebar.classList.contains('mobile-open');
@@ -5557,6 +5576,7 @@ function toggleMobileSidebar() {
 function fecharMobileSidebar() {
   document.getElementById('sidebar')?.classList.remove('mobile-open');
   document.getElementById('sidebar-overlay')?.classList.remove('show');
+  fecharMenuMobile();
 }
 
 function toggleSidebar() {
@@ -6425,5 +6445,93 @@ async function excluirPacote(id) {
 // =========================================================
 init();
 </script>
+
+<!-- ====== MOBILE MENU — BOTTOM SHEET ====== -->
+<!-- Fora de qualquer overflow:hidden, z-index alto, sem transforms problemáticos no iOS -->
+<div id="modal-menu-mobile"
+  style="display:none;position:fixed;inset:0;z-index:500;align-items:flex-end;"
+  onclick="if(event.target===this)fecharMenuMobile()">
+  <!-- Backdrop -->
+  <div style="position:absolute;inset:0;background:rgba(15,8,12,.58);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);"></div>
+  <!-- Panel -->
+  <div id="mmmobile-panel" style="position:relative;z-index:1;width:100%;background:var(--surface);border-radius:22px 22px 0 0;padding-bottom:max(env(safe-area-inset-bottom,0px),16px);max-height:88dvh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.22);">
+    <!-- Handle -->
+    <div style="width:36px;height:4px;border-radius:2px;background:var(--border);margin:14px auto 2px;" onclick="fecharMenuMobile()"></div>
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 20px 14px;border-bottom:1px solid var(--border);">
+      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--sidebar-from),var(--sidebar-to));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <img src="./logo.png" alt="ED" style="width:20px;height:20px;object-fit:contain;filter:invert(1);opacity:.9">
+      </div>
+      <div>
+        <p style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">Beauty Studio</p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--text1);line-height:1.1">Studio Érika Daiany</p>
+      </div>
+    </div>
+    <!-- Nav principal -->
+    <div style="padding:10px 12px;display:flex;flex-direction:column;gap:2px;">
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('agendamentos')">
+        <i data-lucide="calendar" class="mmb-icon"></i><span>Atendimentos</span>
+      </button>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('clientes')">
+        <i data-lucide="users" class="mmb-icon"></i><span>Clientes</span>
+      </button>
+      <button class="mmb-item admin-only" onclick="fecharMenuMobile();navTo('funcionarias')">
+        <i data-lucide="badge" class="mmb-icon"></i><span>Funcionárias</span>
+      </button>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('servicos')">
+        <i data-lucide="sparkles" class="mmb-icon"></i><span>Serviços</span>
+      </button>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('pacotes')">
+        <i data-lucide="package" class="mmb-icon"></i><span>Pacotes</span>
+      </button>
+    </div>
+    <!-- Seção admin -->
+    <div class="admin-only" style="padding:0 12px;display:flex;flex-direction:column;gap:2px;">
+      <p style="padding:10px 8px 5px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3)">Estoque</p>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('estoque-salao')">
+        <i data-lucide="flask-conical" class="mmb-icon"></i><span>Estoque Salão</span>
+      </button>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('estoque-revenda')">
+        <i data-lucide="shopping-bag" class="mmb-icon"></i><span>Estoque Revenda</span>
+      </button>
+      <p style="padding:10px 8px 5px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3)">Financeiro</p>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('fluxo-caixa')">
+        <i data-lucide="trending-up" class="mmb-icon"></i><span>Fluxo de Caixa</span>
+      </button>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('fechamento')">
+        <i data-lucide="wallet" class="mmb-icon"></i><span>Fechamento</span>
+      </button>
+    </div>
+    <!-- Relacionamento -->
+    <div style="padding:0 12px;display:flex;flex-direction:column;gap:2px;">
+      <p style="padding:10px 8px 5px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3)">Relacionamento</p>
+      <button class="mmb-item" onclick="fecharMenuMobile();abrirModalAniversariantes()">
+        <i data-lucide="cake" class="mmb-icon"></i><span>Aniversariantes</span>
+      </button>
+      <button class="mmb-item admin-only" onclick="fecharMenuMobile();abrirRelatorioInativas()">
+        <i data-lucide="heart-pulse" class="mmb-icon"></i><span>Clientes Inativas</span>
+      </button>
+    </div>
+    <!-- Logout -->
+    <div style="padding:12px 12px 4px;border-top:1px solid var(--border);margin-top:8px;">
+      <button class="mmb-item mmb-logout" onclick="fecharMenuMobile();fazerLogout()">
+        <i data-lucide="log-out" class="mmb-icon"></i><span>Sair</span>
+      </button>
+    </div>
+  </div>
+</div>
+<style>
+  .mmb-item {
+    display:flex;align-items:center;gap:14px;width:100%;
+    padding:13px 12px;border-radius:14px;
+    font-size:15px;font-weight:600;color:var(--text1);
+    background:transparent;border:none;cursor:pointer;text-align:left;
+    transition:background .15s;
+  }
+  .mmb-item:active { background:var(--surface2); }
+  .mmb-icon { width:20px;height:20px;flex-shrink:0;color:var(--accent); }
+  .mmb-logout { color:#DC2626; }
+  .mmb-logout .mmb-icon { color:#DC2626; }
+</style>
 </body>
 </html>

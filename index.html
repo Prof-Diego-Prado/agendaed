@@ -2232,7 +2232,13 @@ let usuarioLogado = _carregarSessao();
 function isAdmin() { return usuarioLogado?.papel === 'admin'; }
 
 // Retorna funcionarios ativos na ordem definida pelo usuário
-// Admin (Erika/Proprietária) é sempre a primeira coluna, sem exceções
+// Erika (proprietária/admin) é sempre a primeira coluna, sem exceções
+function _isAdminFunc(f) {
+  // Detecta admin pelo papel OU pelo ID do usuário logado como admin
+  return f.papel === 'admin' ||
+         (usuarioLogado?.papel === 'admin' && f.id === usuarioLogado.id);
+}
+
 function funcionariosOrdenados() {
   let base;
   if (!ordemFuncionarios.length) {
@@ -2247,8 +2253,9 @@ function funcionariosOrdenados() {
       return ia - ib;
     });
   }
-  const admins = base.filter(f => f.papel === 'admin');
-  const others = base.filter(f => f.papel !== 'admin');
+  // Admin/proprietária sempre primeiro, independente da ordem salva
+  const admins = base.filter(f => _isAdminFunc(f));
+  const others = base.filter(f => !_isAdminFunc(f));
   return [...admins, ...others];
 }
 
@@ -2264,10 +2271,20 @@ function inicializarOrdem() {
   });
   // Remove IDs que não existem mais
   ordemFuncionarios = ordemFuncionarios.filter(id => funcionarios.some(f => f.id === id));
+  // Garante admin sempre na posição 0 do array salvo
+  const adminId = funcionarios.find(f => _isAdminFunc(f))?.id;
+  if (adminId) {
+    ordemFuncionarios = [adminId, ...ordemFuncionarios.filter(id => id !== adminId)];
+  }
   localStorage.setItem('ordem_funcionarios', JSON.stringify(ordemFuncionarios));
 }
 
 function salvarOrdem() {
+  // Reforça admin na posição 0 antes de salvar (impede drag-and-drop de deslocar Erika)
+  const adminId = funcionarios.find(f => _isAdminFunc(f))?.id;
+  if (adminId) {
+    ordemFuncionarios = [adminId, ...ordemFuncionarios.filter(id => id !== adminId)];
+  }
   localStorage.setItem('ordem_funcionarios', JSON.stringify(ordemFuncionarios));
 }
 

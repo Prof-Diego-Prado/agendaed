@@ -330,8 +330,8 @@
       .toast { right: 16px; left: 16px; bottom: 80px; text-align: center; }
 
       /* ── AGENDA MOBILE ── */
-      /* Colunas: 140px para touch confortável */
-      .calendar-col { min-width: 140px !important; }
+      /* Largura das colunas controlada pelo JS (adaptativa ao viewport) */
+      .calendar-col { min-width: 0; }
       /* Coluna de horas: mais estreita */
       #calendario > div:first-child { width: 44px !important; min-width: 44px !important; }
       /* Chips ocultos no novo layout */
@@ -2737,25 +2737,36 @@ function renderCalendarioDia(container, dias) {
       return;
     }
 
+    // Largura adaptativa: distribui o espaço disponível entre as colunas
+    const _isMobile = window.innerWidth < 768;
+    const _horaW    = _isMobile ? 44 : 56;
+    const _numCols  = funcOrdenados.length;
+    const _colW     = _isMobile
+      ? Math.max(88, Math.floor((window.innerWidth - _horaW) / _numCols))
+      : 160;
+    const _avatarSz = _isMobile ? Math.max(28, Math.min(40, _colW - 28)) : 44;
+
     const hdrRow = document.createElement('div');
     hdrRow.className = 'flex flex-1 border-b border-gray-200 prof-col-hdr';
 
     funcOrdenados.forEach((func, idx) => {
       const fHdr = document.createElement('div');
       fHdr.className = 'calendar-col border-r border-gray-100 text-center select-none transition-colors';
-      fHdr.style.minWidth = '140px';
+      fHdr.style.width    = _colW + 'px';
+      fHdr.style.minWidth = _colW + 'px';
       fHdr.style.cursor = 'grab';
       const _np  = func.nome.split(' ');
       const _nL1 = esc(_np[0]);
-      const _nL2 = _np.length >= 2 ? esc(_np[1]) : '';
+      const _nL2 = (_np.length >= 2 && _colW >= 100) ? esc(_np[1]) : '';
+      const _asz = _avatarSz;
       const _fotoTag = func.foto_url
-        ? `<img src="${esc(func.foto_url)}" class="prof-avatar" alt="${_nL1}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        ? `<img src="${esc(func.foto_url)}" alt="${_nL1}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:${_asz}px;height:${_asz}px;border-radius:50%;object-fit:cover;border:2px solid var(--border);flex-shrink:0;">`
         : '';
       fHdr.innerHTML = `
         <div class="flex flex-col items-center gap-1 px-1 py-2 relative">
           ${_fotoTag}
-          <div class="prof-avatar-ini${_fotoTag ? ' hidden' : ''}" style="background:${func.cor}${_fotoTag ? ';display:none' : ''}">${iniciais(func.nome)}</div>
-          <div class="text-xs font-bold text-center leading-tight" style="color:var(--text1)">${_nL1}${_nL2 ? '<br>' + _nL2 : ''}</div>
+          <div class="${_fotoTag ? 'hidden' : ''}" style="width:${_asz}px;height:${_asz}px;border-radius:50%;display:${_fotoTag ? 'none' : 'flex'};align-items:center;justify-content:center;font-size:${Math.max(10,_asz/3.2)|0}px;font-weight:700;color:white;flex-shrink:0;background:${func.cor}">${iniciais(func.nome)}</div>
+          <div class="text-xs font-bold text-center leading-tight" style="color:var(--text1);font-size:${_colW < 100 ? 10 : 11}px">${_nL1}${_nL2 ? '<br>' + _nL2 : ''}</div>
           <button onclick="event.stopPropagation();toggleOcultarFuncAgenda('${func.id}')"
             class="absolute top-1 right-1 p-0.5 hover:bg-red-100 rounded" title="Ocultar da agenda" style="line-height:0;opacity:.35">
             <i data-lucide="eye-off" class="w-3 h-3 text-gray-400 hover:text-red-400"></i>
@@ -2799,7 +2810,8 @@ function renderCalendarioDia(container, dias) {
     funcOrdenados.forEach(func => {
       const colDiv = document.createElement('div');
       colDiv.className = 'calendar-col border-r border-gray-100 relative';
-      colDiv.style.minWidth = '160px';
+      colDiv.style.width    = _colW + 'px';
+      colDiv.style.minWidth = _colW + 'px';
 
       for (let i = 0; i < SLOTS_TOTAL; i++) {
         const slotDiv = document.createElement('div');
@@ -5604,6 +5616,17 @@ async function fazerLogin() {
   adaptarUIParaPapel();
   renderCalendario();
   lucide.createIcons();
+
+  // Re-renderiza o calendário quando a orientação/tamanho muda (rotacionar celular, etc.)
+  let _calResizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(_calResizeTimer);
+    _calResizeTimer = setTimeout(() => {
+      if (document.getElementById('view-agendamentos')?.classList.contains('active')) {
+        renderCalendario();
+      }
+    }, 200);
+  }, { passive: true });
 }
 
 function fazerLogout() {

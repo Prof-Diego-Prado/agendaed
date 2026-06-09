@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Studio Érika Daiany</title>
   <link rel="icon" type="image/png" href="./favicon.png" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -287,12 +287,15 @@
         z-index: 140;
       }
       #sidebar-overlay.show { display: block; }
+      /* iOS fix: position:fixed em body ancora filhos fixed ao viewport real */
+      body { position: fixed !important; width: 100% !important; height: 100dvh !important; overflow: hidden !important; }
       /* Topbar escuro substituído pela bottom-nav */
       #mobile-topbar { display: none !important; }
-      main { padding-top: 0 !important; }
+      /* Safe-area-inset-top empurra o conteúdo abaixo da barra de status */
+      main { padding-top: env(safe-area-inset-top, 0px) !important; }
       #bottom-nav { display: flex !important; }
       /* Espaço abaixo do conteúdo para a bottom-nav não cobrir itens */
-      .view > div:last-child { padding-bottom: 70px; }
+      .view > div:last-child { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px); }
       #btn-sidebar-collapse { display: none !important; }
       .view > div:first-child { padding-left: 14px !important; padding-right: 14px !important; }
       .mobile-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }

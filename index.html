@@ -3175,6 +3175,7 @@ async function salvarAgendamento(e) {
   const valor         = document.getElementById('agendar-valor').value;
   const obs           = document.getElementById('agendar-obs').value;
 
+  if (!cliente_id) { showToast('Selecione uma cliente', 'error'); return; }
   if (!data || !hora) { showToast('Informe data e horário', 'error'); return; }
 
   const data_hora = new Date(data + 'T' + hora).toISOString();

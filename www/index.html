@@ -1343,11 +1343,10 @@
 
     <!-- Ações -->
     <div id="comanda-acoes" class="flex gap-2 px-5 pb-5 pt-2 border-t border-gray-100">
-      <button id="btn-excluir-comanda" onclick="excluirAgendamento()" style="display:none" class="p-2.5 text-red-400 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 rounded-xl transition-all" title="Excluir agendamento">
+      <button id="btn-excluir-comanda" onclick="excluirAgendamento()" class="p-2.5 text-red-400 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 rounded-xl transition-all" title="Excluir agendamento">
         <i data-lucide="trash-2" class="w-4 h-4"></i>
       </button>
       <button id="btn-faltou-comanda" onclick="atualizarStatusComanda('faltou')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors">Faltou</button>
-      <button id="btn-cancelar-comanda" onclick="atualizarStatusComanda('cancelado')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors">Cancelar</button>
       <button id="btn-fechar-comanda" onclick="fecharComanda()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl shadow flex items-center justify-center gap-1.5 transition-all" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
         <i data-lucide="check-circle" class="w-4 h-4"></i>Fechar Comanda
       </button>
@@ -3175,6 +3174,7 @@ async function salvarAgendamento(e) {
   const valor         = document.getElementById('agendar-valor').value;
   const obs           = document.getElementById('agendar-obs').value;
 
+  if (!cliente_id) { showToast('Selecione uma cliente', 'error'); return; }
   if (!data || !hora) { showToast('Informe data e horário', 'error'); return; }
 
   const data_hora = new Date(data + 'T' + hora).toISOString();
@@ -3266,9 +3266,8 @@ async function abrirDetalheAgendamento(id) {
 
   // Preenche cascata categoria → serviço no painel de add item
   popularItemCat();
-  document.getElementById('btn-excluir-comanda').style.display  = !fechado ? '' : 'none';
+  document.getElementById('btn-excluir-comanda').style.display  = '';
   document.getElementById('btn-faltou-comanda').style.display   = (ag.status==='faltou'||fechado) ? 'none' : '';
-  document.getElementById('btn-cancelar-comanda').style.display = ag.status==='cancelado' ? 'none' : '';
   document.getElementById('btn-fechar-comanda').style.display   = fechado ? 'none' : '';
   document.getElementById('btn-toggle-add-item').style.display    = fechado ? 'none' : '';
   document.getElementById('btn-toggle-add-produto').style.display  = fechado ? 'none' : '';

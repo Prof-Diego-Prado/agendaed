@@ -4095,17 +4095,19 @@ async function salvarCliente(e) {
     anamnese:    lerAnamnese(),
   };
   try {
-    let err;
     if (id) {
-      ({ error: err } = await db.from('clientes').update(payload).eq('id', id));
+      const { error: err } = await db.from('clientes').update(payload).eq('id', id);
+      if (err) throw err;
+      const idx = clientes.findIndex(c => c.id === id);
+      if (idx !== -1) clientes[idx] = { ...clientes[idx], ...payload };
     } else {
-      ({ error: err } = await db.from('clientes').insert(payload));
+      const { data: novo, error: err } = await db.from('clientes').insert(payload).select().single();
+      if (err) throw err;
+      clientes.push(novo);
+      clientes.sort((a, b) => a.nome.localeCompare(b.nome));
     }
-    if (err) throw err;
     showToast(id ? 'Cliente atualizado!' : 'Cliente cadastrado!', 'success');
     fecharModal('modal-cliente');
-    const { data } = await db.from('clientes').select('*').order('nome');
-    clientes = data || [];
     renderClientes(document.getElementById('busca-cliente').value);
   } catch (e) {
     showToast('Erro: ' + e.message, 'error');

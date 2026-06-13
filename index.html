@@ -3014,9 +3014,10 @@ function typeaheadCliente(q) {
   const dropdown = document.getElementById('agendar-cliente-dropdown');
   if (!dropdown) return;
   const termo = q.trim().toLowerCase();
+  const validos = clientes.filter(c => c && c.nome);
   const filtrados = termo.length < 1
-    ? clientes.slice(0, 30)
-    : clientes.filter(c => c.nome.toLowerCase().includes(termo)).slice(0, 30);
+    ? validos.slice(0, 30)
+    : validos.filter(c => c.nome.toLowerCase().includes(termo)).slice(0, 30);
 
   if (!filtrados.length) { dropdown.classList.remove('open'); return; }
 
@@ -3060,8 +3061,10 @@ async function criarClienteRapido() {
   if (!nome) { showToast('Informe o nome da cliente', 'error'); return; }
   const telefone = document.getElementById('rapido-telefone').value.trim() || null;
   try {
-    const { data, error } = await db.from('clientes').insert({ nome, telefone }).select().single();
+    const { data: rows, error } = await db.from('clientes').insert({ nome, telefone }).select();
     if (error) throw error;
+    const data = Array.isArray(rows) && rows[0] ? rows[0] : null;
+    if (!data) throw new Error('Cliente salvo mas não retornado. Recarregue e tente novamente.');
     clientes.push(data);
     clientes.sort((a, b) => a.nome.localeCompare(b.nome));
     selecionarClienteTypeahead(data.id, data.nome);
@@ -3815,9 +3818,10 @@ function abrirModalAgendarComSlot(funcId, dia, hora) {
 function renderClientes(filtro = '') {
   const tbody = document.getElementById('tabela-clientes');
   const empty = document.getElementById('empty-clientes');
+  const validos = clientes.filter(c => c && c.nome);
   const lista = filtro
-    ? clientes.filter(c => c.nome.toLowerCase().includes(filtro.toLowerCase()))
-    : clientes;
+    ? validos.filter(c => c.nome.toLowerCase().includes(filtro.toLowerCase()))
+    : validos;
 
   if (lista.length === 0) {
     tbody.innerHTML = '';
@@ -4101,10 +4105,17 @@ async function salvarCliente(e) {
       const idx = clientes.findIndex(c => c.id === id);
       if (idx !== -1) clientes[idx] = { ...clientes[idx], ...payload };
     } else {
-      const { data: novo, error: err } = await db.from('clientes').insert(payload).select().single();
+      const { data: rows, error: err } = await db.from('clientes').insert(payload).select();
       if (err) throw err;
-      clientes.push(novo);
-      clientes.sort((a, b) => a.nome.localeCompare(b.nome));
+      const novo = Array.isArray(rows) && rows[0] ? rows[0] : null;
+      if (novo) {
+        clientes.push(novo);
+        clientes.sort((a, b) => a.nome.localeCompare(b.nome));
+      } else {
+        const { data: todos, error: fetchErr } = await db.from('clientes').select('*').order('nome');
+        if (fetchErr) throw fetchErr;
+        clientes = todos || clientes;
+      }
     }
     showToast(id ? 'Cliente atualizado!' : 'Cliente cadastrado!', 'success');
     fecharModal('modal-cliente');

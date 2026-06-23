@@ -329,6 +329,24 @@
         max-height: 94dvh; overflow-y: auto;
         width: 100% !important; max-width: 100% !important;
       }
+      /* Comanda: preenche a tela, layout flex coluna */
+      #modal-comanda > div {
+        height: 94dvh;
+        display: flex !important;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      #modal-comanda > div > .overflow-y-auto {
+        flex: 1 1 0%;
+        max-height: none !important;
+        overflow-y: auto;
+      }
+      /* Botões do header: somente ícones no mobile */
+      #modal-comanda .comanda-btn-label { display: none; }
+      /* Reduz padding do header no mobile */
+      #modal-comanda > div > div:first-child { padding: 12px 14px; }
+      /* Ações sempre visíveis no rodapé */
+      #comanda-acoes { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
       #view-fluxo-caixa .grid { grid-template-columns: 1fr !important; }
       .toast { right: 16px; left: 16px; bottom: 80px; text-align: center; }
 
@@ -1178,16 +1196,16 @@
       </div>
       <div class="flex items-center gap-1.5">
         <button id="btn-anamnese-comanda" onclick="verAnamneseComanda()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1a1a1a] rounded-xl transition-colors" style="background:#fffbeb">
-          <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Ficha
+          <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i><span class="comanda-btn-label"> Ficha</span>
         </button>
         <button id="btn-anotacoes-comanda" onclick="abrirAnotacoesComanda()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1a1a1a] rounded-xl transition-colors" style="background:#fffbeb">
-          <i data-lucide="notebook-pen" class="w-3.5 h-3.5"></i> Anotações
+          <i data-lucide="notebook-pen" class="w-3.5 h-3.5"></i><span class="comanda-btn-label"> Anotações</span>
         </button>
         <button id="btn-whatsapp-comanda" onclick="enviarWhatsApp()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-xl transition-colors" style="background:#25D366">
-          <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
+          <i data-lucide="message-circle" class="w-3.5 h-3.5"></i><span class="comanda-btn-label"> WhatsApp</span>
         </button>
         <button id="btn-add-whatsapp-comanda" onclick="adicionarWhatsAppComanda()" style="display:none" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-xl transition-colors" style="background:#25D366">
-          <i data-lucide="phone-plus" class="w-3.5 h-3.5"></i> Add Tel
+          <i data-lucide="phone-plus" class="w-3.5 h-3.5"></i><span class="comanda-btn-label"> Add Tel</span>
         </button>
         <button id="btn-editar-ag" onclick="toggleEditarAg()" class="p-1.5 hover:bg-[#fffbeb] rounded-xl transition-colors" title="Editar agendamento">
           <i data-lucide="pencil" class="w-4 h-4 text-gray-500"></i>

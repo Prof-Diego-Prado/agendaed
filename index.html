@@ -326,12 +326,12 @@
       .modal-backdrop > div {
         border-bottom-left-radius: 0 !important;
         border-bottom-right-radius: 0 !important;
-        max-height: 94dvh; overflow-y: auto;
+        max-height: 92dvh; overflow-y: auto;
         width: 100% !important; max-width: 100% !important;
       }
       /* Comanda: preenche a tela, layout flex coluna */
       #modal-comanda > div {
-        height: 94dvh;
+        height: 92dvh;
         display: flex !important;
         flex-direction: column;
         overflow: hidden;
@@ -345,12 +345,12 @@
       #modal-comanda .comanda-btn-label { display: none; }
       /* Reduz padding do header no mobile */
       #modal-comanda > div > div:first-child { padding: 12px 14px; }
-      /* Ações sempre visíveis no rodapé */
-      #comanda-acoes { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+      /* Ações: respeita safe area do iOS */
+      #comanda-acoes { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); }
 
       /* Novo Agendamento: preenche a tela, form scrollável */
       #modal-agendar > div {
-        height: 94dvh;
+        height: 92dvh;
         display: flex !important;
         flex-direction: column;
         overflow: hidden;
@@ -5310,9 +5310,15 @@ async function confirmarAddPacote() {
 // =========================================================
 function abrirModal(id) {
   document.getElementById(id).classList.remove('hidden');
+  const nav = document.getElementById('bottom-nav');
+  if (nav) nav.style.display = 'none';
 }
 function fecharModal(id) {
   document.getElementById(id).classList.add('hidden');
+  if (!document.querySelector('.modal-backdrop:not(.hidden)')) {
+    const nav = document.getElementById('bottom-nav');
+    if (nav) nav.style.display = '';
+  }
 }
 function fecharModalSeFora(e, id) {
   if (e.target === document.getElementById(id)) fecharModal(id);
@@ -5321,6 +5327,8 @@ function fecharModalSeFora(e, id) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-backdrop:not(.hidden)').forEach(m => m.classList.add('hidden'));
+    const nav = document.getElementById('bottom-nav');
+    if (nav) nav.style.display = '';
   }
 });
 

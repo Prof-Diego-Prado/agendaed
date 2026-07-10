@@ -1142,7 +1142,13 @@
           <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cadastrar nova cliente</p>
           <div class="grid grid-cols-2 gap-2">
             <input type="text" id="rapido-nome" placeholder="Nome *" class="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:bg-white transition-colors" />
-            <input type="tel" id="rapido-telefone" placeholder="Telefone" class="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:bg-white transition-colors" />
+            <div class="flex gap-1.5">
+              <select id="rapido-pais" title="País" class="px-1.5 py-2 border border-gray-200 rounded-lg text-sm bg-white transition-colors flex-shrink-0" style="width:70px">
+                <option value="BR">🇧🇷 +55</option>
+                <option value="PY">🇵🇾 +595</option>
+              </select>
+              <input type="tel" id="rapido-telefone" placeholder="Telefone" class="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:bg-white transition-colors" />
+            </div>
           </div>
           <div class="flex justify-end gap-2">
             <button type="button" onclick="toggleNovaClienteRapido()" class="px-3 py-1.5 text-xs font-semibold text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">Cancelar</button>
@@ -1560,7 +1566,13 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Telefone</label>
-            <input type="tel" id="cliente-telefone" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="(44) 99999-0000" />
+            <div class="flex gap-1.5">
+              <select id="cliente-pais" title="País" class="px-1.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors flex-shrink-0" style="width:76px">
+                <option value="BR">🇧🇷 +55</option>
+                <option value="PY">🇵🇾 +595</option>
+              </select>
+              <input type="tel" id="cliente-telefone" class="flex-1 min-w-0 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="(44) 99999-0000" />
+            </div>
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Aniversário</label>
@@ -2388,7 +2400,12 @@ async function carregarDados() {
 // =========================================================
 // NAVEGAÇÃO
 // =========================================================
-function navTo(view) {
+async function refrescarClientes() {
+  const { data, error } = await db.from('clientes').select('*').order('nome');
+  if (!error) clientes = data || [];
+}
+
+async function navTo(view) {
   fecharMobileSidebar();
   currentView = view;
   // Atualiza tab ativa na bottom-nav
@@ -2411,14 +2428,14 @@ function navTo(view) {
       b.classList.add('active');
     }
   });
-  renderView(view);
+  await renderView(view);
   lucide.createIcons();
 }
 
-function renderView(view) {
+async function renderView(view) {
   switch (view) {
-    case 'agendamentos':    renderCalendario(); break;
-    case 'clientes':        renderClientes(); break;
+    case 'agendamentos':    await refrescarClientes(); renderCalendario(); break;
+    case 'clientes':        await refrescarClientes(); renderClientes(); break;
     case 'funcionarias':    renderFuncionarias(); setFuncAba(funcAbaAtiva); break;
     case 'servicos':        renderServicos(); setServicoAba(servicoAbaAtiva); break;
     case 'pacotes':         renderPacotes(); break;
@@ -3083,6 +3100,7 @@ function toggleNovaClienteRapido() {
     const nomeDigitado = document.getElementById('agendar-cliente-busca').value.trim();
     document.getElementById('rapido-nome').value = nomeDigitado;
     document.getElementById('rapido-telefone').value = '';
+    document.getElementById('rapido-pais').value = 'BR';
     document.getElementById('rapido-nome').focus();
   }
 }
@@ -3091,8 +3109,9 @@ async function criarClienteRapido() {
   const nome = document.getElementById('rapido-nome').value.trim();
   if (!nome) { showToast('Informe o nome da cliente', 'error'); return; }
   const telefone = document.getElementById('rapido-telefone').value.trim() || null;
+  const pais = document.getElementById('rapido-pais').value || 'BR';
   try {
-    const { data: rows, error } = await db.from('clientes').insert({ nome, telefone }).select();
+    const { data: rows, error } = await db.from('clientes').insert({ nome, telefone, pais }).select();
     if (error) throw error;
     const data = Array.isArray(rows) && rows[0] ? rows[0] : null;
     if (!data) throw new Error('Cliente salvo mas não retornado. Recarregue e tente novamente.');
@@ -3110,6 +3129,7 @@ async function criarClienteRapido() {
 // MODAL AGENDAMENTO
 // =========================================================
 function abrirModalAgendar(dataPreset = null) {
+  refrescarClientes();
   document.getElementById('modal-agendar-titulo').textContent = 'Novo Agendamento';
   document.getElementById('agendar-id').value = '';
   document.getElementById('form-agendar').reset();
@@ -3641,12 +3661,15 @@ async function cancelarAgendamento() {
   await atualizarStatusComanda('cancelado');
 }
 
-function fmtWhatsAppNum(tel) {
+const DDI_PAIS = { BR: '55', PY: '595' };
+
+function fmtWhatsAppNum(tel, pais) {
   if (!tel) return null;
   const d = tel.replace(/\D/g, '');
   if (!d || d.length < 8) return null;
-  if (d.startsWith('55') && d.length >= 12) return d;
-  return '55' + d;
+  const ddi = DDI_PAIS[pais] || DDI_PAIS.BR;
+  if (d.startsWith(ddi) && d.length >= ddi.length + 8) return d;
+  return ddi + d;
 }
 
 function verAnamneseComanda() {
@@ -3707,7 +3730,7 @@ function enviarWhatsApp() {
   const servico = servicos.find(s => s.id === ag.servico_id);
   const d       = new Date(ag.data_hora);
   const tel     = cliente?.telefone || '';
-  const num     = fmtWhatsAppNum(tel);
+  const num     = fmtWhatsAppNum(tel, cliente?.pais);
   if (!num) { showToast('Cliente sem telefone cadastrado', 'error'); return; }
 
   const dataFmt  = d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
@@ -4099,6 +4122,7 @@ function abrirModalCliente() {
   document.getElementById('modal-cliente-titulo').textContent = 'Novo Cliente';
   document.getElementById('form-cliente').reset();
   document.getElementById('cliente-id').value = '';
+  document.getElementById('cliente-pais').value = 'BR';
   preencherAnamnese({});
   setClienteTab('dados');
   document.getElementById('cli-tab-historico').style.display = 'none';
@@ -4113,6 +4137,7 @@ function editarCliente(id) {
   document.getElementById('cliente-id').value = c.id;
   document.getElementById('cliente-nome').value = c.nome || '';
   document.getElementById('cliente-telefone').value = c.telefone || '';
+  document.getElementById('cliente-pais').value = c.pais || 'BR';
   document.getElementById('cliente-email').value = c.email || '';
   document.getElementById('cliente-aniversario').value = c.aniversario || '';
   document.getElementById('cliente-obs').value = c.observacoes || '';
@@ -4130,6 +4155,7 @@ async function salvarCliente(e) {
   const payload = {
     nome:        document.getElementById('cliente-nome').value.trim(),
     telefone:    document.getElementById('cliente-telefone').value.trim() || null,
+    pais:        document.getElementById('cliente-pais').value || 'BR',
     email:       document.getElementById('cliente-email').value.trim() || null,
     aniversario: document.getElementById('cliente-aniversario').value || null,
     observacoes: document.getElementById('cliente-obs').value.trim() || null,
@@ -5444,7 +5470,7 @@ function abrirModalAniversariantes() {
       const d       = c._birthdayDate;
       const ehHoje  = d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth();
       const diaNome = ehHoje ? 'Hoje!' : d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
-      const numWA   = fmtWhatsAppNum(c.telefone);
+      const numWA   = fmtWhatsAppNum(c.telefone, c.pais);
       const msg     = encodeURIComponent(
         `Olá, ${c.nome.split(' ')[0]}! 🎂🌸 A equipe do ${SALAO} deseja um feliz aniversário! ` +
         `Temos um mimo especial para você esta semana. Venha nos visitar! 💖`
@@ -5565,8 +5591,6 @@ async function abrirRelatorioInativas() {
 function gerarJanelaRelatorio(inativas) {
   const fmtDias = d => d >= 9999 ? 'Nunca atendida' : `${d} dias atrás`;
   const fmtData = d => d ? d.toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' }) : '—';
-  const fmtNum  = tel => { const d = (tel||'').replace(/\D/g,''); return d.startsWith('55') ? d : '55'+d; };
-
   const linhas = inativas.map(c => {
     const diasTxt = c.diasSemVisita >= 9999 ? 'nunca atendida na plataforma' : `há ${c.diasSemVisita} dias (última visita: ${fmtData(c.ultimaVisita)})`;
     const semanas = c.diasSemVisita >= 9999 ? '' : Math.round(c.diasSemVisita / 7) > 8
@@ -5574,7 +5598,7 @@ function gerarJanelaRelatorio(inativas) {
       : `${Math.round(c.diasSemVisita / 7)} semanas`;
     const primeiro = (c.nome || '').split(' ')[0];
     const msg = `Olá ${primeiro}! 😊\n\nSentimos sua falta no *Studio Érika Daiany*! ❤️\n\nJá faz ${semanas || 'algum tempo'} desde seu último atendimento. Que tal agendar um horário? Temos novidades esperando por você! ✂️💅\n\nEntre em contato ou responda essa mensagem para agendar. Te esperamos!`;
-    const waUrl = `https://wa.me/${fmtNum(c.telefone)}?text=${encodeURIComponent(msg)}`;
+    const waUrl = `https://wa.me/${fmtWhatsAppNum(c.telefone, c.pais) || ''}?text=${encodeURIComponent(msg)}`;
     const tagCor = c.diasSemVisita >= 9999 ? '#6b7280' : c.diasSemVisita >= 180 ? '#ef4444' : c.diasSemVisita >= 90 ? '#f59e0b' : '#111111';
     return `
       <div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:center;gap:16px">
@@ -6319,6 +6343,7 @@ function abrirHistoricoCliente(id) {
   document.getElementById('cliente-id').value = c.id;
   document.getElementById('cliente-nome').value = c.nome || '';
   document.getElementById('cliente-telefone').value = c.telefone || '';
+  document.getElementById('cliente-pais').value = c.pais || 'BR';
   document.getElementById('cliente-email').value = c.email || '';
   document.getElementById('cliente-aniversario').value = c.aniversario || '';
   document.getElementById('cliente-obs').value = c.observacoes || '';

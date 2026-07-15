@@ -2361,11 +2361,29 @@ async function init() {
   renderCalendario();
 }
 
+// O Supabase/PostgREST limita cada select a 1000 linhas por padrão.
+// Com 1200+ clientes cadastradas, um select('*') simples corta a lista
+// e clientes "depois do corte" (alfabético) somem do app, causando
+// '?' na agenda e impossibilidade de agendar para elas.
+async function buscarTodosClientes() {
+  const pageSize = 1000;
+  let todos = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await db.from('clientes').select('*').order('nome').range(from, from + pageSize - 1);
+    if (error) return { data: todos, error };
+    todos = todos.concat(data || []);
+    if (!data || data.length < pageSize) break;
+    from += pageSize;
+  }
+  return { data: todos, error: null };
+}
+
 async function carregarDados() {
   try {
     const [f, c, s, a, es, er, dp, deb, pac, pit, mov, adiant] = await Promise.all([
       db.from('funcionarios').select('*').eq('ativo', true).order('nome'),
-      db.from('clientes').select('*').order('nome'),
+      buscarTodosClientes(),
       db.from('servicos').select('*').order('nome'),
       carregarAgendamentosRange(new Date()),
       db.from('estoque_salao').select('*').order('produto'),
@@ -2401,7 +2419,7 @@ async function carregarDados() {
 // NAVEGAÇÃO
 // =========================================================
 async function refrescarClientes() {
-  const { data, error } = await db.from('clientes').select('*').order('nome');
+  const { data, error } = await buscarTodosClientes();
   if (!error) clientes = data || [];
 }
 
@@ -4175,7 +4193,7 @@ async function salvarCliente(e) {
         clientes.push(novo);
         clientes.sort((a, b) => a.nome.localeCompare(b.nome));
       } else {
-        const { data: todos, error: fetchErr } = await db.from('clientes').select('*').order('nome');
+        const { data: todos, error: fetchErr } = await buscarTodosClientes();
         if (fetchErr) throw fetchErr;
         clientes = todos || clientes;
       }

@@ -3170,7 +3170,7 @@ function abrirModalAgendar(dataPreset = null) {
 
   // Data padrão
   const hoje = dataPreset || currentDate;
-  document.getElementById('agendar-data').value = hoje.toISOString().split('T')[0];
+  document.getElementById('agendar-data').value = fmtDataLocalISO(hoje);
 
   abrirModal('modal-agendar');
   lucide.createIcons();
@@ -3261,7 +3261,22 @@ async function salvarAgendamento(e) {
       ({ error: err } = await db.from('agendamentos').insert(payload));
     }
     if (err) throw err;
-    showToast(id ? 'Agendamento atualizado!' : 'Agendamento criado!', 'success');
+
+    // Se a funcionária estava oculta da agenda, reexibe automaticamente —
+    // senão o agendamento salva mas nunca aparece no calendário (bug que
+    // gerou agendamentos duplicados por engano, corrigido em 2026-08-13).
+    let msg = id ? 'Agendamento atualizado!' : 'Agendamento criado!';
+    if (agendaOcultas.has(funcionario_id)) {
+      agendaOcultas.delete(funcionario_id);
+      localStorage.setItem('agenda_ocultas', JSON.stringify([...agendaOcultas]));
+      const func = funcionarios.find(f => f.id === funcionario_id);
+      msg += ` ${func ? func.nome.split(' ')[0] : 'Funcionária'} estava oculta da agenda — reexibida.`;
+    }
+    if (profVisiveis.size > 0 && !profVisiveis.has(funcionario_id)) {
+      profVisiveis.add(funcionario_id);
+      if (profVisiveis.size === funcionariosOrdenados().filter(f => !agendaOcultas.has(f.id)).length) profVisiveis = new Set();
+    }
+    showToast(msg, 'success');
     fecharModal('modal-agendar');
     const result = await carregarAgendamentosRange(currentDate);
     agendamentos = result.data || [];
@@ -3801,7 +3816,7 @@ function toggleEditarAg() {
     if (!ag) return;
     _popularCategoriasEditarAg(ag.servico_id);
     const d = new Date(ag.data_hora);
-    document.getElementById('edit-ag-data').value  = d.toISOString().split('T')[0];
+    document.getElementById('edit-ag-data').value  = fmtDataLocalISO(d);
     document.getElementById('edit-ag-hora').value  = d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('edit-ag-valor').value = ag.valor_cobrado || '';
     painel.classList.remove('hidden');
@@ -5547,6 +5562,12 @@ function fmtData(d) {
   const [y, m, day] = d.split('-');
   return `${day}/${m}/${y}`;
 }
+// Formata um objeto Date no formato YYYY-MM-DD usando o dia LOCAL (não UTC) —
+// toISOString() converte pra UTC e vira o dia perto da meia-noite, fazendo
+// agendamentos salvarem/editarem com a data errada.
+function fmtDataLocalISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 function iniciais(nome) {
   return nome ? nome.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase() : '?';
 }
@@ -5890,7 +5911,7 @@ function renderFechamento() {
   const hoje = new Date();
   const ini  = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
   const fim  = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-  const fmtInput = d => d.toISOString().split('T')[0];
+  const fmtInput = d => fmtDataLocalISO(d);
   const inEl = document.getElementById('fech-inicio');
   const fimEl = document.getElementById('fech-fim');
   if (inEl && !inEl.value) inEl.value = fmtInput(ini);

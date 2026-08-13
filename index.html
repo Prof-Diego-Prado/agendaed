@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Studio Érika Daiany</title>
   <link rel="icon" type="image/png" href="./favicon.png" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -154,7 +154,7 @@
     .view.active { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; align-self: stretch; }
 
     /* Modals */
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(15,8,12,0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(15,8,12,0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
     .modal-backdrop.hidden { display: none; }
 
     /* Calendar */
@@ -287,12 +287,15 @@
         z-index: 140;
       }
       #sidebar-overlay.show { display: block; }
+      /* iOS fix: position:fixed em body ancora filhos fixed ao viewport real */
+      body { position: fixed !important; width: 100% !important; height: 100dvh !important; overflow: hidden !important; }
       /* Topbar escuro substituído pela bottom-nav */
       #mobile-topbar { display: none !important; }
-      main { padding-top: 0 !important; }
+      /* Safe-area-inset-top empurra o conteúdo abaixo da barra de status */
+      main { padding-top: env(safe-area-inset-top, 0px) !important; }
       #bottom-nav { display: flex !important; }
       /* Espaço abaixo do conteúdo para a bottom-nav não cobrir itens */
-      .view > div:last-child { padding-bottom: 70px; }
+      .view > div:last-child { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px); }
       #btn-sidebar-collapse { display: none !important; }
       .view > div:first-child { padding-left: 14px !important; padding-right: 14px !important; }
       .mobile-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -323,15 +326,45 @@
       .modal-backdrop > div {
         border-bottom-left-radius: 0 !important;
         border-bottom-right-radius: 0 !important;
-        max-height: 94dvh; overflow-y: auto;
+        max-height: 92dvh; overflow-y: auto;
         width: 100% !important; max-width: 100% !important;
+      }
+      /* Comanda: preenche a tela, layout flex coluna */
+      #modal-comanda > div {
+        height: 92dvh;
+        display: flex !important;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      #modal-comanda > div > .overflow-y-auto {
+        flex: 1 1 0%;
+        max-height: none !important;
+        overflow-y: auto;
+      }
+      /* Botões do header: somente ícones no mobile */
+      #modal-comanda .comanda-btn-label { display: none; }
+      /* Reduz padding do header no mobile */
+      #modal-comanda > div > div:first-child { padding: 12px 14px; }
+      /* Ações: respeita safe area do iOS */
+      #comanda-acoes { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); }
+
+      /* Novo Agendamento: preenche a tela, form scrollável */
+      #modal-agendar > div {
+        height: 92dvh;
+        display: flex !important;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      #modal-agendar > div > form {
+        flex: 1 1 0%;
+        overflow-y: auto;
       }
       #view-fluxo-caixa .grid { grid-template-columns: 1fr !important; }
       .toast { right: 16px; left: 16px; bottom: 80px; text-align: center; }
 
       /* ── AGENDA MOBILE ── */
-      /* Colunas: 140px para touch confortável */
-      .calendar-col { min-width: 140px !important; }
+      /* Largura das colunas controlada pelo JS (adaptativa ao viewport) */
+      .calendar-col { min-width: 0; }
       /* Coluna de horas: mais estreita */
       #calendario > div:first-child { width: 44px !important; min-width: 44px !important; }
       /* Chips ocultos no novo layout */
@@ -497,7 +530,7 @@
       </div>
       <div>
         <p style="font-size:9px;color:rgba(255,255,255,0.38);letter-spacing:.08em;text-transform:uppercase;font-weight:700">Beauty Studio</p>
-        <p style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:rgba(255,255,255,0.95);letter-spacing:0.03em;line-height:1.1">ED</p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:rgba(255,255,255,0.95);letter-spacing:0.03em;line-height:1.1">ED <span style="font-family:system-ui,sans-serif;font-size:9px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.04em;vertical-align:middle">v1.01</span></p>
       </div>
     </div>
     <button id="btn-sidebar-collapse" onclick="toggleSidebar()" class="p-1.5 rounded-lg transition-colors flex-shrink-0" style="color:rgba(255,255,255,0.4)" title="Recolher menu">
@@ -1109,7 +1142,13 @@
           <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cadastrar nova cliente</p>
           <div class="grid grid-cols-2 gap-2">
             <input type="text" id="rapido-nome" placeholder="Nome *" class="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:bg-white transition-colors" />
-            <input type="tel" id="rapido-telefone" placeholder="Telefone" class="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:bg-white transition-colors" />
+            <div class="flex gap-1.5">
+              <select id="rapido-pais" title="País" class="px-1.5 py-2 border border-gray-200 rounded-lg text-sm bg-white transition-colors flex-shrink-0" style="width:70px">
+                <option value="BR">🇧🇷 +55</option>
+                <option value="PY">🇵🇾 +595</option>
+              </select>
+              <input type="tel" id="rapido-telefone" placeholder="Telefone" class="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:bg-white transition-colors" />
+            </div>
           </div>
           <div class="flex justify-end gap-2">
             <button type="button" onclick="toggleNovaClienteRapido()" class="px-3 py-1.5 text-xs font-semibold text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">Cancelar</button>
@@ -1175,16 +1214,16 @@
       </div>
       <div class="flex items-center gap-1.5">
         <button id="btn-anamnese-comanda" onclick="verAnamneseComanda()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1a1a1a] rounded-xl transition-colors" style="background:#fffbeb">
-          <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Ficha
+          <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i><span class="comanda-btn-label"> Ficha</span>
         </button>
         <button id="btn-anotacoes-comanda" onclick="abrirAnotacoesComanda()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1a1a1a] rounded-xl transition-colors" style="background:#fffbeb">
-          <i data-lucide="notebook-pen" class="w-3.5 h-3.5"></i> Anotações
+          <i data-lucide="notebook-pen" class="w-3.5 h-3.5"></i><span class="comanda-btn-label"> Anotações</span>
         </button>
         <button id="btn-whatsapp-comanda" onclick="enviarWhatsApp()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-xl transition-colors" style="background:#25D366">
-          <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
+          <i data-lucide="message-circle" class="w-3.5 h-3.5"></i><span class="comanda-btn-label"> WhatsApp</span>
         </button>
         <button id="btn-add-whatsapp-comanda" onclick="adicionarWhatsAppComanda()" style="display:none" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-xl transition-colors" style="background:#25D366">
-          <i data-lucide="phone-plus" class="w-3.5 h-3.5"></i> Add Tel
+          <i data-lucide="phone-plus" class="w-3.5 h-3.5"></i><span class="comanda-btn-label"> Add Tel</span>
         </button>
         <button id="btn-editar-ag" onclick="toggleEditarAg()" class="p-1.5 hover:bg-[#fffbeb] rounded-xl transition-colors" title="Editar agendamento">
           <i data-lucide="pencil" class="w-4 h-4 text-gray-500"></i>
@@ -1340,11 +1379,11 @@
 
     <!-- Ações -->
     <div id="comanda-acoes" class="flex gap-2 px-5 pb-5 pt-2 border-t border-gray-100">
-      <button id="btn-excluir-comanda" onclick="excluirAgendamento()" style="display:none" class="p-2.5 text-red-400 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 rounded-xl transition-all" title="Excluir agendamento">
+      <button id="btn-excluir-comanda" onclick="excluirAgendamento()" class="p-2.5 text-red-400 hover:text-white hover:bg-red-500 border border-red-200 hover:border-red-500 rounded-xl transition-all" title="Excluir agendamento">
         <i data-lucide="trash-2" class="w-4 h-4"></i>
       </button>
+      <button id="btn-cancelar-comanda" onclick="cancelarAgendamento()" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors">Cancelar</button>
       <button id="btn-faltou-comanda" onclick="atualizarStatusComanda('faltou')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors">Faltou</button>
-      <button id="btn-cancelar-comanda" onclick="atualizarStatusComanda('cancelado')" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors">Cancelar</button>
       <button id="btn-fechar-comanda" onclick="fecharComanda()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl shadow flex items-center justify-center gap-1.5 transition-all" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
         <i data-lucide="check-circle" class="w-4 h-4"></i>Fechar Comanda
       </button>
@@ -1527,7 +1566,13 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Telefone</label>
-            <input type="tel" id="cliente-telefone" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="(44) 99999-0000" />
+            <div class="flex gap-1.5">
+              <select id="cliente-pais" title="País" class="px-1.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors flex-shrink-0" style="width:76px">
+                <option value="BR">🇧🇷 +55</option>
+                <option value="PY">🇵🇾 +595</option>
+              </select>
+              <input type="tel" id="cliente-telefone" class="flex-1 min-w-0 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="(44) 99999-0000" />
+            </div>
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Aniversário</label>
@@ -2229,7 +2274,13 @@ let usuarioLogado = _carregarSessao();
 function isAdmin() { return usuarioLogado?.papel === 'admin'; }
 
 // Retorna funcionarios ativos na ordem definida pelo usuário
-// Admin (Erika/Proprietária) é sempre a primeira coluna, sem exceções
+// Erika (proprietária/admin) é sempre a primeira coluna, sem exceções
+function _isAdminFunc(f) {
+  // Detecta admin pelo papel OU pelo ID do usuário logado como admin
+  return f.papel === 'admin' ||
+         (usuarioLogado?.papel === 'admin' && f.id === usuarioLogado.id);
+}
+
 function funcionariosOrdenados() {
   let base;
   if (!ordemFuncionarios.length) {
@@ -2244,8 +2295,9 @@ function funcionariosOrdenados() {
       return ia - ib;
     });
   }
-  const admins = base.filter(f => f.papel === 'admin');
-  const others = base.filter(f => f.papel !== 'admin');
+  // Admin/proprietária sempre primeiro, independente da ordem salva
+  const admins = base.filter(f => _isAdminFunc(f));
+  const others = base.filter(f => !_isAdminFunc(f));
   return [...admins, ...others];
 }
 
@@ -2261,10 +2313,20 @@ function inicializarOrdem() {
   });
   // Remove IDs que não existem mais
   ordemFuncionarios = ordemFuncionarios.filter(id => funcionarios.some(f => f.id === id));
+  // Garante admin sempre na posição 0 do array salvo
+  const adminId = funcionarios.find(f => _isAdminFunc(f))?.id;
+  if (adminId) {
+    ordemFuncionarios = [adminId, ...ordemFuncionarios.filter(id => id !== adminId)];
+  }
   localStorage.setItem('ordem_funcionarios', JSON.stringify(ordemFuncionarios));
 }
 
 function salvarOrdem() {
+  // Reforça admin na posição 0 antes de salvar (impede drag-and-drop de deslocar Erika)
+  const adminId = funcionarios.find(f => _isAdminFunc(f))?.id;
+  if (adminId) {
+    ordemFuncionarios = [adminId, ...ordemFuncionarios.filter(id => id !== adminId)];
+  }
   localStorage.setItem('ordem_funcionarios', JSON.stringify(ordemFuncionarios));
 }
 
@@ -2299,11 +2361,29 @@ async function init() {
   renderCalendario();
 }
 
+// O Supabase/PostgREST limita cada select a 1000 linhas por padrão.
+// Com 1200+ clientes cadastradas, um select('*') simples corta a lista
+// e clientes "depois do corte" (alfabético) somem do app, causando
+// '?' na agenda e impossibilidade de agendar para elas.
+async function buscarTodosClientes() {
+  const pageSize = 1000;
+  let todos = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await db.from('clientes').select('*').order('nome').range(from, from + pageSize - 1);
+    if (error) return { data: todos, error };
+    todos = todos.concat(data || []);
+    if (!data || data.length < pageSize) break;
+    from += pageSize;
+  }
+  return { data: todos, error: null };
+}
+
 async function carregarDados() {
   try {
     const [f, c, s, a, es, er, dp, deb, pac, pit, mov, adiant] = await Promise.all([
       db.from('funcionarios').select('*').eq('ativo', true).order('nome'),
-      db.from('clientes').select('*').order('nome'),
+      buscarTodosClientes(),
       db.from('servicos').select('*').order('nome'),
       carregarAgendamentosRange(new Date()),
       db.from('estoque_salao').select('*').order('produto'),
@@ -2338,7 +2418,12 @@ async function carregarDados() {
 // =========================================================
 // NAVEGAÇÃO
 // =========================================================
-function navTo(view) {
+async function refrescarClientes() {
+  const { data, error } = await buscarTodosClientes();
+  if (!error) clientes = data || [];
+}
+
+async function navTo(view) {
   fecharMobileSidebar();
   currentView = view;
   // Atualiza tab ativa na bottom-nav
@@ -2361,14 +2446,14 @@ function navTo(view) {
       b.classList.add('active');
     }
   });
-  renderView(view);
+  await renderView(view);
   lucide.createIcons();
 }
 
-function renderView(view) {
+async function renderView(view) {
   switch (view) {
-    case 'agendamentos':    renderCalendario(); break;
-    case 'clientes':        renderClientes(); break;
+    case 'agendamentos':    await refrescarClientes(); renderCalendario(); break;
+    case 'clientes':        await refrescarClientes(); renderClientes(); break;
     case 'funcionarias':    renderFuncionarias(); setFuncAba(funcAbaAtiva); break;
     case 'servicos':        renderServicos(); setServicoAba(servicoAbaAtiva); break;
     case 'pacotes':         renderPacotes(); break;
@@ -2695,7 +2780,7 @@ function renderCalendarioDia(container, dias) {
       // Agendamentos para este dia+func
       const agsDia = agendamentos.filter(a => {
         const d = new Date(a.data_hora);
-        return a.funcionario_id === func.id && d.toDateString() === dia.toDateString();
+        return a.funcionario_id === func.id && d.toDateString() === dia.toDateString() && a.status !== 'cancelado';
       });
       agsDia.forEach(ag => posicionarBloco(colDiv, ag));
       layoutOverlaps(colDiv);
@@ -2723,9 +2808,10 @@ function renderCalendarioDia(container, dias) {
     });
     let funcOrdenados;
     if (mostrarTodasFuncs) {
-      funcOrdenados = _todasBase; // mostra todas, Erika já vem primeiro via funcionariosOrdenados()
+      funcOrdenados = _todasBase;
     } else {
-      funcOrdenados = _todasBase.filter(f => _comAg(f.id));
+      // Admin (Erika) sempre aparece; demais apenas se tiverem agendamento no dia
+      funcOrdenados = _todasBase.filter(f => f.papel === 'admin' || _comAg(f.id));
     }
 
     if (funcOrdenados.length === 0) {
@@ -2737,25 +2823,36 @@ function renderCalendarioDia(container, dias) {
       return;
     }
 
+    // Largura adaptativa: distribui o espaço disponível entre as colunas
+    const _isMobile = window.innerWidth < 768;
+    const _horaW    = _isMobile ? 44 : 56;
+    const _numCols  = funcOrdenados.length;
+    const _colW     = _isMobile
+      ? Math.max(88, Math.floor((window.innerWidth - _horaW) / _numCols))
+      : 160;
+    const _avatarSz = _isMobile ? Math.max(28, Math.min(40, _colW - 28)) : 44;
+
     const hdrRow = document.createElement('div');
     hdrRow.className = 'flex flex-1 border-b border-gray-200 prof-col-hdr';
 
     funcOrdenados.forEach((func, idx) => {
       const fHdr = document.createElement('div');
       fHdr.className = 'calendar-col border-r border-gray-100 text-center select-none transition-colors';
-      fHdr.style.minWidth = '140px';
+      fHdr.style.width    = _colW + 'px';
+      fHdr.style.minWidth = _colW + 'px';
       fHdr.style.cursor = 'grab';
       const _np  = func.nome.split(' ');
       const _nL1 = esc(_np[0]);
-      const _nL2 = _np.length >= 2 ? esc(_np[1]) : '';
+      const _nL2 = (_np.length >= 2 && _colW >= 100) ? esc(_np[1]) : '';
+      const _asz = _avatarSz;
       const _fotoTag = func.foto_url
-        ? `<img src="${esc(func.foto_url)}" class="prof-avatar" alt="${_nL1}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        ? `<img src="${esc(func.foto_url)}" alt="${_nL1}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:${_asz}px;height:${_asz}px;border-radius:50%;object-fit:cover;border:2px solid var(--border);flex-shrink:0;">`
         : '';
       fHdr.innerHTML = `
         <div class="flex flex-col items-center gap-1 px-1 py-2 relative">
           ${_fotoTag}
-          <div class="prof-avatar-ini${_fotoTag ? ' hidden' : ''}" style="background:${func.cor}${_fotoTag ? ';display:none' : ''}">${iniciais(func.nome)}</div>
-          <div class="text-xs font-bold text-center leading-tight" style="color:var(--text1)">${_nL1}${_nL2 ? '<br>' + _nL2 : ''}</div>
+          <div class="${_fotoTag ? 'hidden' : ''}" style="width:${_asz}px;height:${_asz}px;border-radius:50%;display:${_fotoTag ? 'none' : 'flex'};align-items:center;justify-content:center;font-size:${Math.max(10,_asz/3.2)|0}px;font-weight:700;color:white;flex-shrink:0;background:${func.cor}">${iniciais(func.nome)}</div>
+          <div class="text-xs font-bold text-center leading-tight" style="color:var(--text1);font-size:${_colW < 100 ? 10 : 11}px">${_nL1}${_nL2 ? '<br>' + _nL2 : ''}</div>
           <button onclick="event.stopPropagation();toggleOcultarFuncAgenda('${func.id}')"
             class="absolute top-1 right-1 p-0.5 hover:bg-red-100 rounded" title="Ocultar da agenda" style="line-height:0;opacity:.35">
             <i data-lucide="eye-off" class="w-3 h-3 text-gray-400 hover:text-red-400"></i>
@@ -2799,7 +2896,8 @@ function renderCalendarioDia(container, dias) {
     funcOrdenados.forEach(func => {
       const colDiv = document.createElement('div');
       colDiv.className = 'calendar-col border-r border-gray-100 relative';
-      colDiv.style.minWidth = '160px';
+      colDiv.style.width    = _colW + 'px';
+      colDiv.style.minWidth = _colW + 'px';
 
       for (let i = 0; i < SLOTS_TOTAL; i++) {
         const slotDiv = document.createElement('div');
@@ -2810,7 +2908,7 @@ function renderCalendarioDia(container, dias) {
 
       const agsDia = agendamentos.filter(a => {
         const d = new Date(a.data_hora);
-        return a.funcionario_id === func.id && d.toDateString() === currentDate.toDateString();
+        return a.funcionario_id === func.id && d.toDateString() === currentDate.toDateString() && a.status !== 'cancelado';
       });
       agsDia.forEach(ag => posicionarBloco(colDiv, ag));
       layoutOverlaps(colDiv);
@@ -2982,9 +3080,10 @@ function typeaheadCliente(q) {
   const dropdown = document.getElementById('agendar-cliente-dropdown');
   if (!dropdown) return;
   const termo = q.trim().toLowerCase();
+  const validos = clientes.filter(c => c && c.nome);
   const filtrados = termo.length < 1
-    ? clientes.slice(0, 30)
-    : clientes.filter(c => c.nome.toLowerCase().includes(termo)).slice(0, 30);
+    ? validos.slice(0, 30)
+    : validos.filter(c => c.nome.toLowerCase().includes(termo)).slice(0, 30);
 
   if (!filtrados.length) { dropdown.classList.remove('open'); return; }
 
@@ -3019,6 +3118,7 @@ function toggleNovaClienteRapido() {
     const nomeDigitado = document.getElementById('agendar-cliente-busca').value.trim();
     document.getElementById('rapido-nome').value = nomeDigitado;
     document.getElementById('rapido-telefone').value = '';
+    document.getElementById('rapido-pais').value = 'BR';
     document.getElementById('rapido-nome').focus();
   }
 }
@@ -3027,9 +3127,12 @@ async function criarClienteRapido() {
   const nome = document.getElementById('rapido-nome').value.trim();
   if (!nome) { showToast('Informe o nome da cliente', 'error'); return; }
   const telefone = document.getElementById('rapido-telefone').value.trim() || null;
+  const pais = document.getElementById('rapido-pais').value || 'BR';
   try {
-    const { data, error } = await db.from('clientes').insert({ nome, telefone }).select().single();
+    const { data: rows, error } = await db.from('clientes').insert({ nome, telefone, pais }).select();
     if (error) throw error;
+    const data = Array.isArray(rows) && rows[0] ? rows[0] : null;
+    if (!data) throw new Error('Cliente salvo mas não retornado. Recarregue e tente novamente.');
     clientes.push(data);
     clientes.sort((a, b) => a.nome.localeCompare(b.nome));
     selecionarClienteTypeahead(data.id, data.nome);
@@ -3044,6 +3147,7 @@ async function criarClienteRapido() {
 // MODAL AGENDAMENTO
 // =========================================================
 function abrirModalAgendar(dataPreset = null) {
+  refrescarClientes();
   document.getElementById('modal-agendar-titulo').textContent = 'Novo Agendamento';
   document.getElementById('agendar-id').value = '';
   document.getElementById('form-agendar').reset();
@@ -3066,7 +3170,7 @@ function abrirModalAgendar(dataPreset = null) {
 
   // Data padrão
   const hoje = dataPreset || currentDate;
-  document.getElementById('agendar-data').value = hoje.toISOString().split('T')[0];
+  document.getElementById('agendar-data').value = fmtDataLocalISO(hoje);
 
   abrirModal('modal-agendar');
   lucide.createIcons();
@@ -3142,6 +3246,7 @@ async function salvarAgendamento(e) {
   const valor         = document.getElementById('agendar-valor').value;
   const obs           = document.getElementById('agendar-obs').value;
 
+  if (!cliente_id) { showToast('Selecione uma cliente', 'error'); return; }
   if (!data || !hora) { showToast('Informe data e horário', 'error'); return; }
 
   const data_hora = new Date(data + 'T' + hora).toISOString();
@@ -3156,7 +3261,22 @@ async function salvarAgendamento(e) {
       ({ error: err } = await db.from('agendamentos').insert(payload));
     }
     if (err) throw err;
-    showToast(id ? 'Agendamento atualizado!' : 'Agendamento criado!', 'success');
+
+    // Se a funcionária estava oculta da agenda, reexibe automaticamente —
+    // senão o agendamento salva mas nunca aparece no calendário (bug que
+    // gerou agendamentos duplicados por engano, corrigido em 2026-08-13).
+    let msg = id ? 'Agendamento atualizado!' : 'Agendamento criado!';
+    if (agendaOcultas.has(funcionario_id)) {
+      agendaOcultas.delete(funcionario_id);
+      localStorage.setItem('agenda_ocultas', JSON.stringify([...agendaOcultas]));
+      const func = funcionarios.find(f => f.id === funcionario_id);
+      msg += ` ${func ? func.nome.split(' ')[0] : 'Funcionária'} estava oculta da agenda — reexibida.`;
+    }
+    if (profVisiveis.size > 0 && !profVisiveis.has(funcionario_id)) {
+      profVisiveis.add(funcionario_id);
+      if (profVisiveis.size === funcionariosOrdenados().filter(f => !agendaOcultas.has(f.id)).length) profVisiveis = new Set();
+    }
+    showToast(msg, 'success');
     fecharModal('modal-agendar');
     const result = await carregarAgendamentosRange(currentDate);
     agendamentos = result.data || [];
@@ -3233,9 +3353,9 @@ async function abrirDetalheAgendamento(id) {
 
   // Preenche cascata categoria → serviço no painel de add item
   popularItemCat();
-  document.getElementById('btn-excluir-comanda').style.display  = !fechado ? '' : 'none';
+  document.getElementById('btn-excluir-comanda').style.display  = '';
+  document.getElementById('btn-cancelar-comanda').style.display = fechado ? 'none' : '';
   document.getElementById('btn-faltou-comanda').style.display   = (ag.status==='faltou'||fechado) ? 'none' : '';
-  document.getElementById('btn-cancelar-comanda').style.display = ag.status==='cancelado' ? 'none' : '';
   document.getElementById('btn-fechar-comanda').style.display   = fechado ? 'none' : '';
   document.getElementById('btn-toggle-add-item').style.display    = fechado ? 'none' : '';
   document.getElementById('btn-toggle-add-produto').style.display  = fechado ? 'none' : '';
@@ -3569,12 +3689,20 @@ async function atualizarStatusComanda(status) {
   } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }
 
-function fmtWhatsAppNum(tel) {
+async function cancelarAgendamento() {
+  if (!confirm('Cancelar este agendamento? O horário ficará livre para nova cliente.')) return;
+  await atualizarStatusComanda('cancelado');
+}
+
+const DDI_PAIS = { BR: '55', PY: '595' };
+
+function fmtWhatsAppNum(tel, pais) {
   if (!tel) return null;
   const d = tel.replace(/\D/g, '');
   if (!d || d.length < 8) return null;
-  if (d.startsWith('55') && d.length >= 12) return d;
-  return '55' + d;
+  const ddi = DDI_PAIS[pais] || DDI_PAIS.BR;
+  if (d.startsWith(ddi) && d.length >= ddi.length + 8) return d;
+  return ddi + d;
 }
 
 function verAnamneseComanda() {
@@ -3635,7 +3763,7 @@ function enviarWhatsApp() {
   const servico = servicos.find(s => s.id === ag.servico_id);
   const d       = new Date(ag.data_hora);
   const tel     = cliente?.telefone || '';
-  const num     = fmtWhatsAppNum(tel);
+  const num     = fmtWhatsAppNum(tel, cliente?.pais);
   if (!num) { showToast('Cliente sem telefone cadastrado', 'error'); return; }
 
   const dataFmt  = d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
@@ -3688,7 +3816,7 @@ function toggleEditarAg() {
     if (!ag) return;
     _popularCategoriasEditarAg(ag.servico_id);
     const d = new Date(ag.data_hora);
-    document.getElementById('edit-ag-data').value  = d.toISOString().split('T')[0];
+    document.getElementById('edit-ag-data').value  = fmtDataLocalISO(d);
     document.getElementById('edit-ag-hora').value  = d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('edit-ag-valor').value = ag.valor_cobrado || '';
     painel.classList.remove('hidden');
@@ -3783,9 +3911,10 @@ function abrirModalAgendarComSlot(funcId, dia, hora) {
 function renderClientes(filtro = '') {
   const tbody = document.getElementById('tabela-clientes');
   const empty = document.getElementById('empty-clientes');
+  const validos = clientes.filter(c => c && c.nome);
   const lista = filtro
-    ? clientes.filter(c => c.nome.toLowerCase().includes(filtro.toLowerCase()))
-    : clientes;
+    ? validos.filter(c => c.nome.toLowerCase().includes(filtro.toLowerCase()))
+    : validos;
 
   if (lista.length === 0) {
     tbody.innerHTML = '';
@@ -4026,6 +4155,7 @@ function abrirModalCliente() {
   document.getElementById('modal-cliente-titulo').textContent = 'Novo Cliente';
   document.getElementById('form-cliente').reset();
   document.getElementById('cliente-id').value = '';
+  document.getElementById('cliente-pais').value = 'BR';
   preencherAnamnese({});
   setClienteTab('dados');
   document.getElementById('cli-tab-historico').style.display = 'none';
@@ -4040,6 +4170,7 @@ function editarCliente(id) {
   document.getElementById('cliente-id').value = c.id;
   document.getElementById('cliente-nome').value = c.nome || '';
   document.getElementById('cliente-telefone').value = c.telefone || '';
+  document.getElementById('cliente-pais').value = c.pais || 'BR';
   document.getElementById('cliente-email').value = c.email || '';
   document.getElementById('cliente-aniversario').value = c.aniversario || '';
   document.getElementById('cliente-obs').value = c.observacoes || '';
@@ -4057,23 +4188,33 @@ async function salvarCliente(e) {
   const payload = {
     nome:        document.getElementById('cliente-nome').value.trim(),
     telefone:    document.getElementById('cliente-telefone').value.trim() || null,
+    pais:        document.getElementById('cliente-pais').value || 'BR',
     email:       document.getElementById('cliente-email').value.trim() || null,
     aniversario: document.getElementById('cliente-aniversario').value || null,
     observacoes: document.getElementById('cliente-obs').value.trim() || null,
     anamnese:    lerAnamnese(),
   };
   try {
-    let err;
     if (id) {
-      ({ error: err } = await db.from('clientes').update(payload).eq('id', id));
+      const { error: err } = await db.from('clientes').update(payload).eq('id', id);
+      if (err) throw err;
+      const idx = clientes.findIndex(c => c.id === id);
+      if (idx !== -1) clientes[idx] = { ...clientes[idx], ...payload };
     } else {
-      ({ error: err } = await db.from('clientes').insert(payload));
+      const { data: rows, error: err } = await db.from('clientes').insert(payload).select();
+      if (err) throw err;
+      const novo = Array.isArray(rows) && rows[0] ? rows[0] : null;
+      if (novo) {
+        clientes.push(novo);
+        clientes.sort((a, b) => a.nome.localeCompare(b.nome));
+      } else {
+        const { data: todos, error: fetchErr } = await buscarTodosClientes();
+        if (fetchErr) throw fetchErr;
+        clientes = todos || clientes;
+      }
     }
-    if (err) throw err;
     showToast(id ? 'Cliente atualizado!' : 'Cliente cadastrado!', 'success');
     fecharModal('modal-cliente');
-    const { data } = await db.from('clientes').select('*').order('nome');
-    clientes = data || [];
     renderClientes(document.getElementById('busca-cliente').value);
   } catch (e) {
     showToast('Erro: ' + e.message, 'error');
@@ -5228,9 +5369,15 @@ async function confirmarAddPacote() {
 // =========================================================
 function abrirModal(id) {
   document.getElementById(id).classList.remove('hidden');
+  const nav = document.getElementById('bottom-nav');
+  if (nav) nav.style.display = 'none';
 }
 function fecharModal(id) {
   document.getElementById(id).classList.add('hidden');
+  if (!document.querySelector('.modal-backdrop:not(.hidden)')) {
+    const nav = document.getElementById('bottom-nav');
+    if (nav) nav.style.display = '';
+  }
 }
 function fecharModalSeFora(e, id) {
   if (e.target === document.getElementById(id)) fecharModal(id);
@@ -5239,6 +5386,8 @@ function fecharModalSeFora(e, id) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-backdrop:not(.hidden)').forEach(m => m.classList.add('hidden'));
+    const nav = document.getElementById('bottom-nav');
+    if (nav) nav.style.display = '';
   }
 });
 
@@ -5354,7 +5503,7 @@ function abrirModalAniversariantes() {
       const d       = c._birthdayDate;
       const ehHoje  = d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth();
       const diaNome = ehHoje ? 'Hoje!' : d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
-      const numWA   = fmtWhatsAppNum(c.telefone);
+      const numWA   = fmtWhatsAppNum(c.telefone, c.pais);
       const msg     = encodeURIComponent(
         `Olá, ${c.nome.split(' ')[0]}! 🎂🌸 A equipe do ${SALAO} deseja um feliz aniversário! ` +
         `Temos um mimo especial para você esta semana. Venha nos visitar! 💖`
@@ -5412,6 +5561,12 @@ function fmtData(d) {
   if (!d) return '—';
   const [y, m, day] = d.split('-');
   return `${day}/${m}/${y}`;
+}
+// Formata um objeto Date no formato YYYY-MM-DD usando o dia LOCAL (não UTC) —
+// toISOString() converte pra UTC e vira o dia perto da meia-noite, fazendo
+// agendamentos salvarem/editarem com a data errada.
+function fmtDataLocalISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function iniciais(nome) {
   return nome ? nome.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase() : '?';
@@ -5475,8 +5630,6 @@ async function abrirRelatorioInativas() {
 function gerarJanelaRelatorio(inativas) {
   const fmtDias = d => d >= 9999 ? 'Nunca atendida' : `${d} dias atrás`;
   const fmtData = d => d ? d.toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' }) : '—';
-  const fmtNum  = tel => { const d = (tel||'').replace(/\D/g,''); return d.startsWith('55') ? d : '55'+d; };
-
   const linhas = inativas.map(c => {
     const diasTxt = c.diasSemVisita >= 9999 ? 'nunca atendida na plataforma' : `há ${c.diasSemVisita} dias (última visita: ${fmtData(c.ultimaVisita)})`;
     const semanas = c.diasSemVisita >= 9999 ? '' : Math.round(c.diasSemVisita / 7) > 8
@@ -5484,7 +5637,7 @@ function gerarJanelaRelatorio(inativas) {
       : `${Math.round(c.diasSemVisita / 7)} semanas`;
     const primeiro = (c.nome || '').split(' ')[0];
     const msg = `Olá ${primeiro}! 😊\n\nSentimos sua falta no *Studio Érika Daiany*! ❤️\n\nJá faz ${semanas || 'algum tempo'} desde seu último atendimento. Que tal agendar um horário? Temos novidades esperando por você! ✂️💅\n\nEntre em contato ou responda essa mensagem para agendar. Te esperamos!`;
-    const waUrl = `https://wa.me/${fmtNum(c.telefone)}?text=${encodeURIComponent(msg)}`;
+    const waUrl = `https://wa.me/${fmtWhatsAppNum(c.telefone, c.pais) || ''}?text=${encodeURIComponent(msg)}`;
     const tagCor = c.diasSemVisita >= 9999 ? '#6b7280' : c.diasSemVisita >= 180 ? '#ef4444' : c.diasSemVisita >= 90 ? '#f59e0b' : '#111111';
     return `
       <div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:center;gap:16px">
@@ -5526,7 +5679,25 @@ function gerarJanelaRelatorio(inativas) {
   window.open(url, '_blank');
 }
 
+function abrirMenuMobile() {
+  const el = document.getElementById('modal-menu-mobile');
+  if (!el) return;
+  el.style.display = 'flex';
+  lucide.createIcons();
+}
+
+function fecharMenuMobile() {
+  const el = document.getElementById('modal-menu-mobile');
+  if (el) el.style.display = 'none';
+}
+
 function toggleMobileSidebar() {
+  if (window.innerWidth < 768) {
+    const el = document.getElementById('modal-menu-mobile');
+    if (el && el.style.display === 'flex') fecharMenuMobile();
+    else abrirMenuMobile();
+    return;
+  }
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebar-overlay');
   const isOpen  = sidebar.classList.contains('mobile-open');
@@ -5542,6 +5713,7 @@ function toggleMobileSidebar() {
 function fecharMobileSidebar() {
   document.getElementById('sidebar')?.classList.remove('mobile-open');
   document.getElementById('sidebar-overlay')?.classList.remove('show');
+  fecharMenuMobile();
 }
 
 function toggleSidebar() {
@@ -5604,6 +5776,17 @@ async function fazerLogin() {
   adaptarUIParaPapel();
   renderCalendario();
   lucide.createIcons();
+
+  // Re-renderiza o calendário quando a orientação/tamanho muda (rotacionar celular, etc.)
+  let _calResizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(_calResizeTimer);
+    _calResizeTimer = setTimeout(() => {
+      if (document.getElementById('view-agendamentos')?.classList.contains('active')) {
+        renderCalendario();
+      }
+    }, 200);
+  }, { passive: true });
 }
 
 function fazerLogout() {
@@ -5728,7 +5911,7 @@ function renderFechamento() {
   const hoje = new Date();
   const ini  = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
   const fim  = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-  const fmtInput = d => d.toISOString().split('T')[0];
+  const fmtInput = d => fmtDataLocalISO(d);
   const inEl = document.getElementById('fech-inicio');
   const fimEl = document.getElementById('fech-fim');
   if (inEl && !inEl.value) inEl.value = fmtInput(ini);
@@ -6199,6 +6382,7 @@ function abrirHistoricoCliente(id) {
   document.getElementById('cliente-id').value = c.id;
   document.getElementById('cliente-nome').value = c.nome || '';
   document.getElementById('cliente-telefone').value = c.telefone || '';
+  document.getElementById('cliente-pais').value = c.pais || 'BR';
   document.getElementById('cliente-email').value = c.email || '';
   document.getElementById('cliente-aniversario').value = c.aniversario || '';
   document.getElementById('cliente-obs').value = c.observacoes || '';
@@ -6399,5 +6583,93 @@ async function excluirPacote(id) {
 // =========================================================
 init();
 </script>
+
+<!-- ====== MOBILE MENU — BOTTOM SHEET ====== -->
+<!-- Fora de qualquer overflow:hidden, z-index alto, sem transforms problemáticos no iOS -->
+<div id="modal-menu-mobile"
+  style="display:none;position:fixed;inset:0;z-index:500;align-items:flex-end;"
+  onclick="if(event.target===this)fecharMenuMobile()">
+  <!-- Backdrop -->
+  <div style="position:absolute;inset:0;background:rgba(15,8,12,.58);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);"></div>
+  <!-- Panel -->
+  <div id="mmmobile-panel" style="position:relative;z-index:1;width:100%;background:var(--surface);border-radius:22px 22px 0 0;padding-bottom:max(env(safe-area-inset-bottom,0px),16px);max-height:88dvh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.22);">
+    <!-- Handle -->
+    <div style="width:36px;height:4px;border-radius:2px;background:var(--border);margin:14px auto 2px;" onclick="fecharMenuMobile()"></div>
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 20px 14px;border-bottom:1px solid var(--border);">
+      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--sidebar-from),var(--sidebar-to));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <img src="./logo.png" alt="ED" style="width:20px;height:20px;object-fit:contain;filter:invert(1);opacity:.9">
+      </div>
+      <div>
+        <p style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">Beauty Studio</p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--text1);line-height:1.1">Studio Érika Daiany</p>
+      </div>
+    </div>
+    <!-- Nav principal -->
+    <div style="padding:10px 12px;display:flex;flex-direction:column;gap:2px;">
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('agendamentos')">
+        <i data-lucide="calendar" class="mmb-icon"></i><span>Atendimentos</span>
+      </button>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('clientes')">
+        <i data-lucide="users" class="mmb-icon"></i><span>Clientes</span>
+      </button>
+      <button class="mmb-item admin-only" onclick="fecharMenuMobile();navTo('funcionarias')">
+        <i data-lucide="badge" class="mmb-icon"></i><span>Funcionárias</span>
+      </button>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('servicos')">
+        <i data-lucide="sparkles" class="mmb-icon"></i><span>Serviços</span>
+      </button>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('pacotes')">
+        <i data-lucide="package" class="mmb-icon"></i><span>Pacotes</span>
+      </button>
+    </div>
+    <!-- Seção admin -->
+    <div class="admin-only" style="padding:0 12px;display:flex;flex-direction:column;gap:2px;">
+      <p style="padding:10px 8px 5px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3)">Estoque</p>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('estoque-salao')">
+        <i data-lucide="flask-conical" class="mmb-icon"></i><span>Estoque Salão</span>
+      </button>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('estoque-revenda')">
+        <i data-lucide="shopping-bag" class="mmb-icon"></i><span>Estoque Revenda</span>
+      </button>
+      <p style="padding:10px 8px 5px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3)">Financeiro</p>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('fluxo-caixa')">
+        <i data-lucide="trending-up" class="mmb-icon"></i><span>Fluxo de Caixa</span>
+      </button>
+      <button class="mmb-item" onclick="fecharMenuMobile();navTo('fechamento')">
+        <i data-lucide="wallet" class="mmb-icon"></i><span>Fechamento</span>
+      </button>
+    </div>
+    <!-- Relacionamento -->
+    <div style="padding:0 12px;display:flex;flex-direction:column;gap:2px;">
+      <p style="padding:10px 8px 5px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3)">Relacionamento</p>
+      <button class="mmb-item" onclick="fecharMenuMobile();abrirModalAniversariantes()">
+        <i data-lucide="cake" class="mmb-icon"></i><span>Aniversariantes</span>
+      </button>
+      <button class="mmb-item admin-only" onclick="fecharMenuMobile();abrirRelatorioInativas()">
+        <i data-lucide="heart-pulse" class="mmb-icon"></i><span>Clientes Inativas</span>
+      </button>
+    </div>
+    <!-- Logout -->
+    <div style="padding:12px 12px 4px;border-top:1px solid var(--border);margin-top:8px;">
+      <button class="mmb-item mmb-logout" onclick="fecharMenuMobile();fazerLogout()">
+        <i data-lucide="log-out" class="mmb-icon"></i><span>Sair</span>
+      </button>
+    </div>
+  </div>
+</div>
+<style>
+  .mmb-item {
+    display:flex;align-items:center;gap:14px;width:100%;
+    padding:13px 12px;border-radius:14px;
+    font-size:15px;font-weight:600;color:var(--text1);
+    background:transparent;border:none;cursor:pointer;text-align:left;
+    transition:background .15s;
+  }
+  .mmb-item:active { background:var(--surface2); }
+  .mmb-icon { width:20px;height:20px;flex-shrink:0;color:var(--accent); }
+  .mmb-logout { color:#DC2626; }
+  .mmb-logout .mmb-icon { color:#DC2626; }
+</style>
 </body>
 </html>

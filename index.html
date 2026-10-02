@@ -1465,8 +1465,25 @@
         </div>
         <div id="pagto-resumo-itens" class="space-y-1.5 text-sm"></div>
         <div class="flex justify-between items-center mt-3 pt-3 border-t" style="border-color:var(--border)">
-          <span class="font-bold text-gray-700 text-sm">Total do Atendimento</span>
-          <span id="pagto-total" class="text-2xl font-bold" style="color:var(--text1);font-family:'Cormorant Garamond',serif">R$ 0,00</span>
+          <span class="font-bold text-gray-700 text-sm">Subtotal</span>
+          <span id="pagto-total" class="text-base font-bold" style="color:var(--text1)">R$ 0,00</span>
+        </div>
+        <!-- Desconto -->
+        <div class="flex items-center justify-between gap-3 mt-2">
+          <span class="text-sm font-semibold text-gray-600">Desconto</span>
+          <div class="flex items-center gap-1.5">
+            <div class="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-bold">
+              <button type="button" id="pagto-desc-tipo-pct" onclick="setTipoDesconto('pct')" class="px-2.5 py-1.5">%</button>
+              <button type="button" id="pagto-desc-tipo-valor" onclick="setTipoDesconto('valor')" class="px-2.5 py-1.5">R$</button>
+            </div>
+            <input type="number" id="pagto-desconto" min="0" step="any" placeholder="0" oninput="atualizarPagamento()"
+              class="w-24 px-2.5 py-1.5 text-sm text-right border border-gray-200 rounded-lg bg-gray-50 focus:bg-white" />
+          </div>
+        </div>
+        <div id="pagto-desconto-info" class="hidden text-right text-xs font-semibold mt-1" style="color:#b91c1c"></div>
+        <div class="flex justify-between items-center mt-3 pt-3 border-t" style="border-color:var(--border)">
+          <span class="font-bold text-gray-700 text-sm">Total a pagar</span>
+          <span id="pagto-total-final" class="text-2xl font-bold" style="color:var(--text1);font-family:'Cormorant Garamond',serif">R$ 0,00</span>
         </div>
       </div>
 
@@ -1489,6 +1506,7 @@
         <div class="flex items-center gap-2 mb-3">
           <i data-lucide="credit-card" class="w-3.5 h-3.5" style="color:var(--accent)"></i>
           <span class="text-xs font-bold uppercase tracking-wider" style="color:var(--text3)">Forma de Pagamento</span>
+          <span class="text-[11px] text-gray-400 ml-auto">toque em mais de uma para dividir</span>
         </div>
         <div class="grid grid-cols-3 gap-2 mb-4">
           <button type="button" data-metodo="dinheiro" onclick="selecionarPagto(this)" class="pagto-btn pagto-ativo flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-xs font-semibold transition-all">
@@ -1510,6 +1528,9 @@
             <i data-lucide="clock" class="w-5 h-5"></i>Fiado
           </button>
         </div>
+
+        <!-- Divisão entre formas (aparece com 2+ formas selecionadas) -->
+        <div id="pagto-divisao" class="hidden mb-4 rounded-xl border border-gray-200 p-3 space-y-2"></div>
 
         <!-- PIX QR — aparece ao selecionar Pix -->
         <div id="pagto-pix-section" class="hidden rounded-2xl border overflow-hidden" style="border-color:var(--border);background:var(--surface2)">
@@ -3611,6 +3632,8 @@ async function fecharComanda() {
   });
   document.getElementById('pagto-resumo-itens').innerHTML = resumoHtml || '<span class="text-gray-400 text-xs">Nenhum item</span>';
   document.getElementById('pagto-total').textContent = fmtPreco(total);
+  document.getElementById('pagto-desconto').value = '';
+  setTipoDesconto('pct');
 
   const section = document.getElementById('pagto-debitos-section');
   if (isAdmin() && ag.cliente_id) {
@@ -3625,9 +3648,7 @@ async function fecharComanda() {
     } else { section.classList.add('hidden'); }
   } else { section.classList.add('hidden'); }
 
-  document.querySelectorAll('.pagto-btn').forEach(b => {
-    b.classList.remove('pagto-ativo');
-  });
+  _pagtoSel = [];
   const primeiroBtn = document.querySelector('.pagto-btn[data-metodo="dinheiro"]');
   if (primeiroBtn) selecionarPagto(primeiroBtn);
 
@@ -3636,19 +3657,104 @@ async function fecharComanda() {
   lucide.createIcons();
 }
 
-function selecionarPagto(btn) {
-  document.querySelectorAll('.pagto-btn').forEach(b => {
-    b.classList.remove('pagto-ativo');
+// ---- Pagamento: desconto e várias formas ----
+let _pagtoSel = [];          // [{ forma, valor }] na ordem em que foram tocadas
+let _tipoDesconto = 'pct';   // 'pct' | 'valor'
+const PAGTO_LABEL = { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito', cortesia:'Cortesia', fiado:'Fiado', misto:'Misto' };
+
+function setTipoDesconto(tipo) {
+  _tipoDesconto = tipo;
+  [['pct','pagto-desc-tipo-pct'],['valor','pagto-desc-tipo-valor']].forEach(([t, id]) => {
+    const b = document.getElementById(id);
+    b.style.background = t === tipo ? '#1a1a1a' : 'transparent';
+    b.style.color      = t === tipo ? '#fff' : '#6b7280';
   });
-  btn.classList.add('pagto-ativo');
+  atualizarPagamento();
+}
+
+function _calcPagamento() {
+  const subtotal = calcularTotalComanda();
+  const v = Math.max(0, parseFloat(document.getElementById('pagto-desconto')?.value) || 0);
+  let desconto = _tipoDesconto === 'pct' ? subtotal * Math.min(v, 100) / 100 : Math.min(v, subtotal);
+  desconto = Math.round(desconto * 100) / 100;
+  return { subtotal, desconto, total: Math.round((subtotal - desconto) * 100) / 100 };
+}
+
+function selecionarPagto(btn) {
+  const forma = btn.dataset.metodo;
+  const idx = _pagtoSel.findIndex(p => p.forma === forma);
+  if (forma === 'cortesia' || _pagtoSel.some(p => p.forma === 'cortesia')) {
+    _pagtoSel = idx >= 0 && _pagtoSel.length === 1 ? _pagtoSel : [{ forma, valor: 0 }]; // cortesia é exclusiva
+  } else if (idx >= 0) {
+    if (_pagtoSel.length > 1) _pagtoSel.splice(idx, 1); // desmarca (mantém ao menos uma)
+  } else {
+    const { total } = _calcPagamento();
+    const usado = _pagtoSel.reduce((s, p) => s + p.valor, 0);
+    _pagtoSel.push({ forma, valor: Math.max(0, Math.round((total - usado) * 100) / 100) });
+  }
+  atualizarPagamento();
+}
+
+function _setValorPagto(forma, valor) {
+  const p = _pagtoSel.find(x => x.forma === forma);
+  if (!p) return;
+  p.valor = Math.max(0, parseFloat(valor) || 0);
+  // Joga o restante na última forma (ou na primeira, se a editada for a última)
+  const outro = _pagtoSel[_pagtoSel.length - 1] !== p ? _pagtoSel[_pagtoSel.length - 1] : _pagtoSel[0];
+  if (outro && outro !== p) {
+    const { total } = _calcPagamento();
+    const demais = _pagtoSel.filter(x => x !== outro).reduce((s, x) => s + x.valor, 0);
+    outro.valor = Math.max(0, Math.round((total - demais) * 100) / 100);
+    const inp = document.querySelector(`#pagto-divisao input[data-forma="${outro.forma}"]`);
+    if (inp) inp.value = outro.valor.toFixed(2);
+  }
+  _atualizarRestantePagto();
+}
+
+function _atualizarRestantePagto() {
+  const el = document.getElementById('pagto-restante');
+  if (!el) return;
+  const { total } = _calcPagamento();
+  const dif = Math.round((total - _pagtoSel.reduce((s, p) => s + p.valor, 0)) * 100) / 100;
+  el.textContent = Math.abs(dif) < 0.01 ? '✓ Valores conferem' : dif > 0 ? `Faltam ${fmtPreco(dif)}` : `Passou ${fmtPreco(-dif)}`;
+  el.style.color = Math.abs(dif) < 0.01 ? '#047857' : '#b91c1c';
+}
+
+function atualizarPagamento() {
+  const { subtotal, desconto, total } = _calcPagamento();
+  document.getElementById('pagto-total-final').textContent = fmtPreco(total);
+  const info = document.getElementById('pagto-desconto-info');
+  info.classList.toggle('hidden', desconto <= 0);
+  info.textContent = `− ${fmtPreco(desconto)}`;
+
+  // Uma forma só: leva o total inteiro
+  if (_pagtoSel.length === 1) _pagtoSel[0].valor = _pagtoSel[0].forma === 'cortesia' ? 0 : total;
+
+  document.querySelectorAll('.pagto-btn').forEach(b =>
+    b.classList.toggle('pagto-ativo', _pagtoSel.some(p => p.forma === b.dataset.metodo)));
+
+  const div = document.getElementById('pagto-divisao');
+  if (_pagtoSel.length > 1) {
+    div.classList.remove('hidden');
+    div.innerHTML = _pagtoSel.map(p => `
+      <div class="flex items-center justify-between gap-3">
+        <span class="text-sm font-semibold text-gray-700">${PAGTO_LABEL[p.forma]}</span>
+        <div class="flex items-center gap-1"><span class="text-xs text-gray-400">R$</span>
+          <input type="number" min="0" step="0.01" data-forma="${p.forma}" value="${p.valor.toFixed(2)}" oninput="_setValorPagto('${p.forma}', this.value)"
+            class="w-28 px-2.5 py-1.5 text-sm text-right border border-gray-200 rounded-lg bg-gray-50 focus:bg-white" /></div>
+      </div>`).join('') +
+      `<div id="pagto-restante" class="text-right text-xs font-bold pt-1"></div>`;
+    _atualizarRestantePagto();
+  } else {
+    div.classList.add('hidden');
+    div.innerHTML = '';
+  }
+
   const pixSection = document.getElementById('pagto-pix-section');
   if (pixSection) {
-    if (btn.dataset.metodo === 'pix') {
-      pixSection.classList.remove('hidden');
-      iniciarPixQRModal();
-    } else {
-      pixSection.classList.add('hidden');
-    }
+    const temPix = _pagtoSel.some(p => p.forma === 'pix');
+    pixSection.classList.toggle('hidden', !temPix);
+    if (temPix) iniciarPixQRModal();
   }
 }
 
@@ -3665,16 +3771,23 @@ function iniciarPixQRModal() {
 async function confirmarPagamento() {
   const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
   if (!ag) return;
-  const total      = calcularTotalComanda();
-  const metodoBtn  = document.querySelector('.pagto-btn.pagto-ativo');
-  const forma      = metodoBtn?.dataset?.metodo || 'dinheiro';
+  const { desconto, total } = _calcPagamento();
+  if (!_pagtoSel.length) { showToast('Escolha a forma de pagamento', 'error'); return; }
+  if (_pagtoSel.length === 1) _pagtoSel[0].valor = _pagtoSel[0].forma === 'cortesia' ? 0 : total;
+  const somaPagtos = _pagtoSel.reduce((s, p) => s + p.valor, 0);
+  if (_pagtoSel.length > 1 && Math.abs(somaPagtos - total) >= 0.01) {
+    showToast(`A soma das formas (${fmtPreco(somaPagtos)}) não confere com o total (${fmtPreco(total)})`, 'error');
+    return;
+  }
+  const pagamentos = _pagtoSel.filter(p => p.valor > 0 || p.forma === 'cortesia').map(p => ({ forma: p.forma, valor: p.valor }));
+  const forma      = pagamentos.length === 1 ? pagamentos[0].forma : 'misto';
+  const valorFiado = pagamentos.filter(p => p.forma === 'fiado').reduce((s, p) => s + p.valor, 0);
   const abatimento = parseFloat(document.getElementById('pagto-abatimento')?.value) || 0;
   try {
-    const { error } = await db.from('agendamentos')
-      .update({ status: 'concluido', valor_cobrado: total, forma_pagamento: forma })
-      .eq('id', agendamentoSelecionadoId);
+    const upd = { status: 'concluido', valor_cobrado: total, forma_pagamento: forma, desconto, pagamentos };
+    const { error } = await db.from('agendamentos').update(upd).eq('id', agendamentoSelecionadoId);
     if (error) throw error;
-    ag.status = 'concluido'; ag.valor_cobrado = total; ag.forma_pagamento = forma;
+    Object.assign(ag, upd);
 
     // Salvar produtos vendidos e dar baixa no estoque
     for (const p of comandaProdutos) {
@@ -3690,10 +3803,10 @@ async function confirmarPagamento() {
     }
     comandaProdutos = [];
 
-    if (forma === 'fiado') {
+    if (valorFiado > 0) {
       await db.from('debitos_clientes').insert({
         cliente_id: ag.cliente_id, agendamento_id: ag.id,
-        valor_original: total, valor_pago: 0,
+        valor_original: valorFiado, valor_pago: 0,
         data_lancamento: new Date().toISOString().slice(0,10),
       });
     }
@@ -3711,8 +3824,8 @@ async function confirmarPagamento() {
     const { data: dbsAtual } = await db.from('debitos_clientes').select('*').order('created_at', { ascending: false });
     debitosClientes = dbsAtual || [];
 
-    const label = { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito', cortesia:'Cortesia', fiado:'Fiado' };
-    showToast(`Comanda fechada · ${label[forma]||forma} · ${fmtPreco(total)}`, 'success');
+    const formasTxt = pagamentos.map(p => PAGTO_LABEL[p.forma] || p.forma).join(' + ');
+    showToast(`Comanda fechada · ${formasTxt} · ${fmtPreco(total)}${desconto > 0 ? ' (desc. ' + fmtPreco(desconto) + ')' : ''}`, 'success');
     fecharModal('modal-pagamento');
     renderCalendario();
   } catch(e) { showToast('Erro: ' + e.message, 'error'); }
@@ -4380,7 +4493,7 @@ async function renderRemuneracao() {
   const fimISO = new Date(fim + 'T23:59:59').toISOString();
 
   const [{ data: ags, error }, { data: todasComissoes }] = await Promise.all([
-    db.from('agendamentos').select('*, comanda_itens(*)').eq('status', 'concluido').gte('data_hora', iniISO).lte('data_hora', fimISO).order('data_hora'),
+    db.from('agendamentos').select('*, comanda_itens(*)').eq('status', 'concluido').not('baixa_retroativa', 'is', true).gte('data_hora', iniISO).lte('data_hora', fimISO).order('data_hora'),
     db.from('comissoes_servico').select('*'),
   ]);
   if (error) { cardsEl.innerHTML = `<div class="text-center py-8 text-red-400 text-sm">Erro: ${esc(error.message)}</div>`; return; }
@@ -4416,9 +4529,8 @@ async function renderRemuneracao() {
     const linhas = lista.map(ag => {
       const serv  = servicos.find(s => s.id === ag.servico_id);
       const cli   = clientes.find(c => c.id === ag.cliente_id);
-      const base  = Number(ag.valor_cobrado || 0);
-      const extras = (ag.comanda_itens || []).reduce((s, i) => s + (i.quantidade || 1) * (i.valor_unitario || 0), 0);
-      const total = base + extras;
+      // valor_cobrado já inclui extras/produtos e desconto (gravado ao fechar a comanda)
+      const total = Number(ag.valor_cobrado || 0);
       totalBruto += total;
 
       const comissaoServ = comissoesFn.find(c => c.servico_id === ag.servico_id);
@@ -5987,6 +6099,7 @@ async function gerarFechamento() {
   let query = db.from('agendamentos')
     .select('*, comanda_itens(*)')
     .eq('status', 'concluido')
+    .not('baixa_retroativa', 'is', true)
     .gte('data_hora', iniISO)
     .lte('data_hora', fimISO);
   if (funcId) query = query.eq('funcionario_id', funcId);
@@ -6024,9 +6137,8 @@ async function gerarFechamento() {
     const linhas = lista.map(ag => {
       const serv   = servicos.find(s => s.id === ag.servico_id);
       const cli    = clientes.find(c => c.id === ag.cliente_id);
-      const base   = Number(ag.valor_cobrado || 0);
-      const extras = (ag.comanda_itens||[]).reduce((s,i)=>s+(i.quantidade||1)*(i.valor_unitario||0), 0);
-      const total  = base + extras;
+      // valor_cobrado já inclui extras/produtos e desconto (gravado ao fechar a comanda)
+      const total  = Number(ag.valor_cobrado || 0);
       totalBruto  += total;
 
       // Usa % específica do serviço, ou cai na % padrão da funcionária
@@ -6256,7 +6368,7 @@ function renderFluxoCaixa() {
   if (abaAtiva) abaAtiva.classList.add('ativa');
 
   const iniAg = ini + 'T00:00:00'; const fimAg = fim + 'T23:59:59';
-  const agsNo  = agendamentos.filter(a => a.status === 'concluido' && a.data_hora >= iniAg && a.data_hora <= fimAg);
+  const agsNo  = agendamentos.filter(a => a.status === 'concluido' && !a.baixa_retroativa && a.data_hora >= iniAg && a.data_hora <= fimAg);
   const receita = agsNo.reduce((s, a) => s + Number(a.valor_cobrado || 0), 0);
   const despsNo = despesas.filter(d => d.data >= ini && d.data <= fim);
   const despTotal = despsNo.reduce((s, d) => s + Number(d.valor || 0), 0);
@@ -6302,7 +6414,7 @@ function renderFluxoLista() {
   const pagtoLabel = { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito', cortesia:'Cortesia', fiado:'Fiado' };
 
   if (fluxoAba === 'entradas') {
-    const ags = agendamentos.filter(a => a.status==='concluido' && a.data_hora>=iniAg && a.data_hora<=fimAg)
+    const ags = agendamentos.filter(a => a.status==='concluido' && !a.baixa_retroativa && a.data_hora>=iniAg && a.data_hora<=fimAg)
       .sort((a,b) => b.data_hora.localeCompare(a.data_hora));
     lista.innerHTML = ags.length ? ags.map(ag => {
       const cli  = clientes.find(c => c.id === ag.cliente_id);
@@ -6312,7 +6424,7 @@ function renderFluxoLista() {
       return `<div class="flex items-center justify-between px-4 py-3">
         <div>
           <div class="text-sm font-semibold text-gray-800">${esc(cli?.nome?.split(' ')[0]||'—')} · ${esc(serv?.nome||'—')}</div>
-          <div class="text-xs text-gray-400">${d.toLocaleDateString('pt-BR')} · ${esc(func?.nome?.split(' ')[0]||'—')} · ${pagtoLabel[ag.forma_pagamento]||ag.forma_pagamento||'—'}</div>
+          <div class="text-xs text-gray-400">${d.toLocaleDateString('pt-BR')} · ${esc(func?.nome?.split(' ')[0]||'—')} · ${(ag.pagamentos?.length > 1 ? ag.pagamentos.map(p => PAGTO_LABEL[p.forma] || p.forma).join(' + ') : PAGTO_LABEL[ag.forma_pagamento] || ag.forma_pagamento) || '—'}${Number(ag.desconto) > 0 ? ' · desc. ' + fmtPreco(ag.desconto) : ''}</div>
         </div>
         <span class="font-bold text-sm" style="color:#10b981">+${fmtPreco(ag.valor_cobrado)}</span>
       </div>`;
@@ -6488,11 +6600,15 @@ async function renderHistoricoCliente() {
       const extras = (a.comanda_itens || []).reduce((s, i) => s + (i.quantidade || 1) * Number(i.valor_unitario || 0), 0);
       const valor  = a.valor_cobrado != null ? Number(a.valor_cobrado) : Number(serv?.preco || 0) + extras;
       let situacao, pendente = 0;
+      const parteFiado = (a.pagamentos || []).filter(p => p.forma === 'fiado').reduce((s, p) => s + Number(p.valor || 0), 0)
+        || (a.forma_pagamento === 'fiado' ? valor : 0);
       if (a.status === 'faltou') {
         situacao = 'faltou';
-      } else if (a.status === 'concluido' && a.forma_pagamento === 'fiado') {
+      } else if (a.status === 'concluido' && a.baixa_retroativa) {
+        situacao = 'retroativo';
+      } else if (a.status === 'concluido' && parteFiado > 0) {
         const deb = debPorAg.get(a.id);
-        pendente  = deb ? saldoDeb(deb) : valor;
+        pendente  = deb ? saldoDeb(deb) : parteFiado;
         situacao  = pendente > 0.001 ? 'fiado' : 'pago';
       } else if (a.status === 'concluido') {
         situacao = 'pago';
@@ -6508,6 +6624,7 @@ async function renderHistoricoCliente() {
   const debsAvulsos = debs.filter(d => (!d.agendamento_id || !idsAg.has(d.agendamento_id)) && saldoDeb(d) > 0.001);
 
   const atendidos   = passados.filter(x => x.situacao !== 'faltou');
+  const retroativos = passados.filter(x => x.situacao === 'retroativo').length;
   const ultimo      = atendidos[0];
   const totalPago   = atendidos.filter(x => x.situacao === 'pago' && x.a.forma_pagamento !== 'cortesia').reduce((s, x) => s + x.valor, 0);
   const pendFiado   = passados.filter(x => x.situacao === 'fiado').reduce((s, x) => s + x.pendente, 0) + debsAvulsos.reduce((s, d) => s + saldoDeb(d), 0);
@@ -6529,7 +6646,8 @@ async function renderHistoricoCliente() {
     </div>`;
   const badge = x => {
     const map = {
-      pago:       ['#ecfdf5', '#047857', 'Pago' + (x.a.forma_pagamento ? ' · ' + (pagtoLabel[x.a.forma_pagamento] || x.a.forma_pagamento) : '')],
+      pago:       ['#ecfdf5', '#047857', 'Pago' + (x.a.pagamentos?.length ? ' · ' + x.a.pagamentos.map(p => pagtoLabel[p.forma] || p.forma).join(' + ') : x.a.forma_pagamento ? ' · ' + (pagtoLabel[x.a.forma_pagamento] || x.a.forma_pagamento) : '')],
+      retroativo: ['#f3f4f6', '#6b7280', 'Baixa retroativa'],
       fiado:      ['#fef2f2', '#b91c1c', 'Fiado em aberto'],
       'sem-pagto':['#fffbeb', '#b45309', 'Comanda não fechada'],
       faltou:     ['#f3f4f6', '#6b7280', 'Faltou'],
@@ -6584,7 +6702,7 @@ async function renderHistoricoCliente() {
     <div class="p-4 grid grid-cols-2 sm:grid-cols-4 gap-2" style="background:#fffbeb55">
       ${card('Último atendimento', ultimo ? fmtData(ultimo.d) : '—', txtDias)}
       ${card('Atendimentos', atendidos.length, passados.length - atendidos.length ? `${passados.length - atendidos.length} falta(s)` : '')}
-      ${card('Total pago', fmtPreco(totalPago))}
+      ${card('Total pago', fmtPreco(totalPago), retroativos ? `+ ${retroativos} baixa${retroativos !== 1 ? 's' : ''} retroativa${retroativos !== 1 ? 's' : ''}` : '')}
       ${card('Pendente', fmtPreco(pendTotal), '', pendTotal > 0.001 ? '#b91c1c' : '#047857')}
     </div>
     ${secPend}

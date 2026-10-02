@@ -1387,6 +1387,9 @@
       <button id="btn-fechar-comanda" onclick="fecharComanda()" class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl shadow flex items-center justify-center gap-1.5 transition-all" style="background:linear-gradient(to right,#1a1a1a,#4a4a4a)">
         <i data-lucide="check-circle" class="w-4 h-4"></i>Fechar Comanda
       </button>
+      <button id="btn-historico-comanda" onclick="verHistoricoComanda()" class="flex-none sm:flex-1 px-2 py-2 sm:py-2.5 text-[11px] sm:text-sm font-semibold text-[#1a1a1a] rounded-xl flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 transition-colors" style="background:#fffbeb;border:1px solid #f5e6c8">
+        <i data-lucide="history" class="w-4 h-4"></i>Histórico
+      </button>
     </div>
 
   </div>
@@ -3406,6 +3409,7 @@ async function abrirDetalheAgendamento(id) {
   document.getElementById('btn-cancelar-comanda').style.display = fechado ? 'none' : '';
   document.getElementById('btn-faltou-comanda').style.display   = (ag.status==='faltou'||fechado) ? 'none' : '';
   document.getElementById('btn-fechar-comanda').style.display   = fechado ? 'none' : '';
+  document.getElementById('btn-historico-comanda').style.display = ag.cliente_id ? '' : 'none';
   document.getElementById('btn-toggle-add-item').style.display    = fechado ? 'none' : '';
   document.getElementById('btn-toggle-add-produto').style.display  = fechado ? 'none' : '';
   document.getElementById('btn-toggle-add-pacote').style.display   = fechado ? 'none' : '';
@@ -6586,6 +6590,14 @@ async function renderHistoricoCliente() {
     ${secPend}
     <div class="px-5 pt-4 pb-1 text-xs font-bold uppercase tracking-wide text-gray-500">Últimos atendimentos e procedimentos</div>
     ${passados.map(linhaAtend).join('') || '<div class="px-5 py-6 text-sm text-gray-400">Nenhum atendimento realizado</div>'}`;
+}
+
+// Histórico da cliente aberto por cima da comanda (ao fechar, volta para a comanda)
+function verHistoricoComanda() {
+  const ag = agendamentos.find(a => a.id === agendamentoSelecionadoId);
+  if (!ag?.cliente_id) return;
+  if (!clientes.some(c => c.id === ag.cliente_id)) { showToast('Cliente não encontrada', 'error'); return; }
+  abrirHistoricoCliente(ag.cliente_id);
 }
 
 // Abre a comanda de um atendimento antigo a partir do histórico (pode estar fora do range carregado na agenda)

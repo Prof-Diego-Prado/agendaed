@@ -1183,7 +1183,7 @@
         </div>
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-1.5">Horário</label>
-          <input type="time" id="agendar-hora" required step="1800" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
+          <input type="time" id="agendar-hora" required step="60" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" />
         </div>
       </div>
       <div>
@@ -1635,7 +1635,7 @@
 
 <!-- Modal Funcionária -->
 <div id="modal-funcionaria" class="modal-backdrop hidden" onclick="fecharModalSeFora(event,'modal-funcionaria')">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl" onclick="event.stopPropagation()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl" style="max-height:calc(100dvh - 32px);overflow-y:auto" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
       <h3 id="modal-funcionaria-titulo" class="text-lg font-bold text-gray-800">Nova Funcionária</h3>
       <button onclick="fecharModal('modal-funcionaria')" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
@@ -1650,7 +1650,7 @@
         <input type="text" id="funcionaria-nome" required class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Nome da funcionária" />
       </div>
       <!-- Cargo | Telefone | Cor -->
-      <div class="grid grid-cols-3 gap-3">
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div>
           <label class="block text-xs font-semibold text-gray-600 mb-1">Cargo</label>
           <input type="text" id="funcionaria-cargo" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white transition-colors" placeholder="Cabeleireira..." />
@@ -1669,7 +1669,7 @@
       </div>
       <div id="campos-admin-func" class="space-y-3 pt-2 border-t border-gray-100">
         <!-- Papel | PIN | Remuneração | % Comissão -->
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div>
             <label class="block text-xs font-semibold text-gray-600 mb-1">Papel</label>
             <select id="func-papel" class="w-full px-2 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50">
@@ -1690,7 +1690,7 @@
           </div>
           <div id="campo-comissao">
             <label class="block text-xs font-semibold text-gray-600 mb-1">% Comissão</label>
-            <input type="number" id="func-comissao" min="0" max="100" step="1" placeholder="40" class="w-full px-2 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+            <input type="number" id="func-comissao" min="0" max="100" step="any" placeholder="40" class="w-full px-2 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50" />
           </div>
           <div id="campo-salario" class="hidden">
             <label class="block text-xs font-semibold text-gray-600 mb-1">Salário R$</label>
@@ -1727,13 +1727,13 @@
           </button>
         </div>
       </div>
-      <div class="flex justify-between gap-2 pt-2">
+      <div class="flex justify-between gap-2 pt-3 pb-1 sticky bottom-0 bg-white border-t border-gray-100" style="z-index:5">
         <button id="btn-excluir-func-modal" type="button" onclick="confirmarExcluirFuncionariaDoModal()" class="px-4 py-2.5 text-sm font-semibold rounded-xl border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-colors items-center gap-1.5 hidden" style="display:none">
           <i data-lucide="user-x" class="w-4 h-4"></i> Excluir
         </button>
         <div class="flex gap-2 ml-auto">
           <button type="button" onclick="fecharModal('modal-funcionaria')" class="px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
-          <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow hover:shadow-md transition-all flex items-center gap-2"><i data-lucide="save" class="w-4 h-4"></i>Salvar Ajustes</button>
+          <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a1a1a] to-[#4a4a4a] rounded-xl shadow hover:shadow-md transition-all flex items-center gap-2"><i data-lucide="save" class="w-4 h-4"></i>Salvar</button>
         </div>
       </div>
     </form>
@@ -2505,8 +2505,9 @@ async function recarregarSeNecessario(data) {
 // =========================================================
 // CALENDÁRIO
 // =========================================================
-const HORA_INICIO = 7;
-const HORA_FIM    = 20;
+const HORA_INICIO = 0;   // agenda cobre o dia inteiro (00h–24h)
+const HORA_FIM    = 24;
+const HORA_SCROLL_PADRAO = 7; // ao abrir um dia, rola até aqui (ou até o 1º atendimento, se for antes)
 const SLOT_MIN    = 30;
 const SLOTS_TOTAL = ((HORA_FIM - HORA_INICIO) * 60) / SLOT_MIN;
 
@@ -2691,6 +2692,30 @@ function renderCalendario() {
   } else {
     renderCalendarioDia(container, getDiasDaSemana(currentDate));
   }
+  _autoScrollCalendario();
+}
+
+// Rola a agenda até o horário de trabalho só quando muda o dia/modo
+// (re-renders após salvar não mexem na rolagem atual)
+let _calScrollKey = null;
+function _autoScrollCalendario() {
+  if (modoCalendario === 'mensal') { _calScrollKey = null; return; }
+  const key = modoCalendario + '|' + currentDate.toDateString();
+  if (key === _calScrollKey) return;
+  _calScrollKey = key;
+  const scroller = document.getElementById('calendario')?.parentElement;
+  if (!scroller) return;
+  const dias = modoCalendario === 'dia' ? [currentDate] : getDiasDaSemana(currentDate);
+  const chaves = new Set(dias.map(d => d.toDateString()));
+  let minHora = HORA_SCROLL_PADRAO;
+  agendamentos.forEach(a => {
+    if (a.status === 'cancelado') return;
+    const d = new Date(a.data_hora);
+    if (chaves.has(d.toDateString())) minHora = Math.min(minHora, d.getHours());
+  });
+  const slot = document.querySelectorAll('#calendario > div:first-child > .time-slot')[(minHora - HORA_INICIO) * 60 / SLOT_MIN];
+  const stickyH = document.querySelector('#calendario .prof-col-hdr')?.offsetHeight || 0;
+  if (slot) scroller.scrollTop = Math.max(0, slot.offsetTop - stickyH - 4);
 }
 
 function renderCalendarioDia(container, dias) {
@@ -2946,6 +2971,14 @@ function renderCalendarioDia(container, dias) {
     wrapper.appendChild(bodyRow);
     container.appendChild(wrapper);
   }
+
+  // Alinha a coluna de horas com as linhas das funcionárias (o cabeçalho delas tem altura variável)
+  const _slotHora = colHoras.querySelector('.time-slot');
+  const _slotCorpo = container.querySelector('.calendar-col .time-slot');
+  if (_slotHora && _slotCorpo) {
+    const diff = _slotCorpo.getBoundingClientRect().top - _slotHora.getBoundingClientRect().top;
+    if (Math.abs(diff) > 0.5) hdrHora.style.height = (hdrHora.offsetHeight + diff) + 'px';
+  }
 }
 
 function renderCalendarioMensal(container) {
@@ -3020,7 +3053,7 @@ function renderCalendarioMensal(container) {
       dot.title = (clientes.find(c => c.id === ag.cliente_id)?.nome || '—') + ' · ' + func?.nome;
       const hr = new Date(ag.data_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       dot.textContent = hr + ' ' + (clientes.find(c => c.id === ag.cliente_id)?.nome?.split(' ')[0] || '—');
-      dot.onclick = (ev) => { ev.stopPropagation(); abrirComanda(ag.id); };
+      dot.onclick = (ev) => { ev.stopPropagation(); abrirDetalheAgendamento(ag.id); };
       cell.appendChild(dot);
     });
     if (agsNoDia.length > MAX_VIS) {
@@ -4521,7 +4554,7 @@ function filtrarComissoesServico() {
     const val = existente ? existente.percentual : '';
     return `<div class="flex items-center gap-2">
       <span class="flex-1 text-xs text-gray-600 truncate" title="${esc(s.nome)}">${esc(s.nome)}</span>
-      <input type="number" min="0" max="100" step="1" placeholder="—"
+      <input type="number" min="0" max="100" step="any" placeholder="—"
         data-servico-id="${s.id}" value="${val}"
         class="comissao-servico-input w-16 px-2 py-1 border border-gray-200 rounded-lg text-xs text-right bg-gray-50 focus:bg-white" />
       <span class="text-xs text-gray-400">%</span>
@@ -4638,6 +4671,9 @@ async function salvarFuncionaria(e) {
       if (ocultarSem) ocultarSemAg.add(funcId);
       else ocultarSemAg.delete(funcId);
       localStorage.setItem('ocultar_sem_ag', JSON.stringify([...ocultarSemAg]));
+
+      // Nova funcionária: se há filtro de chips ativo, inclui ela para aparecer na agenda
+      if (!id && exibir && profVisiveis.size) profVisiveis.add(funcId);
     }
 
     showToast(id ? 'Funcionária atualizada!' : 'Funcionária cadastrada!', 'success');
@@ -6411,46 +6447,157 @@ function abrirHistoricoCliente(id) {
   lucide.createIcons();
 }
 
-function renderHistoricoCliente() {
+// Histórico completo da cliente, buscado direto no banco (não depende do range
+// carregado na agenda). Considera todo atendimento passado não cancelado — a maioria
+// fica com status "agendado" porque a comanda não é fechada no app.
+async function renderHistoricoCliente() {
   const id  = window._clienteHistoricoId;
   const el  = document.getElementById('cli-historico-conteudo');
   if (!el || !id) return;
+  el.innerHTML = '<div class="text-center py-12 text-gray-400 text-sm">Carregando histórico...</div>';
 
-  const ags = agendamentos
-    .filter(a => a.cliente_id === id && a.status === 'concluido')
-    .sort((a, b) => b.data_hora.localeCompare(a.data_hora));
+  let ags, debs;
+  try {
+    const [rAg, rDeb] = await Promise.all([
+      db.from('agendamentos').select('*, comanda_itens(*)').eq('cliente_id', id).order('data_hora', { ascending: false }),
+      db.from('debitos_clientes').select('*').eq('cliente_id', id),
+    ]);
+    if (rAg.error) throw rAg.error;
+    if (rDeb.error) throw rDeb.error;
+    ags = rAg.data || []; debs = rDeb.data || [];
+  } catch (e) {
+    el.innerHTML = `<div class="text-center py-12 text-red-500 text-sm">Erro ao carregar histórico: ${esc(e.message || '')}</div>`;
+    return;
+  }
+  if (window._clienteHistoricoId !== id) return; // usuário trocou de cliente durante o carregamento
 
-  if (!ags.length) {
+  const agora = new Date();
+  const pagtoLabel = { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito', cortesia:'Cortesia', fiado:'Fiado' };
+  const fmtData = d => d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  const saldoDeb = d => Math.max(0, Number(d.valor_original || 0) - Number(d.valor_pago || 0));
+  const debPorAg = new Map(debs.filter(d => d.agendamento_id).map(d => [d.agendamento_id, d]));
+
+  const passados = ags
+    .filter(a => a.status !== 'cancelado' && new Date(a.data_hora) <= agora)
+    .map(a => {
+      const serv   = servicos.find(s => s.id === a.servico_id);
+      const extras = (a.comanda_itens || []).reduce((s, i) => s + (i.quantidade || 1) * Number(i.valor_unitario || 0), 0);
+      const valor  = a.valor_cobrado != null ? Number(a.valor_cobrado) : Number(serv?.preco || 0) + extras;
+      let situacao, pendente = 0;
+      if (a.status === 'faltou') {
+        situacao = 'faltou';
+      } else if (a.status === 'concluido' && a.forma_pagamento === 'fiado') {
+        const deb = debPorAg.get(a.id);
+        pendente  = deb ? saldoDeb(deb) : valor;
+        situacao  = pendente > 0.001 ? 'fiado' : 'pago';
+      } else if (a.status === 'concluido') {
+        situacao = 'pago';
+      } else {
+        situacao = 'sem-pagto'; // atendimento passado sem comanda fechada (não conta como pendente)
+      }
+      const procs = [serv?.nome, ...(a.comanda_itens || []).map(i => i.descricao)].filter(Boolean);
+      return { a, d: new Date(a.data_hora), serv, valor, situacao, pendente, procs: [...new Set(procs)] };
+    });
+
+  // Fiados lançados sem agendamento correspondente na lista (ex.: agendamento excluído)
+  const idsAg = new Set(ags.map(a => a.id));
+  const debsAvulsos = debs.filter(d => (!d.agendamento_id || !idsAg.has(d.agendamento_id)) && saldoDeb(d) > 0.001);
+
+  const atendidos   = passados.filter(x => x.situacao !== 'faltou');
+  const ultimo      = atendidos[0];
+  const totalPago   = atendidos.filter(x => x.situacao === 'pago' && x.a.forma_pagamento !== 'cortesia').reduce((s, x) => s + x.valor, 0);
+  const pendFiado   = passados.filter(x => x.situacao === 'fiado').reduce((s, x) => s + x.pendente, 0) + debsAvulsos.reduce((s, d) => s + saldoDeb(d), 0);
+  const semPgto     = passados.filter(x => x.situacao === 'sem-pagto');
+  window._histAgs   = new Map(ags.map(a => [a.id, a]));
+
+  if (!passados.length && !debsAvulsos.length) {
     el.innerHTML = '<div class="text-center py-12 text-gray-400 text-sm">Nenhum atendimento registrado</div>';
     return;
   }
 
-  const totalGasto = ags.reduce((s, a) => s + Number(a.valor_cobrado || 0), 0);
-  const pagtoLabel = { dinheiro:'Dinheiro', pix:'Pix', debito:'Débito', credito:'Crédito', cortesia:'Cortesia', fiado:'Fiado' };
+  const diasDesde = ultimo ? Math.floor((agora - ultimo.d) / 86400000) : null;
+  const txtDias   = diasDesde === null ? '' : diasDesde === 0 ? 'hoje' : diasDesde === 1 ? 'ontem' : `há ${diasDesde} dias`;
+  const card = (rotulo, valor, sub = '', cor = '#1a1a1a') => `
+    <div class="rounded-xl border border-gray-100 bg-white px-3 py-2.5">
+      <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">${rotulo}</div>
+      <div class="text-base font-bold mt-0.5" style="color:${cor}">${valor}</div>
+      ${sub ? `<div class="text-[11px] text-gray-400">${sub}</div>` : ''}
+    </div>`;
+  const badge = x => {
+    const map = {
+      pago:       ['#ecfdf5', '#047857', 'Pago' + (x.a.forma_pagamento ? ' · ' + (pagtoLabel[x.a.forma_pagamento] || x.a.forma_pagamento) : '')],
+      fiado:      ['#fef2f2', '#b91c1c', 'Fiado em aberto'],
+      'sem-pagto':['#fffbeb', '#b45309', 'Comanda não fechada'],
+      faltou:     ['#f3f4f6', '#6b7280', 'Faltou'],
+    };
+    const [bg, fg, txt] = map[x.situacao];
+    return `<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap" style="background:${bg};color:${fg}">${txt}</span>`;
+  };
+  const linhaAtend = x => {
+    const func = funcionarios.find(f => f.id === x.a.funcionario_id);
+    return `<div class="px-5 py-3">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <div class="text-sm font-semibold text-gray-800">${esc(x.procs.join(' + ') || '—')}</div>
+          <div class="text-xs text-gray-400 mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5">
+            <span>📅 ${fmtData(x.d)}</span>
+            ${func ? `<span>👩 ${esc(func.nome.split(' ')[0])}</span>` : ''}
+          </div>
+        </div>
+        <div class="flex flex-col items-end gap-1 flex-shrink-0">
+          <span class="text-sm font-bold" style="color:${x.pendente > 0.001 ? '#b91c1c' : '#1a1a1a'}">${x.situacao === 'faltou' ? '—' : fmtPreco(x.pendente > 0.001 ? x.pendente : x.valor)}</span>
+          ${badge(x)}
+          ${x.situacao === 'sem-pagto' && isAdmin() ? `<button onclick="fecharComandaDoHistorico('${x.a.id}')" class="text-[11px] font-semibold text-white px-2.5 py-1 rounded-lg" style="background:#1a1a1a">Fechar comanda</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  };
+
+  const pendentes = passados.filter(x => x.pendente > 0.001);
+  const pendTotal = pendFiado;
+  let secPend = '';
+  if (semPgto.length) {
+    secPend += `
+      <div class="mx-4 mt-4 rounded-xl px-4 py-3 text-xs" style="background:#fffbeb;border:1px solid #fcd34d;color:#92400e">
+        <b>⚠️ ${semPgto.length} atendimento${semPgto.length !== 1 ? 's' : ''} anterior${semPgto.length !== 1 ? 'es' : ''} sem comanda fechada.</b>
+        Feche as comandas para registrar o pagamento (ou lançar como fiado) e manter as pendências em dia.
+        Eles aparecem na lista abaixo com o botão "Fechar comanda".
+      </div>`;
+  }
+  if (pendentes.length || debsAvulsos.length) {
+    secPend += `
+      <div class="px-5 pt-4 pb-1 text-xs font-bold uppercase tracking-wide" style="color:#b91c1c">Valores pendentes (fiado) · ${fmtPreco(pendTotal)}</div>
+      ${debsAvulsos.map(d => `<div class="px-5 py-3"><div class="flex justify-between gap-3">
+          <div><div class="text-sm font-semibold text-gray-800">${esc(d.observacoes || 'Fiado lançado')}</div>
+          <div class="text-xs text-gray-400 mt-0.5">📅 ${d.data_lancamento ? fmtData(new Date(d.data_lancamento + 'T12:00')) : '—'}</div></div>
+          <div class="flex flex-col items-end gap-1"><span class="text-sm font-bold" style="color:#b91c1c">${fmtPreco(saldoDeb(d))}</span>
+          <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full" style="background:#fef2f2;color:#b91c1c">Fiado em aberto</span></div>
+        </div></div>`).join('')}
+      ${pendentes.map(linhaAtend).join('')}`;
+  }
 
   el.innerHTML = `
-    <div class="px-5 py-3 text-xs text-gray-400 flex justify-between" style="background:#fffbeb55">
-      <span>${ags.length} atendimento${ags.length!==1?'s':''}</span>
-      <span class="font-semibold" style="color:#1a1a1a">Total gasto: ${fmtPreco(totalGasto)}</span>
-    </div>` +
-    ags.map(ag => {
-      const serv = servicos.find(s => s.id === ag.servico_id);
-      const func = funcionarios.find(f => f.id === ag.funcionario_id);
-      const d    = new Date(ag.data_hora);
-      return `<div class="px-5 py-4">
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="text-sm font-semibold text-gray-800">${esc(serv?.nome || '—')}</div>
-            <div class="text-xs text-gray-400 mt-0.5 flex flex-wrap gap-2">
-              <span>📅 ${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</span>
-              <span>👩 ${esc(func?.nome?.split(' ')[0] || '—')}</span>
-              ${ag.forma_pagamento ? `<span>${pagtoLabel[ag.forma_pagamento]||ag.forma_pagamento}</span>` : ''}
-            </div>
-          </div>
-          <span class="text-sm font-bold" style="color:#1a1a1a">${fmtPreco(ag.valor_cobrado)}</span>
-        </div>
-      </div>`;
-    }).join('');
+    <div class="p-4 grid grid-cols-2 sm:grid-cols-4 gap-2" style="background:#fffbeb55">
+      ${card('Último atendimento', ultimo ? fmtData(ultimo.d) : '—', txtDias)}
+      ${card('Atendimentos', atendidos.length, passados.length - atendidos.length ? `${passados.length - atendidos.length} falta(s)` : '')}
+      ${card('Total pago', fmtPreco(totalPago))}
+      ${card('Pendente', fmtPreco(pendTotal), '', pendTotal > 0.001 ? '#b91c1c' : '#047857')}
+    </div>
+    ${secPend}
+    <div class="px-5 pt-4 pb-1 text-xs font-bold uppercase tracking-wide text-gray-500">Últimos atendimentos e procedimentos</div>
+    ${passados.map(linhaAtend).join('') || '<div class="px-5 py-6 text-sm text-gray-400">Nenhum atendimento realizado</div>'}`;
+}
+
+// Abre a comanda de um atendimento antigo a partir do histórico (pode estar fora do range carregado na agenda)
+function fecharComandaDoHistorico(agId) {
+  if (!agendamentos.some(a => a.id === agId)) {
+    const ag = window._histAgs?.get(agId);
+    if (!ag) return;
+    const { comanda_itens, ...semItens } = ag;
+    agendamentos.push(semItens);
+  }
+  fecharModal('modal-cliente');
+  abrirDetalheAgendamento(agId);
 }
 
 // =========================================================
